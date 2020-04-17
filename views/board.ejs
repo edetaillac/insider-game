@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Online Insider Game</title>
+        <link rel="stylesheet" href="static/css/style.css">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+        <link rel="icon" type="image/png" sizes="32x32" href="/static/image/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="96x96" href="/static/image/favicon-96x96.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/static/image/favicon-16x16.png">
+        <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    </head>
+ 
+    <body class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-lg-12">
+                    <h2>Insider</h2>
+                    <ul class="players">
+                    <% players.forEach(player => { %>
+                        <li>
+                            <input type="radio" name="player" id="<%= player.name %>" value="<%= player.name %>" /> 
+                            <label for="<%= player.name %>" class="radioLabel"><%= player.name %></label>
+                        </li>
+                    <% }); %>
+                    </ul>
+                    
+                    <div id="reset">
+                        <p class="role" style="display: none">Tu es <strong></strong></p>
+                    </div>
+
+                    <div id="reveal">
+                        <button class="btn btn-warning" style="display: none">Révéler le mot</button>
+                        <div id="word" style="display: none">Le mot à deviner est<strong></strong></div>
+                    </div>
+
+                    <div id="timer"></div>
+                </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="footer">
+          <div class="container">
+            <button class="btn btn-dark" id="newGame">Démarrer une partie</button>
+          </div>
+        </footer>
+
+        <!-- Javascript -->
+        <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="static/js/timer.js"></script>
+        
+        <script>
+            var socket = io.connect('localhost:8080');
+            var audiof = new Audio('/static/sound/ding.mp3');
+
+            $(function() {
+
+                $( "#newGame").click(function(){
+                    socket.emit('resetGame');
+                });
+
+                $( "#reveal button").click(function(){
+                    $('#word').fadeIn(1000).delay(5000).fadeOut("slow", function() {
+                        audiof.play();
+                        socket.emit('revealWord');
+                    });
+                });
+
+                socket.on('newRole', function(data) {
+                    $('#reveal button').hide();
+                    $('#word strong').html('');
+                    $('#word').hide();
+                    $('#timer').hide();
+                    $.each(data.players, function(i, obj) {
+                        if(obj.name == $("input[name='player']:checked").val()) {
+                            $('#reset .role strong').html(obj.role);
+                            $('#reset .role').fadeIn(1000).delay(5000).fadeOut("slow", function(){
+                                if(obj.role == 'Maître du jeu') {
+                                    $('#reveal button').fadeIn(1000);
+                                    $('#word strong').html(data.word);
+                                }
+                                if(obj.role == 'Traitre') {
+                                    $('#word strong').html(data.word);
+                                }
+                            });
+                            return false;
+                        };
+                      });
+                });
+
+                socket.on('revealWord', function() {
+                    $('#word').fadeIn(1000).delay(10000).fadeOut("slow", function() {
+                        socket.emit('startGame');
+                    });
+                });
+
+                socket.on('startGame', function() {
+                    audiof.play();
+                    $('#timer').show();
+                    if(typeof resetTimer  === 'function') {
+                        resetTimer();
+                    }
+                    countdown(5);
+                });
+    
+            });
+ 
+        </script>
+    </body>
+</html>

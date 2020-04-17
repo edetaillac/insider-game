@@ -1,0 +1,12 @@
+{
+  "name": "concept-boardgame",
+  "version": "0.1.0",
+  "dependencies": {
+    "ejs": "1.x",
+    "ent": "2.x",
+    "express": "4.x",
+    "socket.io": "1.x"
+  },
+  "author": "emmanuel.detaillac@gmail.com&gt;",
+  "description": "Simple Insider game to remote playing"
+}

@@ -1,0 +1,70 @@
+body {
+    font-family: "Gill Sans", sans-serif;
+}
+
+.container-fluid {
+  background: url("/static/image/insider.jpg") no-repeat 0 20px;
+  background-color: #FE0200; 
+  background-size: 100%;
+  height: 90vh;
+}
+
+footer {
+  background-color: #FE0200; 
+  height: 10vh;
+}
+
+.content {
+    text-align: center;
+}
+
+.content h2 {
+    margin-top: 30px;
+    text-align: center;
+    padding-right: 25%;
+    font-size: 48px;
+}
+
+.content ul {
+    margin: 50px auto;
+    padding-left: 20%;
+    text-align: left;
+}
+
+.content ul li {
+    list-style-type: none;
+    font-size: 25px;
+}
+
+.content ul li label {
+    margin-left: 8px;
+    vertical-align: top;
+}
+
+#reset {
+    margin-top: 25px;
+}
+
+#reset, #reveal, #word, #timer, .role {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.role strong, #word strong {
+    font-size: 25px;
+    display: block;
+}
+
+#timer{
+    font-weight: bold;
+    font-size: 50px;
+}
+
+.content button {
+    width: 260px;
+    height: 50px;
+    margin: 0 auto;
+    font-weight: bold;
+    font-size: 18px;
+}
+

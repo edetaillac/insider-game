@@ -3,10 +3,17 @@ body {
 }
 
 .container-fluid {
-  background: url("/static/image/insider.jpg") no-repeat 0 5px;
-  background-color: #DE3C31; 
-  background-size: 100%;
   height: 100vh;
+  background-color: #DE3C31; 
+}
+
+header {
+  background-image: url("/static/image/frise.jpg");
+  background-repeat: repeat-x;
+  background-position: bottom center;
+  background-color: #DE3C31; 
+  padding-top: 10px;
+  height: 120px;
 }
 
 footer.footer {
@@ -23,7 +30,7 @@ footer.footer {
 }
 
 .content ul {
-    margin: 120px auto 50px auto;
+    margin: 20px auto 50px auto;
     padding-left: 20%;
     text-align: left;
 }
@@ -31,6 +38,7 @@ footer.footer {
 .content ul li {
     list-style-type: none;
     font-size: 25px;
+    line-height: 30px;
 }
 
 .content ul li label {

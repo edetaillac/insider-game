@@ -65,7 +65,7 @@ io.sockets.on('connection', function (socket) {
     socket.on('resetGame', function (object) {
         players = randomRoles(players);
         word = getWord(wordFamille);
-        io.in('game').emit('newRole', { players: players , word: 'sdf' });
+        io.in('game').emit('newRole', { players: players , word: word });
     })
 
     socket.on('revealWord', function (object) {

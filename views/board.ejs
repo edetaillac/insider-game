@@ -11,6 +11,9 @@
     </head>
  
     <body class="content">
+        <header>
+            <img src="/static/image/title.jpg" />
+        </header>
         <div class="container-fluid">
             <div class="row">
                 <div class="col-lg-12">
@@ -29,7 +32,7 @@
 
                     <div id="reveal">
                         <button class="btn btn-warning" style="display: none">Révéler le mot</button>
-                        <div id="word" style="display: none">Le mot à deviner est<strong></strong></div>
+                        <div id="word" style="display: none"></div>
                     </div>
 
                     <div id="timer"></div>
@@ -69,8 +72,7 @@
 
                 socket.on('newRole', function(data) {
                     $('#reveal button').hide();
-                    $('#word strong').html('');
-                    $('#word').hide();
+                    $('#word').html('').hide();
                     $('#timer').hide();
                     $.each(data.players, function(i, obj) {
                         if(obj.name == $("input[name='player']:checked").val()) {
@@ -78,10 +80,10 @@
                             $('#reset .role').fadeIn(1000).delay(5000).fadeOut("slow", function(){
                                 if(obj.role == 'Maître du jeu') {
                                     $('#reveal button').fadeIn(1000);
-                                    $('#word strong').html(data.word);
+                                    $('#word').html("Le mot à deviner est<strong>"+data.word+"</strong>");
                                 }
                                 if(obj.role == 'Traitre') {
-                                    $('#word strong').html(data.word);
+                                    $('#word').html("Le mot à deviner est<strong>"+data.word+"</strong>");
                                 }
                             });
                             return false;
@@ -101,7 +103,7 @@
                     if(typeof resetTimer  === 'function') {
                         resetTimer();
                     }
-                    countdown(5);
+                    countdown(1);
                 });
 
                 socket.on('ding', function() {

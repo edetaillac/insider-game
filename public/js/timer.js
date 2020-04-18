@@ -23,6 +23,8 @@ function countdown(minutes) {
     function stop() {
     	if (timer) {
             clearTimeout(timer);
+            var counter = document.getElementById("timer");
+            counter.innerHTML = '';
             timer = 0;
         }
     }

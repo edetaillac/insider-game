@@ -64,6 +64,7 @@
                     $('#word').fadeIn(1000).delay(5000).fadeOut("slow", function() {
                         audiof.play();
                         socket.emit('revealWord');
+                        $('#reveal button').fadeOut(1000);
                     });
                 });
 

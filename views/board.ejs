@@ -14,7 +14,6 @@
         <div class="container-fluid">
             <div class="row">
                 <div class="col-lg-12">
-                    <h2>Insider</h2>
                     <ul class="players">
                     <% players.forEach(player => { %>
                         <li>
@@ -62,7 +61,7 @@
 
                 $( "#reveal button").click(function(){
                     $('#word').fadeIn(1000).delay(5000).fadeOut("slow", function() {
-                        audiof.play();
+                        socket.emit('ding');
                         socket.emit('revealWord');
                         $('#reveal button').fadeOut(1000);
                     });
@@ -104,7 +103,11 @@
                     }
                     countdown(5);
                 });
-    
+
+                socket.on('ding', function() {
+                    audiof.play();
+                });
+
             });
  
         </script>

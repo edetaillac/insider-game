@@ -75,6 +75,10 @@ io.sockets.on('connection', function (socket) {
     socket.on('startGame', function (object) {
         io.in('game').emit('startGame', {});
     })
+
+    socket.on('ding', function (object) {
+        io.in('game').emit('ding', {});
+    })
  
 }) 
  

@@ -15,8 +15,7 @@ function countdown(minutes) {
             if(mins > 1){
                 countdown(mins-1);           
             } else {
-            	var audiof = new Audio('/static/sound/ding.mp3');
-            	audiof.play();
+            	//ding dong
             }
         }
     }

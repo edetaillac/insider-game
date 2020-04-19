@@ -4,27 +4,57 @@ const app = express();
 var server = require('http').createServer(app), // Serveur HTTP
     io = require('socket.io').listen(server), // Socket.io pour le realtime
     ent = require('ent'); // Ent pour l'encodage
+var session = require('express-session');
+var bodyParser = require('body-parser');
 
 const fs = require('fs');
 const wordFamille = fs.readFileSync('words/famille.csv','utf8').split("\r\n"); 
 
+var players = [];
+
 app.use(function(req, res, next){
     players = [
-        {name: 'Aude', role: ''},
-        {name: 'Stéphane', role: ''},
-        //{name: 'Hélène', role: ''},
-        //{name: 'Manu', role: ''},
-        //{name: 'Romain', role: ''},
-        //{name: 'Fanny', role: ''}
+        {name: 'Aude', role: '', permission: null},
+        {name: 'Stéphane', role: '', permission: null},
+        //{name: 'Hélène', role: '', permission: null},
+        {name: 'Manu', role: '', permission: 'admin'},
+        //{name: 'Romain', role: '', permission: null},
+        //{name: 'Fanny', role: '', permission: null}
     ];
     next();
 })
 
+.use(session({ secret: 'session-insider-secret', cookie: { maxAge: null }}))
+
 .use('/static', express.static(__dirname + '/public'))
+
+.use(bodyParser.urlencoded({
+   extended: true
+}))
  
-// Rendu de todo.ejs à la route racine
 .get('/', function (req, res) {
-    res.render('board.ejs', {players: players});
+    res.render('welcome.ejs', {players: players});
+})
+
+.post('/game', function (req, res) {    
+    player = {name: req.body.player, permission: null, role: ''};
+    players.forEach(function(playerItem, index) {
+        if(playerItem.name == player.name) {
+            player.permission = playerItem.permission;
+        }
+    });
+
+    req.session.player = player;
+
+    res.redirect('/game');
+})
+
+.get('/game', function (req, res) {
+    if(!req.session.player) {
+        res.redirect('/');
+    }
+
+    res.render('board.ejs', { player: req.session.player });
 })
 
 function randomRoles(players)

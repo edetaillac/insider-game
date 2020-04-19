@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Online Insider Game</title>
+        <link rel="stylesheet" href="static/css/style.css">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+        <link rel="icon" type="image/png" sizes="32x32" href="/static/image/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="96x96" href="/static/image/favicon-96x96.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/static/image/favicon-16x16.png">
+        <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    </head>
+ 
+    <body class="content">
+        
+        <div class="container-fluid">
+            <header>
+                <img src="/static/image/title.jpg" />
+            </header>
+            <div class="row">
+                <div class="col-lg-12">
+                    <h2>Qui es tu ?</h2>
+                    <form method="post" name="playerForm" action="game">
+                        <ul class="players">
+                        <% players.forEach(player => { %>
+                            <li>
+                                <input type="radio" name="player" id="<%= player.name %>" value="<%= player.name %>" /> 
+                                <label for="<%= player.name %>" class="radioLabel"><%= player.name %></label>
+                            </li>
+                        <% }); %>
+                        </ul>
+                    </form>
+                </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="footer">
+          <div class="container">
+            <button class="btn btn-dark" id="newGame">Démarrer</button>
+          </div>
+        </footer>
+
+        <!-- Javascript -->
+        <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="static/js/timer.js"></script>
+    
+        <script>
+
+            $(function() {
+                $( "#newGame").click(function(){
+                    $('.content form').submit();
+                });
+            });
+ 
+        </script>
+    </body>
+</html>

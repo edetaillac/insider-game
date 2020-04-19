@@ -2,9 +2,11 @@
   "name": "concept-boardgame",
   "version": "0.1.0",
   "dependencies": {
+    "body-parser": "^1.19.0",
     "ejs": "1.x",
     "ent": "2.x",
     "express": "4.x",
+    "express-session": "^1.17.1",
     "socket.io": "1.x"
   },
   "author": "emmanuel.detaillac@gmail.com&gt;",

@@ -11,20 +11,21 @@
     </head>
  
     <body class="content">
-        <header>
-            <img src="/static/image/title.jpg" />
-        </header>
+        
         <div class="container-fluid">
+            <header>
+                <img src="/static/image/title.jpg" />
+            </header>
             <div class="row">
                 <div class="col-lg-12">
-                    <ul class="players">
-                    <% players.forEach(player => { %>
-                        <li>
-                            <input type="radio" name="player" id="<%= player.name %>" value="<%= player.name %>" /> 
-                            <label for="<%= player.name %>" class="radioLabel"><%= player.name %></label>
-                        </li>
-                    <% }); %>
-                    </ul>
+
+                    <p class="player">
+                        C'est parti <strong><%= player.name %></strong> !
+                        <span class="homelink">Si ce n'est pas toi, <a href="/">clique ici</a> !</span>
+                    </p>
+                    
+
+                    <p id="waiting">Attendons que tout le monde soit prêt ...</p>
                     
                     <div id="reset">
                         <p class="role" style="display: none">Tu es <strong></strong></p>
@@ -43,7 +44,9 @@
 
         <footer class="footer">
           <div class="container">
-            <button class="btn btn-dark" id="newGame">Démarrer une partie</button>
+            <% if (player.permission == 'admin') { %>
+                <button class="btn btn-dark" id="newGame">Lancer une partie</button>
+            <% } %>
           </div>
         </footer>
 
@@ -74,9 +77,10 @@
                     $('#reveal button').hide();
                     $('#word').html('').hide();
                     $('#timer').hide();
+                    $('#waiting').hide();
                     $.each(data.players, function(i, obj) {
-                        if(obj.name == $("input[name='player']:checked").val()) {
-                            $('#reset .role strong').html(obj.role);
+                        if(obj.name == '<%= player.name %>') {
+                            $('.role strong').html(obj.role);
                             $('#reset .role').fadeIn(1000).delay(5000).fadeOut("slow", function(){
                                 if(obj.role == 'Maître du jeu') {
                                     $('#reveal button').fadeIn(1000);

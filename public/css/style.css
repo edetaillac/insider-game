@@ -25,6 +25,10 @@ footer.footer {
     line-height: 60px;
 }
 
+.content h2 {
+    margin: 10px 0;
+}
+
 .content {
     text-align: center;
 }
@@ -37,8 +41,8 @@ footer.footer {
 
 .content ul li {
     list-style-type: none;
-    font-size: 25px;
-    line-height: 30px;
+    font-size: 20px;
+    line-height: 25px;
 }
 
 .content ul li label {
@@ -50,7 +54,17 @@ footer.footer {
     margin-top: 25px;
 }
 
-#reset, #reveal, #word, #timer, .role {
+.homelink {
+    font-size: 12px;
+    display: block;
+    margin: 0;
+}
+.homelink a {
+    color: #000;
+    text-decoration: underline;
+}
+
+#reset, #reveal, #word, #timer, .role, .player {
     text-align: center;
     margin: 20px 0;
 }
@@ -61,7 +75,7 @@ footer.footer {
     padding: 10px;
 }
 
-.role strong, #word strong {
+.role strong, #word strong, .player {
     font-size: 25px;
     display: block;
 }

@@ -10,17 +10,18 @@ var bodyParser = require('body-parser');
 const fs = require('fs');
 const wordFamille = fs.readFileSync('words/famille.csv','utf8').split("\r\n"); 
 
-var players = [];
-
 app.use(function(req, res, next){
-    players = [
-        {name: 'Aude', role: '', permission: null},
-        {name: 'Stéphane', role: '', permission: null},
-        //{name: 'Hélène', role: '', permission: null},
-        {name: 'Manu', role: '', permission: 'admin'},
-        //{name: 'Romain', role: '', permission: null},
-        //{name: 'Fanny', role: '', permission: null}
-    ];
+    if (typeof(players) == 'undefined') {
+        players = [
+            {name: 'Manu', role: '', permission: 'admin'},
+            {name: 'Aude', role: '', permission: null},
+            {name: 'Stéphane', role: '', permission: null},
+            {name: 'Hélène', role: '', permission: null},
+            //{name: 'Romain', role: '', permission: null},
+            //{name: 'Fanny', role: '', permission: null}
+        ];
+    }
+    
     next();
 })
 
@@ -34,6 +35,28 @@ app.use(function(req, res, next){
  
 .get('/', function (req, res) {
     res.render('welcome.ejs', {players: players});
+})
+
+.get('/adminPlayer', function (req, res) {
+    res.render('adminPlayer.ejs', {players: players});
+})
+
+.get('/deletePlayer', function (req, res) {
+    players.forEach(function(playerItem, index) {
+        if(playerItem.name == req.query.player) {
+            players.splice(index, 1);
+        }
+    });
+
+    res.redirect('/adminPlayer');
+})
+
+.post('/addPlayer', function (req, res) {
+    players.push(
+        {name: req.body.player, role: '', permission: null},
+    );
+
+    res.redirect('/adminPlayer');
 })
 
 .post('/game', function (req, res) {    

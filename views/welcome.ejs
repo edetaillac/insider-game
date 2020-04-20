@@ -4,7 +4,6 @@
         <title>Online Insider Game</title>
         <link rel="stylesheet" href="static/css/style.css">
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-        <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css" rel="stylesheet">
         <link rel="icon" type="image/png" sizes="32x32" href="/static/image/favicon-32x32.png">
         <link rel="icon" type="image/png" sizes="96x96" href="/static/image/favicon-96x96.png">
         <link rel="icon" type="image/png" sizes="16x16" href="/static/image/favicon-16x16.png">
@@ -22,7 +21,7 @@
                     <h2>Qui es tu ?</h2>
                     <span class="homelink">Si tu n'apparais pas, <a href="/adminPlayer">clique ici</a> !</span>
 
-                    <form id="playerChoiceForm" method="post" name="playerForm" action="game">
+                    <form class="inline-block" id="playerChoiceForm" method="post" name="playerForm" action="game">
                         <% players.forEach(function(player, index) { %>
                             <div class="form__group">
                                 <div class="form__radio-group">

@@ -13,12 +13,12 @@ const wordFamille = fs.readFileSync('words/famille.csv','utf8').split("\r\n");
 app.use(function(req, res, next){
     if (typeof(players) == 'undefined') {
         players = [
-            {name: 'Manu', role: '', permission: 'admin'},
-            {name: 'Aude', role: '', permission: null},
-            {name: 'Stéphane', role: '', permission: null},
-            {name: 'Hélène', role: '', permission: null},
-            //{name: 'Romain', role: '', permission: null},
-            //{name: 'Fanny', role: '', permission: null}
+            {name: 'Manu', role: '', vote1: null, vote2: null, nbVote2: 0, permission: 'admin'},
+            {name: 'Aude', role: '', vote1: null, vote2: null, nbVote2: 0, permission: null},
+            //{name: 'Stéphane', role: '', vote1: null, vote2: null, nbVote2: 0, permission: null},
+            //{name: 'Hélène', role: '', vote1: null, vote2: null, nbVote2: 0, permission: null},
+            //{name: 'Romain', role: '', vote1: null, vote2: null, nbVote2: 0, permission: null},
+            //{name: 'Fanny', role: '', vote1: null, vote2: null, nbVote2: 0, permission: null}
         ];
     }
     
@@ -68,7 +68,6 @@ app.use(function(req, res, next){
     });
 
     req.session.player = player;
-
     res.redirect('/game');
 })
 
@@ -85,6 +84,9 @@ function randomRoles(players)
     players = shuffle(players);
     players.forEach(function(player, index) {
         player.role = 'Citoyen';
+        player.vote1 = null;
+        player.vote2 = null;
+        player.nbVote2 = 0;
     });
     players = players.sort(() => Math.random() - 0.5);
     players[0].role = 'Maître du jeu';
@@ -109,6 +111,59 @@ function getWord(data)
 {
     return data[Math.floor(Math.random() * data.length)];
 }
+
+function everybodyHasVoted(voteNumber) {
+    const hasVoted1 = (currentValue) => currentValue.vote1 !== null;
+    const hasVoted2 = (currentValue) => currentValue.vote2 !== null;
+
+    if(voteNumber == 1) {
+        return players.every(hasVoted1);
+    } else {
+        return players.every(hasVoted2);
+    }
+}
+
+function filterPlayerVote2(player) {
+    return player.role !== 'Maître du jeu';
+}
+
+function addPlayerVote2(playerVote) {
+
+    players.map(function(player) {
+        if(playerVote === player.name) {
+            player.nbVote2 += 1
+        }
+    });
+}
+
+function compareVote(a, b) {
+  if (a.nbVote2 < b.nbVote2) return 1;
+  if (b.nbVote2 < a.nbVote2) return -1;
+
+  return 0;
+}
+
+function getVoteResult(voteNumber) {
+
+    if(voteNumber == 1) {
+        voteResult = {'up': 0, 'down': 0};
+        players.some(function(player) {
+          if(player.vote1 == '1') {
+            voteResult.up += 1;
+          } else {
+            voteResult.down += 1;
+          }
+        })
+    } else {
+        players.forEach(function(player, index) {
+            addPlayerVote2(player.vote2);
+        });
+        voteResult = players.filter(filterPlayerVote2);
+        voteResult.sort(compareVote);
+    }
+
+    return voteResult;
+}
  
 // On enclenche le socket d'échange
 io.sockets.on('connection', function (socket) {
@@ -123,6 +178,44 @@ io.sockets.on('connection', function (socket) {
 
     socket.on('revealWord', function (object) {
         socket.broadcast.emit('revealWord');
+    })
+
+    socket.on('wordFound', function (object) {
+        socket.broadcast.emit('wordFound');
+    })
+
+    socket.on('displayVote1', function (object) {
+        socket.broadcast.emit('displayVote1');
+    })
+
+    socket.on('displayVote2', function () {
+        io.in('game').emit('displayVote2', players.filter(filterPlayerVote2));
+    })
+
+    socket.on('vote1', function (object) {
+        players.map(function(player) {
+            if(object.player === player.name) {
+                player.vote1 = object.vote;
+            }
+        });
+
+        if(everybodyHasVoted(1)) {
+            voteResult = getVoteResult(1);
+            io.in('game').emit('vote1Ended', voteResult);
+        }
+    })
+
+    socket.on('vote2', function (object) {
+        players.map(function(player) {
+            if(object.player === player.name) {
+                player.vote2 = object.vote;
+            }
+        });
+
+        if(everybodyHasVoted(2)) {
+            voteResult = getVoteResult(2);
+            io.in('game').emit('vote2Ended', voteResult);
+        }
     })
 
     socket.on('startGame', function (object) {

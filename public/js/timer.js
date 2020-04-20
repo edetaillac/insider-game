@@ -29,7 +29,15 @@ function countdown(minutes) {
         }
     }
 
+    function pause() {
+        if (timer) {
+            clearTimeout(timer);
+            timer = 0;
+        }
+    }
+
     window.resetTimer = stop;
+    window.pauseTimer = pause;
 
     tick();
 }

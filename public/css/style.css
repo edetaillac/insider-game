@@ -2,6 +2,18 @@ body {
     font-family: "Gill Sans", sans-serif;
 }
 
+.content .hidden {
+    display: none;
+}
+
+a.remove, #countdown a {
+    color: #ffc107;
+}
+
+a.remove:active, #countdown a:active {
+    color: #000;
+}
+
 .container-fluid {
   height: 100vh;
   background-color: #DE3C31; 
@@ -70,7 +82,7 @@ footer.footer {
 .homelink {
     font-size: 12px;
     display: block;
-    margin: 0 0 15px 0;
+    margin: 0 0 20px 0;
 }
 .homelink a {
     color: #000;
@@ -85,6 +97,14 @@ footer.footer {
 .role, #word {
     background-color: #23272b;
     color: #fff;
+}
+
+.role {
+    padding: 10px;
+}
+
+#word span{
+    display: block;
     padding: 10px;
 }
 
@@ -93,22 +113,34 @@ footer.footer {
     display: block;
 }
 
-#timer{
+#countdown {
     font-weight: bold;
     font-size: 50px;
 }
 
-.content button.cta {
+#vote1 button, #vote1Result {
+    padding: 1rem 2rem;
+    font-size: 30px;
+    margin: 0 5px;
+}
+
+.content button.cta, .content a.cta {
     width: 260px;
     height: 50px;
     margin: 0 auto;
     font-weight: bold;
     font-size: 18px;
+    line-height: 32px;
+}
+
+.inline-block {
+    display: inline-block;
+    text-align: left;
 }
 
 .form__radio-group {
   display: inline-block;
-  margin: 3px 0;
+  margin: 0px 0;
 }
 .form__radio-input {
   display: none;
@@ -117,11 +149,11 @@ footer.footer {
   cursor: pointer;
   position: relative;
   font-size: 18px;
-  padding-left: 40px;
+  padding-left: 35px;
 }
 .form__radio-button {
-  height: 3rem;
-  width: 3rem;
+  height: 1.5rem;
+  width: 1.5rem;
   border: 3px solid #333;;
   border-radius: 50%;
   display: inline-block;
@@ -132,8 +164,8 @@ footer.footer {
 .form__radio-button::after {
   content: "";
   display: block;
-  height: 1.7rem;
-  width: 1.7rem;
+  height: 0.6rem;
+  width: 0.6rem;
   border-radius: 50%;
   position: absolute;
   top: 50%;

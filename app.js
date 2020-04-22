@@ -25,6 +25,10 @@ app.use(function(req, res, next){
     if (typeof(word) == 'undefined') {
         word = 'mot test';
     }
+
+    if (typeof(online) == 'undefined') {
+        online = 0;
+    }
     
     next();
 })
@@ -190,6 +194,21 @@ function getVoteResult(voteNumber) {
 io.sockets.on('connection', function (socket) {
  
     socket.join('game');
+
+    socket.on('NewPlayer', function(data1) {
+        online = online + 1;
+        offline = players.length - online;
+        console.log('Online players : ' + online);
+        console.log('New player connected : ' + data1);
+        io.in('game').emit('playerStatusUpdate', { online: online, offline: offline });
+      });
+
+    socket.on('disconnect', function () {
+      console.log('Player disconnected');
+      online = online > 0 ? online - 1 : 0;
+      offline = players.length - online;
+      io.in('game').emit('playerStatusUpdate', { online: online, offline: offline });
+    });
     
     socket.on('resetGame', function (object) {
         players = randomRoles(players);
@@ -207,7 +226,7 @@ io.sockets.on('connection', function (socket) {
 
     socket.on('displayVote1', function (object) {
         resetVote(1);
-        socket.broadcast.emit('displayVote1');
+        io.in('game').emit('displayVote1');
     })
 
     socket.on('displayVote2', function () {
@@ -243,14 +262,6 @@ io.sockets.on('connection', function (socket) {
 
     socket.on('startGame', function (object) {
         io.in('game').emit('startGame', {});
-    })
-
-    socket.on('ding', function (object) {
-        io.in('game').emit('ding', {});
-    })
-
-    socket.on('dong', function (object) {
-        io.in('game').emit('dong', {});
     })
  
 }) 

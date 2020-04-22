@@ -1,7 +1,16 @@
-function countdown(minutes, noSleep, socket) {
+function countdown(minutes, noSleep) {
     var seconds = 60;
     var mins = minutes
     var timer = 0;
+
+    function ding() {
+        let audiof = new Audio('/static/sound/ding.mp3');
+        audiof.play();
+    }
+    function dong() {
+        let audiof = new Audio('/static/sound/dong.mp3');
+        audiof.play();
+    }
 
     function tick() {
         //This script expects an element with an ID = "counter". You can change that to what ever you want. 
@@ -15,7 +24,7 @@ function countdown(minutes, noSleep, socket) {
             if(mins > 1){
                 countdown(mins-1);           
             } else {
-            	socket.emit('dong');
+            	dong();
                 noSleep.disable();
             }
         }
@@ -40,7 +49,5 @@ function countdown(minutes, noSleep, socket) {
     window.resetTimer = stop;
     window.pauseTimer = pause;
 
-    socket.emit('ding');
-    noSleep.enable();
     tick();
 }

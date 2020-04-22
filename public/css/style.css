@@ -142,6 +142,19 @@ footer.footer {
     text-align: left;
 }
 
+.playerStatus i {
+    margin-left: 3px;
+}
+.playerStatus .online {
+    color: #46A049;
+}
+.playerStatus .offline {
+    color: #5F5F5F;
+}
+.player .playerStatus {
+    font-size: 10px;
+}
+
 .form__radio-group {
   display: inline-block;
   margin: 0px 0;

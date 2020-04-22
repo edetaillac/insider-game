@@ -21,13 +21,18 @@
             <div class="row">
                 <div class="col-lg-12">
 
-                    <p class="player">
+                    <div class="player">
+                        <% if (player.permission == 'admin') { %>
+                            <div class="playerStatus"></div>
+                        <% } %>
                         C'est parti <strong><%= player.name %></strong> !
                         <span class="homelink">Si ce n'est pas toi, <a href="/">clique ici</a> !</span>
-                    </p>
-                    
+                    </div>
 
-                    <p id="waiting">Attendons que tout le monde soit prêt ...</p>
+                    <div id="waiting">
+                        <p>Attendons que tout le monde soit prêt ...</p>
+                        <p class="playerStatus"></p>
+                    </div>
                     
                     <div id="reset">
                         <p class="role hidden">Tu es <strong></strong></p>
@@ -106,6 +111,41 @@
             var socket = io.connect('localhost:8080');
             var noSleep = new NoSleep();
 
+            function displayPlayerStatus(online, offline) {
+                $('.playerStatus').html('');
+                for (var i = 0; i < online; i++) {
+                    $('.playerStatus').append('<i class="fas fa-circle online"></i>')
+                }
+                for (var i = 0; i < offline; i++) {
+                    $('.playerStatus').append('<i class="fas fa-circle offline"></i>')
+                }
+            }
+
+            function soundNotify(notifType) {
+                let audiof;
+                switch (notifType) {
+                  case 'message':
+                    audiof = new Audio('/static/sound/message.mp3');
+                    break;
+                  case 'mysterious':
+                    audiof = new Audio('/static/sound/mysterious.mp3');
+                    break;
+                  case 'ding':
+                    audiof = new Audio('/static/sound/ding.mp3');
+                    break;
+                  case 'go':
+                    audiof = new Audio('/static/sound/go.mp3');
+                    break;
+                  case 'tada':
+                    audiof = new Audio('/static/sound/tada.mp3');
+                    break;
+                  default:
+                    audiof = new Audio('/static/sound/ding.mp3');
+                }
+                
+                audiof.play();
+            }
+
             function addPlayerVote(player, checked) {
                 let templateVote = '<div class="form__group"><div class="form__radio-group"><input checked type="radio" class="form__radio-input" id="playerName" name="player" value="playerName"><label for="playerName" class="form__radio-label"><span class="form__radio-button"></span>playerName</label></div></div>';
 
@@ -114,15 +154,6 @@
                 }
 
                 $('#vote2 form .choices').append(templateVote.replace(/playerName/g, player));
-            }
-
-            function ding() {
-                let audiof = new Audio('/static/sound/ding.mp3');
-                audiof.play();
-            }
-            function dong() {
-                let audiof = new Audio('/static/sound/dong.mp3');
-                audiof.play();
             }
 
             $(function() {
@@ -151,21 +182,17 @@
                 });
 
                 $( "#displayVote1").click(function(e){
-                    $('#vote1').fadeIn();
-                    $('#vote1 button').attr("disabled", false);
                     socket.emit('displayVote1');
                 });
 
                 $( "#displayVote2").click(function(e){
-                    $('#vote1Result').hide();
-                    $('#vote2 button').attr("disabled", false);
                     socket.emit('displayVote2');
                 });
 
                 $( "#vote1 button").click(function(e){
                     socket.emit('vote1', {player: '<%= player.name %>', vote: $(this).data('vote')});
                     $('#vote1').fadeOut();
-                    $( "#vote1 button").attr("disabled", true);
+                    $(this).attr("disabled", true);
                 });
 
                 $( "#vote2 button").click(function(e){
@@ -180,12 +207,16 @@
                     $(this).attr("disabled", true).hide();
                 });
 
+                socket.emit('NewPlayer', '<%= player.name %>');
+
                 socket.on('newRole', function(data) {
                     $('.hidden').hide();
                     $('#waiting').hide();
                     $('#word').html('');
                     $('#vote2 form .choices').html('');
                     $('#reveal button, #newGame, #vote1 button, #vote2 button').attr("disabled", false);
+                    soundNotify('mysterious');
+
                     $.each(data.players, function(i, obj) {
                         if(obj.name == '<%= player.name %>') {
                             $('.role strong').html(obj.role);
@@ -200,6 +231,7 @@
                 });
 
                 socket.on('revealWord', function(data) {
+                    soundNotify('message');
                     $.each(data.players, function(i, obj) {
                         if(obj.name == '<%= player.name %>') {
                             if(obj.role == 'Maître du jeu' || obj.role == 'Traitre') {
@@ -226,11 +258,15 @@
                 });
 
                 socket.on('displayVote1', function() {
+                    soundNotify('message');
                     $('#vote1').fadeIn();
+                    $("#vote1 button").attr("disabled", false);
                 });
 
                 socket.on('displayVote2', function(players) {
+                    soundNotify('message');
                     $('#vote1Result').hide();
+                    $("#vote2 button").attr("disabled", false);
                     $('#vote2 form .choices').html('');
                     players.forEach(function(votePlayer, index) {
                         let checked = (index === 0 ? true : false);
@@ -240,6 +276,7 @@
                 });
                 
                 socket.on('vote1Ended', function(result) {
+                    soundNotify('tada');
                     $('#displayVote1').hide();
                     $('#vote1Result').fadeIn();
                     $('#vote1Result .resultUp strong').html(result.up);
@@ -248,6 +285,7 @@
                 });
 
                 socket.on('vote2Ended', function(result) {
+                    soundNotify('tada');
                     $("#displayVote2").hide();
                     $('#vote2Result ul').html('');
                     result.forEach(function(votePlayer, index) {
@@ -256,19 +294,20 @@
                     $('#vote2Result').fadeIn();
                 });
 
+                socket.on('playerStatusUpdate', function(playerStatus) {
+                    displayPlayerStatus(playerStatus.online, playerStatus.offline)
+                });
+
                 socket.on('startGame', function() {
                     $('#countdown').show();
                     if(typeof resetTimer  === 'function') {
                         resetTimer();
                     }
-                    countdown(5, noSleep, socket);
-                });
-
-                socket.on('ding', function() {
-                    ding();
-                });
-                socket.on('dong', function() {
-                    dong();
+                    soundNotify('go');
+                    setTimeout(function(){
+                        noSleep.enable();
+                        countdown(5, noSleep);
+                    }, 2000);
                 });
 
             });

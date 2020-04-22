@@ -33,6 +33,16 @@
                         <p class="role hidden">Tu es <strong></strong></p>
                     </div>
 
+                    <div id="chooseWord" class="hidden">
+                        <form id="wordForm" method="post" name="wordForm" action="setWord">
+                            <div class="form-group">
+                                <input type="text" name="word" class="form-control" id="wordForm" style="width: 60%; display: inline;" placeholder="Mot à faire deviner" />
+                                <button type="submit" class="btn btn-warning">Soumettre</button>
+                                <small class="form-text">Soumettre à vide si besoin de générer automatiquement.</small>
+                            </div>
+                        </form>
+                    </div>
+
                     <div id="reveal">
                         <button class="btn btn-warning cta hidden">Révéler le mot</button>
                         <div id="word" class="hidden"></div>
@@ -94,7 +104,6 @@
         
         <script>
             var socket = io.connect('localhost:8080');
-            var audiof = new Audio('/static/sound/ding.mp3');
             var noSleep = new NoSleep();
 
             function addPlayerVote(player, checked) {
@@ -107,7 +116,28 @@
                 $('#vote2 form .choices').append(templateVote.replace(/playerName/g, player));
             }
 
+            function ding() {
+                let audiof = new Audio('/static/sound/ding.mp3');
+                audiof.play();
+            }
+            function dong() {
+                let audiof = new Audio('/static/sound/dong.mp3');
+                audiof.play();
+            }
+
             $(function() {
+
+                $("#wordForm").submit(function(e) {
+                    $.post($(this).attr('action'),
+                    {
+                      word: $("#wordForm input[name='word']").val()
+                    },
+                    function(data, status){
+                      $("#chooseWord").fadeOut();
+                      $('#reveal button').fadeIn(1000);
+                    });
+                    e.preventDefault();
+                });
 
                 $( "#newGame").click(function(){
                     socket.emit('resetGame');
@@ -115,25 +145,20 @@
                 });
 
                 $( "#countdown a").click(function(e){
-                    if(typeof pauseTimer  === 'function') {
-                        pauseTimer();
-                    }
                     $('#displayVote1').fadeIn();
-                    noSleep.disable();
                     socket.emit('wordFound');
-                    $( "#countdown").fadeOut();
                     e.preventDefault();
                 });
 
                 $( "#displayVote1").click(function(e){
-                    $(this).hide();
                     $('#vote1').fadeIn();
+                    $('#vote1 button').attr("disabled", false);
                     socket.emit('displayVote1');
                 });
 
                 $( "#displayVote2").click(function(e){
-                    $(this).hide();
                     $('#vote1Result').hide();
+                    $('#vote2 button').attr("disabled", false);
                     socket.emit('displayVote2');
                 });
 
@@ -151,9 +176,6 @@
                 });
 
                 $( "#reveal button").click(function(){
-                    $('#word').fadeIn(1000).delay(5000).fadeOut("slow", function() {
-                        $('#reveal button').fadeOut(1000);
-                    });
                     socket.emit('revealWord');
                     $(this).attr("disabled", true).hide();
                 });
@@ -169,12 +191,7 @@
                             $('.role strong').html(obj.role);
                             $('#reset .role').fadeIn(1000).delay(6000).fadeOut("slow", function(){
                                 if(obj.role == 'Maître du jeu') {
-                                    $('#reveal button').fadeIn(1000);
-                                    $('#word').html("<span>Le mot à deviner est<strong>"+data.word+"</strong></span>");
-                                } else if(obj.role == 'Traitre') {
-                                    $('#word').html("<span>Le mot à deviner est<strong>"+data.word+"</strong></span>");
-                                } else {
-                                    $('#word').html("<span>Le Maître du jeu ET le Traitre <br />prennent connaissance du mot</span>");
+                                    $("#chooseWord").fadeIn();
                                 }
                             });
                             return false;
@@ -182,14 +199,29 @@
                       });
                 });
 
-                socket.on('revealWord', function() {
-                    $('#word').fadeIn(1000).delay(5000).fadeOut("slow", function() {
-                        socket.emit('startGame');
-                    });
+                socket.on('revealWord', function(data) {
+                    $.each(data.players, function(i, obj) {
+                        if(obj.name == '<%= player.name %>') {
+                            if(obj.role == 'Maître du jeu' || obj.role == 'Traitre') {
+                                $('#word').html("<span>Le mot à deviner est<strong>"+data.word+"</strong></span>");
+                            } else {
+                                $('#word').html("<span>Le Maître du jeu ET le Traitre <br />prennent connaissance du mot</span>");
+                            }
+
+                            $('#word').fadeIn(1000).delay(5000).fadeOut("slow", function() {
+                                socket.emit('startGame');
+                            });
+                            return false;
+                        };
+                      });
                 });
 
                 socket.on('wordFound', function() {
-                    $('#countdown').hide();
+                    noSleep.disable();
+                    if(typeof pauseTimer  === 'function') {
+                        pauseTimer();
+                    }
+                    $( "#countdown").fadeOut();
                     noSleep.disable();
                 });
 
@@ -199,7 +231,7 @@
 
                 socket.on('displayVote2', function(players) {
                     $('#vote1Result').hide();
-                    $('#vote2 form .choices').html();
+                    $('#vote2 form .choices').html('');
                     players.forEach(function(votePlayer, index) {
                         let checked = (index === 0 ? true : false);
                         addPlayerVote(votePlayer.name, checked);
@@ -208,6 +240,7 @@
                 });
                 
                 socket.on('vote1Ended', function(result) {
+                    $('#displayVote1').hide();
                     $('#vote1Result').fadeIn();
                     $('#vote1Result .resultUp strong').html(result.up);
                     $('#vote1Result .resultDown strong').html(result.down);
@@ -215,6 +248,7 @@
                 });
 
                 socket.on('vote2Ended', function(result) {
+                    $("#displayVote2").hide();
                     $('#vote2Result ul').html('');
                     result.forEach(function(votePlayer, index) {
                         $('#vote2Result ul').append('<li>'+votePlayer.name+' ('+votePlayer.nbVote2+')</li>');
@@ -223,17 +257,18 @@
                 });
 
                 socket.on('startGame', function() {
-                    audiof.play();
                     $('#countdown').show();
-                    noSleep.enable();
                     if(typeof resetTimer  === 'function') {
                         resetTimer();
                     }
-                    countdown(5);
+                    countdown(5, noSleep, socket);
                 });
 
                 socket.on('ding', function() {
-                    audiof.play();
+                    ding();
+                });
+                socket.on('dong', function() {
+                    dong();
                 });
 
             });

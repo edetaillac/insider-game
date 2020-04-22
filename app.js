@@ -21,6 +21,10 @@ app.use(function(req, res, next){
             //{name: 'Fanny', role: '', vote1: null, vote2: null, nbVote2: 0, permission: null}
         ];
     }
+
+    if (typeof(word) == 'undefined') {
+        word = 'mot test';
+    }
     
     next();
 })
@@ -57,6 +61,13 @@ app.use(function(req, res, next){
     );
 
     res.redirect('/adminPlayer');
+})
+
+.post('/setWord', function (req, res) {
+    if(req.body.word !== '') {
+        word = req.body.word;
+    }
+    res.json('ok');
 })
 
 .post('/game', function (req, res) {    
@@ -123,6 +134,16 @@ function everybodyHasVoted(voteNumber) {
     }
 }
 
+function resetVote(voteNumber) {
+    players.map(function(player) {
+        if(voteNumber === 1) {
+            player.vote1 = null;
+        } else {
+            player.vote2 = null;
+        }
+    });
+}
+
 function filterPlayerVote2(player) {
     return player.role !== 'Maître du jeu';
 }
@@ -173,22 +194,24 @@ io.sockets.on('connection', function (socket) {
     socket.on('resetGame', function (object) {
         players = randomRoles(players);
         word = getWord(wordFamille);
-        io.in('game').emit('newRole', { players: players , word: word });
+        io.in('game').emit('newRole', { players: players });
     })
 
     socket.on('revealWord', function (object) {
-        socket.broadcast.emit('revealWord');
+        io.in('game').emit('revealWord', { players: players , word: word });
     })
 
     socket.on('wordFound', function (object) {
-        socket.broadcast.emit('wordFound');
+        io.in('game').emit('wordFound');
     })
 
     socket.on('displayVote1', function (object) {
+        resetVote(1);
         socket.broadcast.emit('displayVote1');
     })
 
     socket.on('displayVote2', function () {
+        resetVote(2);
         io.in('game').emit('displayVote2', players.filter(filterPlayerVote2));
     })
 
@@ -224,6 +247,10 @@ io.sockets.on('connection', function (socket) {
 
     socket.on('ding', function (object) {
         io.in('game').emit('ding', {});
+    })
+
+    socket.on('dong', function (object) {
+        io.in('game').emit('dong', {});
     })
  
 }) 

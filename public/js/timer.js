@@ -1,4 +1,4 @@
-function countdown(minutes) {
+function countdown(minutes, noSleep, socket) {
     var seconds = 60;
     var mins = minutes
     var timer = 0;
@@ -15,7 +15,8 @@ function countdown(minutes) {
             if(mins > 1){
                 countdown(mins-1);           
             } else {
-            	//ding dong
+            	socket.emit('dong');
+                noSleep.disable();
             }
         }
     }
@@ -39,5 +40,7 @@ function countdown(minutes) {
     window.resetTimer = stop;
     window.pauseTimer = pause;
 
+    socket.emit('ding');
+    noSleep.enable();
     tick();
 }

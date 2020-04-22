@@ -118,10 +118,14 @@ footer.footer {
     font-size: 50px;
 }
 
+#displayVote1, #vote1 button, #vote1Result, #displayVote2, #vote2 button, #vote2Result {
+    margin: 5px 0 15px 0;
+}
+
 #vote1 button, #vote1Result {
     padding: 1rem 2rem;
     font-size: 30px;
-    margin: 0 5px;
+    margin-left: 10px;
 }
 
 .content button.cta, .content a.cta {

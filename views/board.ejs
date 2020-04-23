@@ -70,7 +70,11 @@
 
 <%- contentFor('footer') %>
 <% if (player.permission == 'admin') { %>
-    <button class="btn btn-dark cta" id="newGame">Lancer une partie</button>
+    <footer class="footer">
+        <div class="container">
+            <button class="btn btn-dark cta" id="newGame">Lancer une partie</button>
+        </div>
+    </footer>
 <% } %>
          
 <%- contentFor('script') %>
@@ -201,10 +205,10 @@
             soundNotify('message');
             $.each(data.players, function(i, obj) {
                 if(obj.name == '<%= player.name %>') {
-                    if(obj.role == 'Maître du jeu' || obj.role == 'Traitre') {
+                    if(obj.role == 'Maître du jeu' || obj.role == 'Traître') {
                         $('#word').html("<span>Le mot à deviner est<strong>"+data.word+"</strong></span>");
                     } else {
-                        $('#word').html("<span>Le Maître du jeu ET le Traitre <br />prennent connaissance du mot</span>");
+                        $('#word').html("<span>Le Maître du jeu ET le Traître <br />prennent connaissance du mot</span>");
                     }
 
                     $('#word').fadeIn(1000).delay(5000).fadeOut("slow", function() {
@@ -278,5 +282,4 @@
         });
 
     });
-
 </script>

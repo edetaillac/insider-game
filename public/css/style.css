@@ -32,8 +32,7 @@ footer.footer {
     background-color: #DE3C31; 
     bottom: 0;
     width: 100%;
-    height: 80px;
-    line-height: 60px;
+    height: 70px;
 }
 
 #playerList {
@@ -154,7 +153,5 @@ footer.footer {
 .player .playerStatus {
     font-size: 10px;
 }
-
-
 
 

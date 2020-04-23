@@ -114,7 +114,7 @@
     }
 
     function addPlayerVote(player, checked) {
-        let templateVote = '<div class="form__group"><div class="form__radio-group"><input checked type="radio" class="form__radio-input" id="playerName" name="player" value="playerName"><label for="playerName" class="form__radio-label"><span class="form__radio-button"></span>playerName</label></div></div>';
+        let templateVote = '<div class="form__group"><div class="form__radio-group"><input checked type="radio" class="form__radio-input" id="playerName" name="player" value="playerName"><label for="playerName" class="form__radio-label">playerName</label></div></div>';
 
         if(!checked) {
             templateVote = templateVote.replace('checked ', '');

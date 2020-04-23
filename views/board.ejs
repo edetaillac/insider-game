@@ -1,317 +1,282 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        <title>Online Insider Game</title>
-        <link rel="stylesheet" href="static/css/style.css">
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-        <link rel="stylesheet" href=
-"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.9.0/css/all.css">
-        <link rel="icon" type="image/png" sizes="32x32" href="/static/image/favicon-32x32.png">
-        <link rel="icon" type="image/png" sizes="96x96" href="/static/image/favicon-96x96.png">
-        <link rel="icon" type="image/png" sizes="16x16" href="/static/image/favicon-16x16.png">
-        <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
-    </head>
- 
-    <body class="content">
-        
-        <div class="container-fluid">
-            <header>
-                <img src="/static/image/title.jpg" />
-            </header>
-            <div class="row">
-                <div class="col-lg-12">
+<%- contentFor('content') %>
+<div class="player">
+    <% if (player.permission == 'admin') { %>
+        <div class="playerStatus"></div>
+    <% } %>
+    C'est parti <strong><%= player.name %></strong> !
+    <span class="homelink">Si ce n'est pas toi, <a href="/">clique ici</a> !</span>
+</div>
 
-                    <div class="player">
-                        <% if (player.permission == 'admin') { %>
-                            <div class="playerStatus"></div>
-                        <% } %>
-                        C'est parti <strong><%= player.name %></strong> !
-                        <span class="homelink">Si ce n'est pas toi, <a href="/">clique ici</a> !</span>
-                    </div>
+<div id="waiting">
+    <p>Attendons que tout le monde soit prêt ...</p>
+    <p class="playerStatus"></p>
+</div>
 
-                    <div id="waiting">
-                        <p>Attendons que tout le monde soit prêt ...</p>
-                        <p class="playerStatus"></p>
-                    </div>
-                    
-                    <div id="reset">
-                        <p class="role hidden">Tu es <strong></strong></p>
-                    </div>
+<div id="reset">
+    <p class="role hidden">Tu es <strong></strong></p>
+</div>
 
-                    <div id="chooseWord" class="hidden">
-                        <form id="wordForm" method="post" name="wordForm" action="setWord">
-                            <div class="form-group">
-                                <input type="text" name="word" class="form-control" id="wordForm" style="width: 60%; display: inline;" placeholder="Mot à faire deviner" />
-                                <button type="submit" class="btn btn-warning">Soumettre</button>
-                                <small class="form-text">Soumettre à vide si besoin de générer automatiquement.</small>
-                            </div>
-                        </form>
-                    </div>
-
-                    <div id="reveal">
-                        <button class="btn btn-warning cta hidden">Révéler le mot</button>
-                        <div id="word" class="hidden"></div>
-                    </div>
-
-                    <div id="countdown" class="hidden">
-                        <span id="timer"></span>
-                        <% if (player.permission == 'admin') { %>
-                            <a href=""><i class="fas fa-stop-circle"></i></a>
-                        <% } %>
-                    </div>
-
-                    <div id="voteForm">
-                        <% if (player.permission == 'admin') { %>
-                            <button id="displayVote1" class="btn btn-warning cta hidden">Voter</button>
-                        <% } %>
-                        <div id="vote1" class="hidden">
-                            <h4>La personne qui a deviné le mot est-elle le Traître ?</h4>
-                            <button data-vote="1" class="btn btn-warning"><i class="fas fa-thumbs-up"></i></button>
-                            <button data-vote="0" class="btn btn-warning"><i class="fas fa-thumbs-down"></i></button>
-                        </div>
-                        <div id="vote1Result" class="hidden">
-                            <span class="resultUp"><strong></strong> <i class="fas fa-thumbs-up"></i></span>
-                            <span class="resultDown"><strong></strong> <i class="fas fa-thumbs-down"></i></span>
-                        </div>
-                        <% if (player.permission == 'admin') { %>
-                            <button id="displayVote2" class="btn btn-warning cta hidden">Voter</button>
-                        <% } %>
-                        <div id="vote2" class="hidden">
-                            <h4>Vote final ?</h4>
-                            <form class="inline-block" id="playerChoiceForm" method="post" name="playerForm" action="game">
-                                <div class="choices"></div>
-                                <button class="btn btn-warning">Voter</button>
-                            </form>
-                        </div>
-                        <div id="vote2Result" class="hidden">
-                            <h4>Résultats du vote</h4>
-                            <ul id="playerList"></ul>
-                        </div>
-                    </div>
-                </div>
-                </div>
-            </div>
+<div id="chooseWord" class="hidden">
+    <form id="wordForm" method="post" name="wordForm" action="setWord">
+        <div class="form-group">
+            <input type="text" name="word" class="form-control" id="wordForm" style="width: 60%; display: inline;" placeholder="Mot à faire deviner" />
+            <button type="submit" class="btn btn-warning">Soumettre</button>
+            <small class="form-text">Soumettre à vide si besoin de générer automatiquement.</small>
         </div>
+    </form>
+</div>
 
-        <footer class="footer">
-          <div class="container">
-            <% if (player.permission == 'admin') { %>
-                <button class="btn btn-dark cta" id="newGame">Lancer une partie</button>
-            <% } %>
-          </div>
-        </footer>
+<div id="reveal">
+    <button class="btn btn-warning cta hidden">Révéler le mot</button>
+    <div id="word" class="hidden"></div>
+</div>
 
-        <!-- Javascript -->
-        <script src="//code.jquery.com/jquery-1.10.2.js"></script>
-        <script src="/socket.io/socket.io.js"></script>
-        <script src="static/js/timer.js"></script>
-        <script src="static/js/nosleep.min.js"></script>
+<div id="countdown" class="hidden">
+    <span id="timer"></span>
+    <% if (player.permission == 'admin') { %>
+        <a href=""><i class="fas fa-stop-circle"></i></a>
+    <% } %>
+</div>
+
+<div id="voteForm">
+    <% if (player.permission == 'admin') { %>
+        <button id="displayVote1" class="btn btn-warning cta hidden">Voter</button>
+    <% } %>
+    <div id="vote1" class="hidden">
+        <h4>La personne qui a deviné le mot est-elle le Traître ?</h4>
+        <button data-vote="1" class="btn btn-warning"><i class="fas fa-thumbs-up"></i></button>
+        <button data-vote="0" class="btn btn-warning"><i class="fas fa-thumbs-down"></i></button>
+    </div>
+    <div id="vote1Result" class="hidden">
+        <h4>Résultats du vote</h4>
+        <span class="resultUp"><strong></strong> <i class="fas fa-thumbs-up"></i></span>
+        <span class="resultDown"><strong></strong> <i class="fas fa-thumbs-down"></i></span>
+    </div>
+    <% if (player.permission == 'admin') { %>
+        <button id="displayVote2" class="btn btn-warning cta hidden">Voter</button>
+    <% } %>
+    <div id="vote2" class="hidden">
+        <h4>Vote final ?</h4>
+        <form class="inline-block" id="playerChoiceForm" method="post" name="playerForm" action="game">
+            <div class="choices"></div>
+            <button class="btn btn-warning">Voter</button>
+        </form>
+    </div>
+    <div id="vote2Result" class="hidden">
+        <h4>Résultats du vote</h4>
+        <ul id="playerList"></ul>
+    </div>
+</div>
+
+<%- contentFor('footer') %>
+<% if (player.permission == 'admin') { %>
+    <button class="btn btn-dark cta" id="newGame">Lancer une partie</button>
+<% } %>
+         
+<%- contentFor('script') %>
+<script>
+    var socket = io.connect('localhost:8080');
+    var noSleep = new NoSleep();
+
+    function displayPlayerStatus(online, offline) {
+        $('.playerStatus').html('');
+        for (var i = 0; i < online; i++) {
+            $('.playerStatus').append('<i class="fas fa-circle online"></i>')
+        }
+        for (var i = 0; i < offline; i++) {
+            $('.playerStatus').append('<i class="fas fa-circle offline"></i>')
+        }
+    }
+
+    function soundNotify(notifType) {
+        let audiof;
+        switch (notifType) {
+          case 'message':
+            audiof = new Audio('/static/sound/message.mp3');
+            break;
+          case 'mysterious':
+            audiof = new Audio('/static/sound/mysterious.mp3');
+            break;
+          case 'ding':
+            audiof = new Audio('/static/sound/ding.mp3');
+            break;
+          case 'go':
+            audiof = new Audio('/static/sound/go.mp3');
+            break;
+          case 'tada':
+            audiof = new Audio('/static/sound/tada.mp3');
+            break;
+          default:
+            audiof = new Audio('/static/sound/ding.mp3');
+        }
         
-        <script>
-            var socket = io.connect('localhost:8080');
-            var noSleep = new NoSleep();
+        audiof.play();
+    }
 
-            function displayPlayerStatus(online, offline) {
-                $('.playerStatus').html('');
-                for (var i = 0; i < online; i++) {
-                    $('.playerStatus').append('<i class="fas fa-circle online"></i>')
-                }
-                for (var i = 0; i < offline; i++) {
-                    $('.playerStatus').append('<i class="fas fa-circle offline"></i>')
-                }
-            }
+    function addPlayerVote(player, checked) {
+        let templateVote = '<div class="form__group"><div class="form__radio-group"><input checked type="radio" class="form__radio-input" id="playerName" name="player" value="playerName"><label for="playerName" class="form__radio-label"><span class="form__radio-button"></span>playerName</label></div></div>';
 
-            function soundNotify(notifType) {
-                let audiof;
-                switch (notifType) {
-                  case 'message':
-                    audiof = new Audio('/static/sound/message.mp3');
-                    break;
-                  case 'mysterious':
-                    audiof = new Audio('/static/sound/mysterious.mp3');
-                    break;
-                  case 'ding':
-                    audiof = new Audio('/static/sound/ding.mp3');
-                    break;
-                  case 'go':
-                    audiof = new Audio('/static/sound/go.mp3');
-                    break;
-                  case 'tada':
-                    audiof = new Audio('/static/sound/tada.mp3');
-                    break;
-                  default:
-                    audiof = new Audio('/static/sound/ding.mp3');
-                }
-                
-                audiof.play();
-            }
+        if(!checked) {
+            templateVote = templateVote.replace('checked ', '');
+        }
 
-            function addPlayerVote(player, checked) {
-                let templateVote = '<div class="form__group"><div class="form__radio-group"><input checked type="radio" class="form__radio-input" id="playerName" name="player" value="playerName"><label for="playerName" class="form__radio-label"><span class="form__radio-button"></span>playerName</label></div></div>';
+        $('#vote2 form .choices').append(templateVote.replace(/playerName/g, player));
+    }
 
-                if(!checked) {
-                    templateVote = templateVote.replace(/checked/g, '')
-                }
+    $(function() {
 
-                $('#vote2 form .choices').append(templateVote.replace(/playerName/g, player));
-            }
-
-            $(function() {
-
-                $("#wordForm").submit(function(e) {
-                    $.post($(this).attr('action'),
-                    {
-                      word: $("#wordForm input[name='word']").val()
-                    },
-                    function(data, status){
-                      $("#chooseWord").fadeOut();
-                      $('#reveal button').fadeIn(1000);
-                    });
-                    e.preventDefault();
-                });
-
-                $( "#newGame").click(function(){
-                    socket.emit('resetGame');
-                    $(this).attr("disabled", true);
-                });
-
-                $( "#countdown a").click(function(e){
-                    $('#displayVote1').fadeIn();
-                    socket.emit('wordFound');
-                    e.preventDefault();
-                });
-
-                $( "#displayVote1").click(function(e){
-                    socket.emit('displayVote1');
-                });
-
-                $( "#displayVote2").click(function(e){
-                    socket.emit('displayVote2');
-                });
-
-                $( "#vote1 button").click(function(e){
-                    socket.emit('vote1', {player: '<%= player.name %>', vote: $(this).data('vote')});
-                    $('#vote1').fadeOut();
-                    $(this).attr("disabled", true);
-                });
-
-                $( "#vote2 button").click(function(e){
-                    socket.emit('vote2', {player: '<%= player.name %>', vote: $("#vote2 input[name='player']:checked").val()});
-                    $('#vote2').hide();
-                    e.preventDefault();
-                    $(this).attr("disabled", true);
-                });
-
-                $( "#reveal button").click(function(){
-                    socket.emit('revealWord');
-                    $(this).attr("disabled", true).hide();
-                });
-
-                socket.emit('NewPlayer', '<%= player.name %>');
-
-                socket.on('newRole', function(data) {
-                    $('.hidden').hide();
-                    $('#waiting').hide();
-                    $('#word').html('');
-                    $('#vote2 form .choices').html('');
-                    $('#reveal button, #newGame, #vote1 button, #vote2 button').attr("disabled", false);
-                    soundNotify('mysterious');
-
-                    $.each(data.players, function(i, obj) {
-                        if(obj.name == '<%= player.name %>') {
-                            $('.role strong').html(obj.role);
-                            $('#reset .role').fadeIn(1000).delay(6000).fadeOut("slow", function(){
-                                if(obj.role == 'Maître du jeu') {
-                                    $("#chooseWord").fadeIn();
-                                }
-                            });
-                            return false;
-                        };
-                      });
-                });
-
-                socket.on('revealWord', function(data) {
-                    soundNotify('message');
-                    $.each(data.players, function(i, obj) {
-                        if(obj.name == '<%= player.name %>') {
-                            if(obj.role == 'Maître du jeu' || obj.role == 'Traitre') {
-                                $('#word').html("<span>Le mot à deviner est<strong>"+data.word+"</strong></span>");
-                            } else {
-                                $('#word').html("<span>Le Maître du jeu ET le Traitre <br />prennent connaissance du mot</span>");
-                            }
-
-                            $('#word').fadeIn(1000).delay(5000).fadeOut("slow", function() {
-                                socket.emit('startGame');
-                            });
-                            return false;
-                        };
-                      });
-                });
-
-                socket.on('wordFound', function() {
-                    noSleep.disable();
-                    if(typeof pauseTimer  === 'function') {
-                        pauseTimer();
-                    }
-                    $( "#countdown").fadeOut();
-                    noSleep.disable();
-                });
-
-                socket.on('displayVote1', function() {
-                    soundNotify('message');
-                    $('#vote1').fadeIn();
-                    $("#vote1 button").attr("disabled", false);
-                });
-
-                socket.on('displayVote2', function(players) {
-                    soundNotify('message');
-                    $('#vote1Result').hide();
-                    $("#vote2 button").attr("disabled", false);
-                    $('#vote2 form .choices').html('');
-                    players.forEach(function(votePlayer, index) {
-                        let checked = (index === 0 ? true : false);
-                        addPlayerVote(votePlayer.name, checked);
-                    });
-                    $('#vote2').fadeIn();
-                });
-                
-                socket.on('vote1Ended', function(result) {
-                    soundNotify('tada');
-                    $('#displayVote1').hide();
-                    $('#vote1Result').fadeIn();
-                    $('#vote1Result .resultUp strong').html(result.up);
-                    $('#vote1Result .resultDown strong').html(result.down);
-                    $('#displayVote2').fadeIn();
-                });
-
-                socket.on('vote2Ended', function(result) {
-                    soundNotify('tada');
-                    $("#displayVote2").hide();
-                    $('#vote2Result ul').html('');
-                    result.forEach(function(votePlayer, index) {
-                        $('#vote2Result ul').append('<li>'+votePlayer.name+' ('+votePlayer.nbVote2+')</li>');
-                    });
-                    $('#vote2Result').fadeIn();
-                });
-
-                socket.on('playerStatusUpdate', function(playerStatus) {
-                    displayPlayerStatus(playerStatus.online, playerStatus.offline)
-                });
-
-                socket.on('startGame', function() {
-                    $('#countdown').show();
-                    if(typeof resetTimer  === 'function') {
-                        resetTimer();
-                    }
-                    soundNotify('go');
-                    setTimeout(function(){
-                        noSleep.enable();
-                        countdown(5, noSleep);
-                    }, 2000);
-                });
-
+        $("#wordForm").submit(function(e) {
+            $.post($(this).attr('action'),
+            {
+              word: $("#wordForm input[name='word']").val()
+            },
+            function(data, status){
+              $("#chooseWord").fadeOut();
+              $('#reveal button').fadeIn(1000);
             });
- 
-        </script>
-    </body>
-</html>
+            e.preventDefault();
+        });
+
+        $( "#newGame").click(function(){
+            socket.emit('resetGame');
+            $(this).attr("disabled", true);
+        });
+
+        $( "#countdown a").click(function(e){
+            $('#displayVote1').fadeIn();
+            socket.emit('wordFound');
+            e.preventDefault();
+        });
+
+        $( "#displayVote1").click(function(e){
+            socket.emit('displayVote1');
+        });
+
+        $( "#displayVote2").click(function(e){
+            socket.emit('displayVote2');
+        });
+
+        $( "#vote1 button").click(function(e){
+            socket.emit('vote1', {player: '<%= player.name %>', vote: $(this).data('vote')});
+            $('#vote1').fadeOut();
+            $(this).attr("disabled", true);
+        });
+
+        $( "#vote2 button").click(function(e){
+            socket.emit('vote2', {player: '<%= player.name %>', vote: $("#vote2 input[name='player']:checked").val()});
+            $('#vote2').hide();
+            e.preventDefault();
+            $(this).attr("disabled", true);
+        });
+
+        $( "#reveal button").click(function(){
+            socket.emit('revealWord');
+            $(this).attr("disabled", true).hide();
+        });
+
+        socket.emit('NewPlayer', '<%= player.name %>');
+
+        socket.on('newRole', function(data) {
+            $('.hidden').hide();
+            $('#waiting').hide();
+            $('#word').html('');
+            $('#vote2 form .choices').html('');
+            $('#reveal button, #newGame, #vote1 button, #vote2 button').attr("disabled", false);
+            soundNotify('mysterious');
+
+            $.each(data.players, function(i, obj) {
+                if(obj.name == '<%= player.name %>') {
+                    $('.role strong').html(obj.role);
+                    $('#reset .role').fadeIn(1000).delay(6000).fadeOut("slow", function(){
+                        if(obj.role == 'Maître du jeu') {
+                            $("#chooseWord").fadeIn();
+                        }
+                    });
+                    return false;
+                };
+              });
+        });
+
+        socket.on('revealWord', function(data) {
+            soundNotify('message');
+            $.each(data.players, function(i, obj) {
+                if(obj.name == '<%= player.name %>') {
+                    if(obj.role == 'Maître du jeu' || obj.role == 'Traitre') {
+                        $('#word').html("<span>Le mot à deviner est<strong>"+data.word+"</strong></span>");
+                    } else {
+                        $('#word').html("<span>Le Maître du jeu ET le Traitre <br />prennent connaissance du mot</span>");
+                    }
+
+                    $('#word').fadeIn(1000).delay(5000).fadeOut("slow", function() {
+                        socket.emit('startGame');
+                    });
+                    return false;
+                };
+              });
+        });
+
+        socket.on('wordFound', function() {
+            noSleep.disable();
+            if(typeof pauseTimer  === 'function') {
+                pauseTimer();
+            }
+            $( "#countdown").fadeOut();
+            noSleep.disable();
+        });
+
+        socket.on('displayVote1', function() {
+            soundNotify('message');
+            $('#vote1').fadeIn();
+            $("#vote1 button").attr("disabled", false);
+        });
+
+        socket.on('displayVote2', function(players) {
+            soundNotify('message');
+            $('#vote1Result').hide();
+            $("#vote2 button").attr("disabled", false);
+            $('#vote2 form .choices').html('');
+            players.forEach(function(votePlayer, index) {
+                let checked = (index === 0 ? true : false);
+                addPlayerVote(votePlayer.name, checked);
+            });
+            $('#vote2').fadeIn();
+        });
+        
+        socket.on('vote1Ended', function(result) {
+            soundNotify('tada');
+            $('#displayVote1').hide();
+            $('#vote1Result').fadeIn();
+            $('#vote1Result .resultUp strong').html(result.up);
+            $('#vote1Result .resultDown strong').html(result.down);
+            $('#displayVote2').fadeIn();
+        });
+
+        socket.on('vote2Ended', function(result) {
+            soundNotify('tada');
+            $("#displayVote2").hide();
+            $('#vote2Result ul').html('');
+            result.forEach(function(votePlayer, index) {
+                $('#vote2Result ul').append('<li>'+votePlayer.name+' ('+votePlayer.nbVote2+')</li>');
+            });
+            $('#vote2Result').fadeIn();
+        });
+
+        socket.on('playerStatusUpdate', function(playerStatus) {
+            displayPlayerStatus(playerStatus.online, playerStatus.offline)
+        });
+
+        socket.on('startGame', function() {
+            $('#countdown').show();
+            if(typeof resetTimer  === 'function') {
+                resetTimer();
+            }
+            soundNotify('go');
+            setTimeout(function(){
+                noSleep.enable();
+                countdown(5, noSleep);
+            }, 2000);
+        });
+
+    });
+
+</script>

@@ -1,64 +1,27 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        <title>Online Insider Game</title>
-        <link rel="stylesheet" href="static/css/style.css">
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-        <link rel="stylesheet" href=
-"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.9.0/css/all.css">
-</link>
-        <link rel="icon" type="image/png" sizes="32x32" href="/static/image/favicon-32x32.png">
-        <link rel="icon" type="image/png" sizes="96x96" href="/static/image/favicon-96x96.png">
-        <link rel="icon" type="image/png" sizes="16x16" href="/static/image/favicon-16x16.png">
-        <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
-    </head>
- 
-    <body class="content">
+<%- contentFor('content') %>
+<h2>Liste des joueurs</h2>
+
+<ul id="playerList">
+    <% players.forEach(function(player, index) { %>
+        <li><%= player.name %> <% if(player.name !== 'Manu') { %><a href="/deletePlayer?player=<%= player.name %>" class="remove"><i class="far fa-trash-alt"></i></a><% } %></li>
+    <% }); %>
+</ul>
+
+<form id="playerAddForm" method="post" name="playerForm" action="addPlayer">
+    <div class="form-group">
+        <label for="playerName">Ajouter le joueur</label>
+        <input type="text" name="player" class="form-control" id="playerName" style="width: 60%; display: inline;" placeholder="John Doe">
+        <button type="submit" class="btn btn-warning">Ajouter</button>
+    </div>
+</form>
+
+<%- contentFor('footer') %>
+<a href='/' class="btn btn-dark cta" id="newGame">Retour au jeu</a>
+
+<%- contentFor('script') %>
+<script>
+    $(function() {
         
-        <div class="container-fluid">
-            <header>
-                <a href="/"><img src="/static/image/title.jpg" /></a>
-            </header>
-            <div class="row">
-                <div class="col-lg-12">
-                    <h2>Liste des joueurs</h2>
-                    
-                    <ul id="playerList">
-                        <% players.forEach(function(player, index) { %>
-                            <li><%= player.name %> <% if(player.name !== 'Manu') { %><a href="/deletePlayer?player=<%= player.name %>" class="remove"><i class="far fa-trash-alt"></i></a><% } %></li>
-                        <% }); %>
-                    </ul>
-
-                    <form id="playerAddForm" method="post" name="playerForm" action="addPlayer">
-                        <div class="form-group">
-                            <label for="playerName">Ajouter le joueur</label>
-                            <input type="text" name="player" class="form-control" id="playerName" style="width: 60%; display: inline;" placeholder="John Doe">
-                            <button type="submit" class="btn btn-warning">Ajouter</button>
-                        </div>
-
-                    </form>
-                </div>
-                </div>
-            </div>
-        </div>
-
-        <footer class="footer">
-          <div class="container">
-            <a href='/' class="btn btn-dark cta" id="newGame">Retour au jeu</a>
-          </div>
-        </footer>
-
-        <!-- Javascript -->
-        <script src="//code.jquery.com/jquery-1.10.2.js"></script>
-        <script src="/socket.io/socket.io.js"></script>
-        <script src="static/js/timer.js"></script>
-    
-        <script>
-
-            $(function() {
-                
-            });
- 
-        </script>
-    </body>
+    });
+</script>
 </html>

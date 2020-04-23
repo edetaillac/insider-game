@@ -6,6 +6,7 @@
     "ejs": "1.x",
     "ent": "2.x",
     "express": "4.x",
+    "express-ejs-layouts": "^2.5.0",
     "express-session": "^1.17.1",
     "socket.io": "1.x"
   },

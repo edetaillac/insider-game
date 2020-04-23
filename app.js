@@ -6,6 +6,7 @@ var server = require('http').createServer(app), // Serveur HTTP
     ent = require('ent'); // Ent pour l'encodage
 var session = require('express-session');
 var bodyParser = require('body-parser');
+var expressLayouts = require('express-ejs-layouts');
 
 const fs = require('fs');
 const wordFamille = fs.readFileSync('words/famille.csv','utf8').split("\r\n"); 
@@ -33,14 +34,16 @@ app.use(function(req, res, next){
     next();
 })
 
+.use(expressLayouts)
 .use(session({ secret: 'session-insider-secret', cookie: { maxAge: null }}))
-
 .use('/static', express.static(__dirname + '/public'))
-
 .use(bodyParser.urlencoded({
    extended: true
 }))
- 
+
+.set('view engine', 'ejs')
+.set('layout', 'layouts/layout')
+
 .get('/', function (req, res) {
     res.render('welcome.ejs', {players: players});
 })

@@ -10,25 +10,28 @@ var expressLayouts = require('express-ejs-layouts');
 
 const fs = require('fs');
 const wordFamille = fs.readFileSync('words/famille.csv','utf8').split("\r\n"); 
+const gameMasterRole = 'Maître du jeu';
+const traitorRole = 'Traître';
+const defaultRole = 'Citoyen';
 
 app.use(function(req, res, next){
     if (typeof(players) == 'undefined') {
         players = [
-            {name: 'Manu', role: '', vote1: null, vote2: null, nbVote2: 0, permission: 'admin'},
-            {name: 'Aude', role: '', vote1: null, vote2: null, nbVote2: 0, permission: null},
-            //{name: 'Stéphane', role: '', vote1: null, vote2: null, nbVote2: 0, permission: null},
-            //{name: 'Hélène', role: '', vote1: null, vote2: null, nbVote2: 0, permission: null},
-            //{name: 'Romain', role: '', vote1: null, vote2: null, nbVote2: 0, permission: null},
-            //{name: 'Fanny', role: '', vote1: null, vote2: null, nbVote2: 0, permission: null}
+            {name: 'Manu', role: '', vote1: null, vote2: null, nbVote2: 0, isGhost: false, permission: 'admin'},
+            {name: 'Hélène', role: '', vote1: null, vote2: null, nbVote2: 0, isGhost: false, permission: null},
         ];
     }
 
     if (typeof(word) == 'undefined') {
-        word = 'mot test';
+        word = '';
     }
 
     if (typeof(online) == 'undefined') {
         online = 0;
+    }
+
+    if (typeof(settings) == 'undefined') {
+        settings = { traitorOptional: true };
     }
     
     next();
@@ -45,7 +48,7 @@ app.use(function(req, res, next){
 .set('layout', 'layouts/layout')
 
 .get('/', function (req, res) {
-    res.render('welcome.ejs', {players: players});
+    res.render('welcome.ejs', {players: players.filter(function(player) {return !isGhostPlayer(player) })});
 })
 
 .get('/adminPlayer', function (req, res) {
@@ -64,7 +67,7 @@ app.use(function(req, res, next){
 
 .post('/addPlayer', function (req, res) {
     players.push(
-        {name: req.body.player, role: '', permission: null},
+        {name: req.body.player, role: '', isGhost: false, permission: null},
     );
 
     res.redirect('/adminPlayer');
@@ -97,42 +100,67 @@ app.use(function(req, res, next){
     res.render('board.ejs', { player: req.session.player });
 })
 
-function randomRoles(players)
-{
-    players = shuffle(players);
+function randomRoles(players) {
+    removeGhostPlayer();
+
     players.forEach(function(player, index) {
-        player.role = 'Citoyen';
+        player.role = defaultRole;
         player.vote1 = null;
         player.vote2 = null;
         player.nbVote2 = 0;
     });
-    players = players.sort(() => Math.random() - 0.5);
-    players[0].role = 'Maître du jeu';
-    players[1].role = 'Traitre';
+
+    players = shuffle(players);
+    setRole(gameMasterRole);
+
+    players = addGhostPlayer();
+    players = shuffle(players);
+
+    setRole(traitorRole);
+
+    players.sort(function(a,b){return a.isGhost ? 1 : -1;});
     
     return players;
 }
 
-function shuffle(players)
-{
-    let newRoles = [];
-    while(players.length !== 0) {
-        let randomIndex = Math.floor(Math.random() * players.length);
-        newRoles.push(players[randomIndex]);
-        players.splice(randomIndex, 1);
-    }
-
-    return newRoles;
+function setRole(role) {
+    players.some(function(player) {
+        if(player.role === defaultRole) {
+            player.role = role;
+            return true;
+        }
+    }); 
 }
 
-function getWord(data)
-{
+function shuffle(players) {
+    return players.sort(() => Math.random() - 0.5);
+}
+
+function addGhostPlayer() {
+    if(settings.traitorOptional) {
+        players.push({name: 'Pas de Traître', role: defaultRole, vote1: null, vote2: null, nbVote2: 0, isGhost: true, permission: null});
+    }
+
+    return players;
+}
+
+function removeGhostPlayer() {
+    players = players.filter(function(player) {return !isGhostPlayer(player) });
+}
+
+function getGhostPlayer() {
+    ghostPlayer = players.filter(isGhostPlayer);
+
+    return ghostPlayer.length > 0 ? ghostPlayer[0] : null;
+}
+
+function getWord(data) {
     return data[Math.floor(Math.random() * data.length)];
 }
 
 function everybodyHasVoted(voteNumber) {
-    const hasVoted1 = (currentValue) => currentValue.vote1 !== null;
-    const hasVoted2 = (currentValue) => currentValue.vote2 !== null;
+    const hasVoted1 = (currentValue) => currentValue.isGhost || currentValue.vote1 !== null;
+    const hasVoted2 = (currentValue) => currentValue.isGhost || currentValue.vote2 !== null;
 
     if(voteNumber == 1) {
         return players.every(hasVoted1);
@@ -151,8 +179,12 @@ function resetVote(voteNumber) {
     });
 }
 
-function filterPlayerVote2(player) {
-    return player.role !== 'Maître du jeu';
+function isNotGameMaster(player) {
+    return player.role !== gameMasterRole;
+}
+
+function isGhostPlayer(player) {
+    return player.isGhost;
 }
 
 function addPlayerVote2(playerVote) {
@@ -171,26 +203,30 @@ function compareVote(a, b) {
   return 0;
 }
 
-function getVoteResult(voteNumber) {
-
-    if(voteNumber == 1) {
-        voteResult = {'up': 0, 'down': 0};
-        players.some(function(player) {
-          if(player.vote1 == '1') {
-            voteResult.up += 1;
-          } else {
-            voteResult.down += 1;
-          }
-        })
-    } else {
-        players.forEach(function(player, index) {
-            addPlayerVote2(player.vote2);
-        });
-        voteResult = players.filter(filterPlayerVote2);
-        voteResult.sort(compareVote);
-    }
+function getVote1Result() {
+    voteResult = {'up': 0, 'down': 0};
+    players.some(function(player) {
+      if(player.vote1 == '1') {
+        voteResult.up += 1;
+      } else if(!isGhostPlayer(player)) {
+        voteResult.down += 1;
+      }
+    })
 
     return voteResult;
+}
+
+function getVote2Result() {
+    players.forEach(function(player, index) {
+        addPlayerVote2(player.vote2);
+    });
+    votePlayers = players.filter(isNotGameMaster);
+    votePlayers.sort(compareVote);
+    hasWon = votePlayers[0].role === traitorRole && votePlayers[1].nbVote2 < votePlayers[0].nbVote2;
+    ghostPlayers = players.filter(isGhostPlayer);
+    ghostPlayer = ghostPlayers.length > 0 ? ghostPlayers[0]: null;
+
+    return { hasWon: hasWon, voteDetail: votePlayers, hasTraitor: (!ghostPlayer || ghostPlayer.role !== traitorRole) };
 }
  
 // On enclenche le socket d'échange
@@ -200,7 +236,8 @@ io.sockets.on('connection', function (socket) {
 
     socket.on('NewPlayer', function(data1) {
         online = online + 1;
-        offline = players.length - online;
+        humanPlayers = players.filter(function(player) {return !isGhostPlayer(player) });
+        offline = humanPlayers.length - online;
         console.log('Online players : ' + online);
         console.log('New player connected : ' + data1);
         io.in('game').emit('playerStatusUpdate', { online: online, offline: offline });
@@ -209,7 +246,8 @@ io.sockets.on('connection', function (socket) {
     socket.on('disconnect', function () {
       console.log('Player disconnected');
       online = online > 0 ? online - 1 : 0;
-      offline = players.length - online;
+      humanPlayers = players.filter(function(player) {return !isGhostPlayer(player) });
+      offline = humanPlayers.length - online;
       io.in('game').emit('playerStatusUpdate', { online: online, offline: offline });
     });
     
@@ -234,7 +272,7 @@ io.sockets.on('connection', function (socket) {
 
     socket.on('displayVote2', function () {
         resetVote(2);
-        io.in('game').emit('displayVote2', players.filter(filterPlayerVote2));
+        io.in('game').emit('displayVote2', players.filter(isNotGameMaster));
     })
 
     socket.on('vote1', function (object) {
@@ -245,8 +283,7 @@ io.sockets.on('connection', function (socket) {
         });
 
         if(everybodyHasVoted(1)) {
-            voteResult = getVoteResult(1);
-            io.in('game').emit('vote1Ended', voteResult);
+            io.in('game').emit('vote1Ended', getVote1Result());
         }
     })
 
@@ -258,8 +295,7 @@ io.sockets.on('connection', function (socket) {
         });
 
         if(everybodyHasVoted(2)) {
-            voteResult = getVoteResult(2);
-            io.in('game').emit('vote2Ended', voteResult);
+            io.in('game').emit('vote2Ended', getVote2Result());
         }
     })
 

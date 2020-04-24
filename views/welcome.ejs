@@ -4,14 +4,16 @@
 
 <form class="inline-block" id="playerChoiceForm" method="post" name="playerForm" action="game">
     <% players.forEach(function(player, index) { %>
-        <div class="form__group">
-            <div class="form__radio-group">
-              <input <% if(index == 0) { %>checked<% } %> type="radio" class="form__radio-input" id="<%= player.name %>" name="player" value="<%= player.name %>" />
-              <label for="<%= player.name %>" class="form__radio-label">
-                <%= player.name %>
-              </label>
-            </div>
-        </div>
+        <% if(!player.isGhost) { %>
+          <div class="form__group">
+              <div class="form__radio-group">
+                <input <% if(index == 0) { %>checked<% } %> type="radio" class="form__radio-input" id="<%= player.name %>" name="player" value="<%= player.name %>" />
+                <label for="<%= player.name %>" class="form__radio-label">
+                  <%= player.name %>
+                </label>
+              </div>
+          </div>
+        <% } %>
     <% }); %>
 </form>
 

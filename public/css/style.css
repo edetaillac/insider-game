@@ -127,6 +127,14 @@ footer.footer {
     margin-left: 10px;
 }
 
+#vote2Result #finalResult {
+    font-weight: bold;
+    font-size: 20px;
+    background-color: #23272b;
+    color: #fff;
+    padding: 10px;
+}
+
 .content button.cta, .content a.cta {
     width: 260px;
     height: 50px;
@@ -152,6 +160,11 @@ footer.footer {
 }
 .player .playerStatus {
     font-size: 10px;
+}
+
+.ghost {
+    color: #55585c;
+    font-style: italic;
 }
 
 

@@ -56,7 +56,7 @@
         <button id="displayVote2" class="btn btn-warning cta hidden">Voter</button>
     <% } %>
     <div id="vote2" class="hidden">
-        <h4>Vote final ?</h4>
+        <h4>Qui est le Traitre ?</h4>
         <form class="inline-block" id="playerChoiceForm" method="post" name="playerForm" action="game">
             <div class="choices"></div>
             <button class="btn btn-warning">Voter</button>
@@ -65,6 +65,7 @@
     <div id="vote2Result" class="hidden">
         <h4>Résultats du vote</h4>
         <ul id="playerList"></ul>
+        <p id="finalResult"></p>
     </div>
 </div>
 
@@ -118,13 +119,14 @@
     }
 
     function addPlayerVote(player, checked) {
-        let templateVote = '<div class="form__group"><div class="form__radio-group"><input checked type="radio" class="form__radio-input" id="playerName" name="player" value="playerName"><label for="playerName" class="form__radio-label">playerName</label></div></div>';
+        let templateVote = '<div class="form__group optionalClass"><div class="form__radio-group"><input checked type="radio" class="form__radio-input" id="playerName" name="player" value="playerName"><label for="playerName" class="form__radio-label">playerName</label></div></div>';
 
         if(!checked) {
             templateVote = templateVote.replace('checked ', '');
         }
+        templateVote = templateVote.replace('optionalClass', player.isGhost ? 'ghost' : '');
 
-        $('#vote2 form .choices').append(templateVote.replace(/playerName/g, player));
+        $('#vote2 form .choices').append(templateVote.replace(/playerName/g, player.name));
     }
 
     $(function() {
@@ -241,7 +243,7 @@
             $('#vote2 form .choices').html('');
             players.forEach(function(votePlayer, index) {
                 let checked = (index === 0 ? true : false);
-                addPlayerVote(votePlayer.name, checked);
+                addPlayerVote(votePlayer, checked);
             });
             $('#vote2').fadeIn();
         });
@@ -259,9 +261,19 @@
             soundNotify('tada');
             $("#displayVote2").hide();
             $('#vote2Result ul').html('');
-            result.forEach(function(votePlayer, index) {
+            result.voteDetail.forEach(function(votePlayer, index) {
                 $('#vote2Result ul').append('<li>'+votePlayer.name+' ('+votePlayer.nbVote2+')</li>');
             });
+
+            if(result.hasWon) {
+                finalResult = 'Bravo ! <br/>C\'est gagné !';
+            } else if(result.hasTraitor) {
+                finalResult = 'Le Traître a gagné !';
+            } else {
+                finalResult = 'Perdu, il n\'y avait pas de Traître !';
+            }
+
+            $('#vote2Result #finalResult').html(finalResult);
             $('#vote2Result').fadeIn();
         });
 

@@ -133,7 +133,19 @@ function setRole(role) {
 }
 
 function shuffle(players) {
-    return players.sort(() => Math.random() - 0.5);
+    let ctr = players.length;
+    let temp;
+    let index;
+
+    while (ctr > 0) {
+        index = Math.floor(Math.random() * ctr);
+        ctr--;
+        temp = players[ctr];
+        players[ctr] = players[index];
+        players[index] = temp;
+    }
+
+    return players;
 }
 
 function addGhostPlayer() {
@@ -233,8 +245,9 @@ function getVote2Result() {
 io.sockets.on('connection', function (socket) {
  
     socket.join('game');
+    var gameCountdown = null;
 
-    socket.on('NewPlayer', function(data1) {
+    socket.on('newPlayer', function(data1) {
         online = online + 1;
         humanPlayers = players.filter(function(player) {return !isGhostPlayer(player) });
         offline = humanPlayers.length - online;
@@ -300,6 +313,18 @@ io.sockets.on('connection', function (socket) {
     })
 
     socket.on('startGame', function (object) {
+        let counter = 300;
+        if (gameCountdown !== null) {
+            clearInterval(gameCountdown);
+        }  
+        gameCountdown = setInterval(function(){
+            counter--
+            if (counter === 0) {
+              clearInterval(this);
+            }
+            io.in('game').emit('countdownUpdate', counter);
+        }, 1000);
+
         io.in('game').emit('startGame', {});
     })
  

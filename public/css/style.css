@@ -6,11 +6,11 @@ body {
     display: none;
 }
 
-a.remove, #countdown a {
+a.remove, #countdown a, #startGame a {
     color: #ffc107;
 }
 
-a.remove:active, #countdown a:active {
+a.remove:active, #countdown a:active, #startGame a:active {
     color: #000;
 }
 
@@ -112,7 +112,7 @@ footer.footer {
     display: block;
 }
 
-#countdown {
+#countdown, #startGame {
     font-weight: bold;
     font-size: 50px;
 }

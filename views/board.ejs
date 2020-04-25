@@ -19,7 +19,7 @@
 <div id="chooseWord" class="hidden">
     <form id="wordForm" method="post" name="wordForm" action="setWord">
         <div class="form-group">
-            <input type="text" name="word" class="form-control" id="wordForm" style="width: 60%; display: inline;" placeholder="Mot à faire deviner" />
+            <input autocomplete="off" type="text" name="word" class="form-control" id="wordForm" style="width: 60%; display: inline;" placeholder="Mot à faire deviner" />
             <button type="submit" class="btn btn-warning">Soumettre</button>
             <small class="form-text">Soumettre à vide si besoin de générer automatiquement.</small>
         </div>
@@ -29,6 +29,12 @@
 <div id="reveal">
     <button class="btn btn-warning cta hidden">Révéler le mot</button>
     <div id="word" class="hidden"></div>
+</div>
+
+<div id="startGame" class="hidden">
+    <% if (player.permission == 'admin') { %>
+        <a href=""><i class="fas fa-play-circle"></i></a>
+    <% } %>
 </div>
 
 <div id="countdown" class="hidden">
@@ -81,7 +87,6 @@
 <%- contentFor('script') %>
 <script>
     var socket = io.connect('localhost:8080');
-    var noSleep = new NoSleep();
 
     function displayPlayerStatus(online, offline) {
         $('.playerStatus').html('');
@@ -105,8 +110,8 @@
           case 'ding':
             audiof = new Audio('/static/sound/ding.mp3');
             break;
-          case 'go':
-            audiof = new Audio('/static/sound/go.mp3');
+          case 'dong':
+            audiof = new Audio('/static/sound/dong.mp3');
             break;
           case 'tada':
             audiof = new Audio('/static/sound/tada.mp3');
@@ -129,6 +134,10 @@
         $('#vote2 form .choices').append(templateVote.replace(/playerName/g, player.name));
     }
 
+    function updateCountdown(counter) {
+        $("#timer").html(formatCountdown(counter));
+    }
+
     $(function() {
 
         $("#wordForm").submit(function(e) {
@@ -146,6 +155,13 @@
         $( "#newGame").click(function(){
             socket.emit('resetGame');
             $(this).attr("disabled", true);
+        });
+
+        $( "#startGame a").click(function(e){
+            socket.emit('startGame');
+            $("#startGame").fadeOut();
+            $("#countdown").fadeIn();
+            e.preventDefault();
         });
 
         $( "#countdown a").click(function(e){
@@ -180,7 +196,11 @@
             $(this).attr("disabled", true).hide();
         });
 
-        socket.emit('NewPlayer', '<%= player.name %>');
+        socket.emit('newPlayer', '<%= player.name %>');
+
+        socket.on('reconnect', function(data) {
+            socket.emit('Reconnect', '<%= player.name %>');
+        })
 
         socket.on('newRole', function(data) {
             $('.hidden').hide();
@@ -212,22 +232,17 @@
                     } else {
                         $('#word').html("<span>Le Maître du jeu ET le Traître <br />prennent connaissance du mot</span>");
                     }
-
-                    $('#word').fadeIn(1000).delay(5000).fadeOut("slow", function() {
-                        socket.emit('startGame');
-                    });
                     return false;
                 };
-              });
+            });
+
+            $('#word').fadeIn(1000).delay(5000).fadeOut("slow", function() {
+                $("#startGame").fadeIn();
+            });
         });
 
         socket.on('wordFound', function() {
-            noSleep.disable();
-            if(typeof pauseTimer  === 'function') {
-                pauseTimer();
-            }
             $( "#countdown").fadeOut();
-            noSleep.disable();
         });
 
         socket.on('displayVote1', function() {
@@ -281,16 +296,13 @@
             displayPlayerStatus(playerStatus.online, playerStatus.offline)
         });
 
+        socket.on('countdownUpdate', function(counter) {
+            updateCountdown(counter);
+        });
+
         socket.on('startGame', function() {
-            $('#countdown').show();
-            if(typeof resetTimer  === 'function') {
-                resetTimer();
-            }
-            soundNotify('go');
-            setTimeout(function(){
-                noSleep.enable();
-                countdown(5, noSleep);
-            }, 2000);
+            soundNotify('ding');
+            $("#countdown").fadeIn();
         });
 
     });

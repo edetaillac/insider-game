@@ -33,6 +33,10 @@ app.use(function(req, res, next){
     if (typeof(settings) == 'undefined') {
         settings = { traitorOptional: true };
     }
+
+    if (typeof(gameCountdown) == 'undefined') {
+        gameCountdown = null
+    }
     
     next();
 })
@@ -245,7 +249,6 @@ function getVote2Result() {
 io.sockets.on('connection', function (socket) {
  
     socket.join('game');
-    var gameCountdown = null;
 
     socket.on('newPlayer', function(data1) {
         online = online + 1;
@@ -265,6 +268,9 @@ io.sockets.on('connection', function (socket) {
     });
     
     socket.on('resetGame', function (object) {
+        if (gameCountdown !== null) {
+            clearInterval(gameCountdown);
+        }
         players = randomRoles(players);
         word = getWord(wordFamille);
         io.in('game').emit('newRole', { players: players });
@@ -275,6 +281,9 @@ io.sockets.on('connection', function (socket) {
     })
 
     socket.on('wordFound', function (object) {
+        if (gameCountdown !== null) {
+            clearInterval(gameCountdown);
+        }
         io.in('game').emit('wordFound');
     })
 

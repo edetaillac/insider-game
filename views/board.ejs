@@ -7,7 +7,7 @@
     <span class="homelink">Si ce n'est pas toi, <a href="/">clique ici</a> !</span>
 </div>
 
-<div id="waiting">
+<div id="waiting" class="hidden">
     <p>Attendons que tout le monde soit prêt ...</p>
     <p class="playerStatus"></p>
 </div>
@@ -17,9 +17,9 @@
 </div>
 
 <div id="chooseWord" class="hidden">
-    <form id="wordForm" method="post" name="wordForm" action="setWord">
+    <form id="wordForm" method="post" name="wordForm" action="setWord" autocomplete="off">
         <div class="form-group">
-            <input autocomplete="off" type="text" name="word" class="form-control" id="wordForm" style="width: 60%; display: inline;" placeholder="Mot à faire deviner" />
+            <input type="text" name="word" class="form-control" id="wordForm" style="width: 60%; display: inline;" placeholder="Mot à faire deviner" />
             <button type="submit" class="btn btn-warning">Soumettre</button>
             <small class="form-text">Soumettre à vide si besoin de générer automatiquement.</small>
         </div>
@@ -140,6 +140,8 @@
 
     $(function() {
 
+        $('#waiting').show();
+
         $("#wordForm").submit(function(e) {
             $.post($(this).attr('action'),
             {
@@ -165,7 +167,6 @@
         });
 
         $( "#countdown a").click(function(e){
-            $('#displayVote1').fadeIn();
             socket.emit('wordFound');
             e.preventDefault();
         });
@@ -179,14 +180,14 @@
         });
 
         $( "#vote1 button").click(function(e){
+            $('.hidden').hide();
             socket.emit('vote1', {player: '<%= player.name %>', vote: $(this).data('vote')});
-            $('#vote1').fadeOut();
             $(this).attr("disabled", true);
         });
 
         $( "#vote2 button").click(function(e){
+            $('.hidden').hide();
             socket.emit('vote2', {player: '<%= player.name %>', vote: $("#vote2 input[name='player']:checked").val()});
-            $('#vote2').hide();
             e.preventDefault();
             $(this).attr("disabled", true);
         });
@@ -204,11 +205,9 @@
 
         socket.on('newRole', function(data) {
             $('.hidden').hide();
-            $('#waiting').hide();
             $('#word').html('');
             $('#vote2 form .choices').html('');
             $('#reveal button, #newGame, #vote1 button, #vote2 button').attr("disabled", false);
-            soundNotify('mysterious');
 
             $.each(data.players, function(i, obj) {
                 if(obj.name == '<%= player.name %>') {
@@ -220,11 +219,12 @@
                     });
                     return false;
                 };
-              });
+            });
+
+            soundNotify('mysterious');
         });
 
         socket.on('revealWord', function(data) {
-            soundNotify('message');
             $.each(data.players, function(i, obj) {
                 if(obj.name == '<%= player.name %>') {
                     if(obj.role == 'Maître du jeu' || obj.role == 'Traître') {
@@ -239,21 +239,24 @@
             $('#word').fadeIn(1000).delay(5000).fadeOut("slow", function() {
                 $("#startGame").fadeIn();
             });
+
+            soundNotify('message');
         });
 
         socket.on('wordFound', function() {
-            $( "#countdown").fadeOut();
+            $('.hidden').hide();
+            $('#displayVote1').fadeIn();
         });
 
         socket.on('displayVote1', function() {
-            soundNotify('message');
+            $('.hidden').hide();
             $('#vote1').fadeIn();
             $("#vote1 button").attr("disabled", false);
+            soundNotify('message');
         });
 
         socket.on('displayVote2', function(players) {
-            soundNotify('message');
-            $('#vote1Result').hide();
+            $('.hidden').hide();
             $("#vote2 button").attr("disabled", false);
             $('#vote2 form .choices').html('');
             players.forEach(function(votePlayer, index) {
@@ -264,17 +267,16 @@
         });
         
         socket.on('vote1Ended', function(result) {
-            soundNotify('tada');
-            $('#displayVote1').hide();
+            $('.hidden').hide();
             $('#vote1Result').fadeIn();
             $('#vote1Result .resultUp strong').html(result.up);
             $('#vote1Result .resultDown strong').html(result.down);
             $('#displayVote2').fadeIn();
+            soundNotify('tada');
         });
 
         socket.on('vote2Ended', function(result) {
-            soundNotify('tada');
-            $("#displayVote2").hide();
+            $('.hidden').hide();
             $('#vote2Result ul').html('');
             result.voteDetail.forEach(function(votePlayer, index) {
                 $('#vote2Result ul').append('<li>'+votePlayer.name+' ('+votePlayer.nbVote2+')</li>');
@@ -290,6 +292,7 @@
 
             $('#vote2Result #finalResult').html(finalResult);
             $('#vote2Result').fadeIn();
+            soundNotify('tada');
         });
 
         socket.on('playerStatusUpdate', function(playerStatus) {
@@ -297,12 +300,15 @@
         });
 
         socket.on('countdownUpdate', function(counter) {
+            $('.hidden').hide();
             updateCountdown(counter);
+            $("#countdown").show();
         });
 
         socket.on('startGame', function() {
-            soundNotify('ding');
+            $('.hidden').hide();
             $("#countdown").fadeIn();
+            soundNotify('ding');
         });
 
     });

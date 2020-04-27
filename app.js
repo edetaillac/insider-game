@@ -41,7 +41,7 @@ app.use(function(req, res, next){
 .set('layout', 'layouts/layout')
 
 .get('/', function (req, res) {
-    res.render('welcome.ejs', {players: game.players.filter(function(player) {return !isGhostPlayer(player) })});
+    res.render('welcome.ejs', {players: game.players.filter((player) => !isGhostPlayer(player))});
 })
 
 .get('/adminPlayer', function (req, res) {
@@ -111,7 +111,7 @@ function randomRoles(players) {
 
     setRole(traitorRole);
 
-    players.sort(function(a,b){return a.isGhost ? 1 : -1;});
+    players.sort((a,b) => a.isGhost ? 1 : -1 );
     
     return players;
 }
@@ -150,7 +150,7 @@ function addGhostPlayer() {
 }
 
 function removeGhostPlayer() {
-    game.players = game.players.filter(function(player) {return !isGhostPlayer(player) });
+    game.players = game.players.filter((player) => !isGhostPlayer(player) );
 }
 
 function getGhostPlayer() {
@@ -241,7 +241,7 @@ io.sockets.on('connection', function (socket) {
 
     socket.on('newPlayer', function(data1) {
         game.online = game.online + 1;
-        humanPlayers = game.players.filter(function(player) {return !isGhostPlayer(player) });
+        humanPlayers = game.players.filter((player) => !isGhostPlayer(player) );
         offline = humanPlayers.length - game.online;
         console.log('Online players : ' + game.online);
         console.log('New player connected : ' + data1);
@@ -251,8 +251,8 @@ io.sockets.on('connection', function (socket) {
     socket.on('disconnect', function () {
       console.log('Player disconnected');
       game.online = game.online > 0 ? game.online - 1 : 0;
-      humanPlayers = game.players.filter(function(player) {return !isGhostPlayer(player) });
-      offline = humanPlayers.length - online;
+      humanPlayers = game.players.filter((player) => !isGhostPlayer(player) );
+      offline = humanPlayers.length - game.online;
       io.in('game').emit('playerStatusUpdate', { online: game.online, offline: offline });
     });
     

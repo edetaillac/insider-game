@@ -1,43 +1,32 @@
-// On mets en place les app requierments
 const express = require('express');
 const app = express();
+
 var server = require('http').createServer(app), // Serveur HTTP
     io = require('socket.io').listen(server), // Socket.io pour le realtime
-    ent = require('ent'); // Ent pour l'encodage
-var session = require('express-session');
-var bodyParser = require('body-parser');
-var expressLayouts = require('express-ejs-layouts');
+    ent = require('ent'), // Ent pour l'encodage
+    session = require('express-session'),
+    bodyParser = require('body-parser'),
+    expressLayouts = require('express-ejs-layouts');
 
-const fs = require('fs');
-const wordFamille = fs.readFileSync('words/famille.csv','utf8').split("\r\n"); 
-const gameMasterRole = 'Maître du jeu';
-const traitorRole = 'Traître';
-const defaultRole = 'Citoyen';
+const fs = require('fs'),
+      wordFamille = fs.readFileSync('words/famille.csv','utf8').split("\r\n"),
+      gameMasterRole = 'Maître du jeu',
+      traitorRole = 'Traître',
+      defaultRole = 'Citoyen';
 
 app.use(function(req, res, next){
-    if (typeof(players) == 'undefined') {
-        players = [
-            {name: 'Manu', role: '', vote1: null, vote2: null, nbVote2: 0, isGhost: false, permission: 'admin'},
-            {name: 'Hélène', role: '', vote1: null, vote2: null, nbVote2: 0, isGhost: false, permission: null},
-        ];
+    if (typeof(game) == 'undefined') {
+        game = {
+            players: [
+                {name: 'Manu', role: '', vote1: null, vote2: null, nbVote2: 0, isGhost: false, permission: 'admin'},
+                {name: 'Hélène', role: '', vote1: null, vote2: null, nbVote2: 0, isGhost: false, permission: null},
+            ],
+            word: '',
+            online: 0,
+            settings: { traitorOptional: true },
+            countdown: null
+        };
     }
-
-    if (typeof(word) == 'undefined') {
-        word = '';
-    }
-
-    if (typeof(online) == 'undefined') {
-        online = 0;
-    }
-
-    if (typeof(settings) == 'undefined') {
-        settings = { traitorOptional: true };
-    }
-
-    if (typeof(gameCountdown) == 'undefined') {
-        gameCountdown = null
-    }
-    
     next();
 })
 
@@ -52,17 +41,17 @@ app.use(function(req, res, next){
 .set('layout', 'layouts/layout')
 
 .get('/', function (req, res) {
-    res.render('welcome.ejs', {players: players.filter(function(player) {return !isGhostPlayer(player) })});
+    res.render('welcome.ejs', {players: game.players.filter(function(player) {return !isGhostPlayer(player) })});
 })
 
 .get('/adminPlayer', function (req, res) {
-    res.render('adminPlayer.ejs', {players: players});
+    res.render('adminPlayer.ejs', {players: game.players});
 })
 
 .get('/deletePlayer', function (req, res) {
-    players.forEach(function(playerItem, index) {
+    game.players.forEach(function(playerItem, index) {
         if(playerItem.name == req.query.player) {
-            players.splice(index, 1);
+            game.players.splice(index, 1);
         }
     });
 
@@ -70,7 +59,7 @@ app.use(function(req, res, next){
 })
 
 .post('/addPlayer', function (req, res) {
-    players.push(
+    game.players.push(
         {name: req.body.player, role: '', isGhost: false, permission: null},
     );
 
@@ -79,14 +68,14 @@ app.use(function(req, res, next){
 
 .post('/setWord', function (req, res) {
     if(req.body.word !== '') {
-        word = req.body.word;
+        game.word = req.body.word;
     }
     res.json('ok');
 })
 
 .post('/game', function (req, res) {    
     player = {name: req.body.player, permission: null, role: ''};
-    players.forEach(function(playerItem, index) {
+    game.players.forEach(function(playerItem, index) {
         if(playerItem.name == player.name) {
             player.permission = playerItem.permission;
         }
@@ -128,7 +117,7 @@ function randomRoles(players) {
 }
 
 function setRole(role) {
-    players.some(function(player) {
+    game.players.some(function(player) {
         if(player.role === defaultRole) {
             player.role = role;
             return true;
@@ -153,19 +142,19 @@ function shuffle(players) {
 }
 
 function addGhostPlayer() {
-    if(settings.traitorOptional) {
-        players.push({name: 'Pas de Traître', role: defaultRole, vote1: null, vote2: null, nbVote2: 0, isGhost: true, permission: null});
+    if(game.settings.traitorOptional) {
+        game.players.push({name: 'Pas de Traître', role: defaultRole, vote1: null, vote2: null, nbVote2: 0, isGhost: true, permission: null});
     }
 
-    return players;
+    return game.players;
 }
 
 function removeGhostPlayer() {
-    players = players.filter(function(player) {return !isGhostPlayer(player) });
+    game.players = game.players.filter(function(player) {return !isGhostPlayer(player) });
 }
 
 function getGhostPlayer() {
-    ghostPlayer = players.filter(isGhostPlayer);
+    ghostPlayer = game.players.filter(isGhostPlayer);
 
     return ghostPlayer.length > 0 ? ghostPlayer[0] : null;
 }
@@ -179,14 +168,14 @@ function everybodyHasVoted(voteNumber) {
     const hasVoted2 = (currentValue) => currentValue.isGhost || currentValue.vote2 !== null;
 
     if(voteNumber == 1) {
-        return players.every(hasVoted1);
+        return game.players.every(hasVoted1);
     } else {
-        return players.every(hasVoted2);
+        return game.players.every(hasVoted2);
     }
 }
 
 function resetVote(voteNumber) {
-    players.map(function(player) {
+    game.players.map(function(player) {
         if(voteNumber === 1) {
             player.vote1 = null;
         } else {
@@ -205,7 +194,7 @@ function isGhostPlayer(player) {
 
 function addPlayerVote2(playerVote) {
 
-    players.map(function(player) {
+    game.players.map(function(player) {
         if(playerVote === player.name) {
             player.nbVote2 += 1
         }
@@ -221,7 +210,7 @@ function compareVote(a, b) {
 
 function getVote1Result() {
     voteResult = {'up': 0, 'down': 0};
-    players.some(function(player) {
+    game.players.some(function(player) {
       if(player.vote1 == '1') {
         voteResult.up += 1;
       } else if(!isGhostPlayer(player)) {
@@ -233,13 +222,13 @@ function getVote1Result() {
 }
 
 function getVote2Result() {
-    players.forEach(function(player, index) {
+    game.players.forEach(function(player, index) {
         addPlayerVote2(player.vote2);
     });
-    votePlayers = players.filter(isNotGameMaster);
+    votePlayers = game.players.filter(isNotGameMaster);
     votePlayers.sort(compareVote);
     hasWon = votePlayers[0].role === traitorRole && votePlayers[1].nbVote2 < votePlayers[0].nbVote2;
-    ghostPlayers = players.filter(isGhostPlayer);
+    ghostPlayers = game.players.filter(isGhostPlayer);
     ghostPlayer = ghostPlayers.length > 0 ? ghostPlayers[0]: null;
 
     return { hasWon: hasWon, voteDetail: votePlayers, hasTraitor: (!ghostPlayer || ghostPlayer.role !== traitorRole) };
@@ -251,38 +240,38 @@ io.sockets.on('connection', function (socket) {
     socket.join('game');
 
     socket.on('newPlayer', function(data1) {
-        online = online + 1;
-        humanPlayers = players.filter(function(player) {return !isGhostPlayer(player) });
-        offline = humanPlayers.length - online;
-        console.log('Online players : ' + online);
+        game.online = game.online + 1;
+        humanPlayers = game.players.filter(function(player) {return !isGhostPlayer(player) });
+        offline = humanPlayers.length - game.online;
+        console.log('Online players : ' + game.online);
         console.log('New player connected : ' + data1);
-        io.in('game').emit('playerStatusUpdate', { online: online, offline: offline });
+        io.in('game').emit('playerStatusUpdate', { online: game.online, offline: offline });
       });
 
     socket.on('disconnect', function () {
       console.log('Player disconnected');
-      online = online > 0 ? online - 1 : 0;
-      humanPlayers = players.filter(function(player) {return !isGhostPlayer(player) });
+      game.online = game.online > 0 ? game.online - 1 : 0;
+      humanPlayers = game.players.filter(function(player) {return !isGhostPlayer(player) });
       offline = humanPlayers.length - online;
-      io.in('game').emit('playerStatusUpdate', { online: online, offline: offline });
+      io.in('game').emit('playerStatusUpdate', { online: game.online, offline: offline });
     });
     
     socket.on('resetGame', function (object) {
-        if (gameCountdown !== null) {
-            clearInterval(gameCountdown);
+        if (game.countdown !== null) {
+            clearInterval(game.countdown);
         }
-        players = randomRoles(players);
-        word = getWord(wordFamille);
-        io.in('game').emit('newRole', { players: players });
+        game.players = randomRoles(game.players);
+        game.word = getWord(wordFamille);
+        io.in('game').emit('newRole', { players: game.players });
     })
 
     socket.on('revealWord', function (object) {
-        io.in('game').emit('revealWord', { players: players , word: word });
+        io.in('game').emit('revealWord', { players: game.players , word: game.word });
     })
 
     socket.on('wordFound', function (object) {
-        if (gameCountdown !== null) {
-            clearInterval(gameCountdown);
+        if (game.countdown !== null) {
+            clearInterval(game.countdown);
         }
         io.in('game').emit('wordFound');
     })
@@ -294,11 +283,11 @@ io.sockets.on('connection', function (socket) {
 
     socket.on('displayVote2', function () {
         resetVote(2);
-        io.in('game').emit('displayVote2', players.filter(isNotGameMaster));
+        io.in('game').emit('displayVote2', game.players.filter(isNotGameMaster));
     })
 
     socket.on('vote1', function (object) {
-        players.map(function(player) {
+        game.players.map(function(player) {
             if(object.player === player.name) {
                 player.vote1 = object.vote;
             }
@@ -310,7 +299,7 @@ io.sockets.on('connection', function (socket) {
     })
 
     socket.on('vote2', function (object) {
-        players.map(function(player) {
+        game.players.map(function(player) {
             if(object.player === player.name) {
                 player.vote2 = object.vote;
             }
@@ -323,10 +312,10 @@ io.sockets.on('connection', function (socket) {
 
     socket.on('startGame', function (object) {
         let counter = 300;
-        if (gameCountdown !== null) {
-            clearInterval(gameCountdown);
+        if (game.countdown !== null) {
+            clearInterval(game.countdown);
         }  
-        gameCountdown = setInterval(function(){
+        game.countdown = setInterval(function(){
             counter--
             if (counter === 0) {
               clearInterval(this);

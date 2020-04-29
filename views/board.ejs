@@ -2,6 +2,7 @@
 <div class="player">
     <% if (player.permission == 'admin') { %>
         <div class="playerStatus"></div>
+        <p><small>Status: <%= status %></small></p>
     <% } %>
     C'est parti <strong><%= player.name %></strong> !
     <span class="homelink">Si ce n'est pas toi, <a href="/">clique ici</a> !</span>
@@ -80,6 +81,14 @@
         <ul id="playerList"></ul>
         <p id="finalResult"></p>
     </div>
+</div>
+
+<div id="status" class="hidden <% if (status !== '') { %>current<% } %>">
+    <p>
+        <% if (status !== '') { %>
+            Dans l'attente du <strong>Maître du jeu</strong> ou du <strong>chef de jeu</strong> ...
+        <% } %>
+    </p>
 </div>
 
 <%- contentFor('footer') %>

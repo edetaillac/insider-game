@@ -7,16 +7,15 @@
     <span class="homelink">Si ce n'est pas toi, <a href="/">clique ici</a> !</span>
 </div>
 
-<div id="waiting" class="hidden">
+<div id="waiting" class="hidden <% if (status === '') { %>current<% } %>">
     <p>Attendons que tout le monde soit prêt ...</p>
-    <p class="playerStatus"></p>
 </div>
 
 <div id="reset">
-    <p class="role hidden">Tu es <strong></strong></p>
+    <p class="role hidden <% if (status == 'role') { %>appear<% } %>">Tu es <strong><%= player.role %></strong></p>
 </div>
 
-<div id="chooseWord" class="hidden">
+<div id="chooseWord" class="hidden <% if (status == 'role' && player.role === 'Maître du jeu') { %>current<% } %>">
     <form id="wordForm" method="post" name="wordForm" action="setWord" autocomplete="off">
         <div class="form-group">
             <input type="text" name="word" class="form-control" id="wordForm" style="width: 60%; display: inline;" placeholder="Mot à faire deviner" />
@@ -27,11 +26,11 @@
 </div>
 
 <div id="reveal">
-    <button class="btn btn-warning cta hidden">Révéler le mot</button>
+    <button class="btn btn-warning cta hidden <% if (status == 'word' && player.role === 'Maître du jeu') { %>current<% } %>">Révéler le mot</button>
     <div id="word" class="hidden"></div>
 </div>
 
-<div id="startGame" class="hidden">
+<div id="startGame" class="hidden  <% if (status == 'word') { %>current<% } %>">
     <% if (player.permission == 'admin') { %>
         <a href=""><i class="fas fa-play-circle"></i></a>
     <% } %>
@@ -46,20 +45,28 @@
 
 <div id="voteForm">
     <% if (player.permission == 'admin') { %>
-        <button id="displayVote1" class="btn btn-warning cta hidden">Voter</button>
+        <button id="displayVote1" class="btn btn-warning cta hidden <% if (status == 'vote1') { %>current<% } %>">Voter</button>
     <% } %>
     <div id="vote1" class="hidden">
         <h4>La personne qui a deviné le mot est-elle le Traître ?</h4>
         <button data-vote="1" class="btn btn-warning"><i class="fas fa-thumbs-up"></i></button>
         <button data-vote="0" class="btn btn-warning"><i class="fas fa-thumbs-down"></i></button>
     </div>
-    <div id="vote1Result" class="hidden">
+    <div id="vote1Result" class="hidden <% if (status == 'vote2') { %>current<% } %>">
         <h4>Résultats du vote</h4>
-        <span class="resultUp"><strong></strong> <i class="fas fa-thumbs-up"></i></span>
-        <span class="resultDown"><strong></strong> <i class="fas fa-thumbs-down"></i></span>
+        <span class="resultUp">
+            <strong>
+                <% if(resultVote1 !== null) {%><%= resultVote1.up %><% } %>
+            </strong> <i class="fas fa-thumbs-up"></i>
+        </span>
+        <span class="resultDown">
+            <strong>
+                <% if(resultVote1 !== null) {%><%= resultVote1.down %><% } %>
+            </strong> <i class="fas fa-thumbs-down"></i>
+        </span>
     </div>
     <% if (player.permission == 'admin') { %>
-        <button id="displayVote2" class="btn btn-warning cta hidden">Voter</button>
+        <button id="displayVote2" class="btn btn-warning cta hidden <% if (status == 'vote2') { %>current<% } %>">Voter</button>
     <% } %>
     <div id="vote2" class="hidden">
         <h4>Qui est le Traitre ?</h4>
@@ -138,9 +145,19 @@
         $("#timer").html(formatCountdown(counter));
     }
 
+    function getResultIssue(result) {
+        if(result.hasWon) {
+            return 'Bravo ! <br/>C\'est gagné !';
+        } else if(result.hasTraitor) {
+            return 'Le Traître a gagné !';
+        } else {
+            return 'Perdu, il n\'y avait pas de Traître !';
+        }
+    }
+
     $(function() {
 
-        $('#waiting').show();
+        $('.appear').fadeIn().delay(3000).fadeOut();
 
         $("#wordForm").submit(function(e) {
             $.post($(this).attr('action'),
@@ -220,7 +237,6 @@
                     return false;
                 };
             });
-
             soundNotify('mysterious');
         });
 
@@ -239,7 +255,6 @@
             $('#word').fadeIn(1000).delay(5000).fadeOut("slow", function() {
                 $("#startGame").fadeIn();
             });
-
             soundNotify('message');
         });
 
@@ -281,15 +296,7 @@
             result.voteDetail.forEach(function(votePlayer, index) {
                 $('#vote2Result ul').append('<li>'+votePlayer.name+' ('+votePlayer.nbVote2+')</li>');
             });
-
-            if(result.hasWon) {
-                finalResult = 'Bravo ! <br/>C\'est gagné !';
-            } else if(result.hasTraitor) {
-                finalResult = 'Le Traître a gagné !';
-            } else {
-                finalResult = 'Perdu, il n\'y avait pas de Traître !';
-            }
-
+            finalResult = getResultIssue(result);
             $('#vote2Result #finalResult').html(finalResult);
             $('#vote2Result').fadeIn();
             soundNotify('tada');

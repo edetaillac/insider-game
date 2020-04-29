@@ -24,7 +24,10 @@ app.use(function(req, res, next){
             word: '',
             online: 0,
             settings: { traitorOptional: true },
-            countdown: null
+            countdown: null,
+            resultVote1: null,
+            resultVote2: null,
+            status: ''
         };
     }
     next();
@@ -74,14 +77,7 @@ app.use(function(req, res, next){
 })
 
 .post('/game', function (req, res) {    
-    player = {name: req.body.player, permission: null, role: ''};
-    game.players.forEach(function(playerItem, index) {
-        if(playerItem.name == player.name) {
-            player.permission = playerItem.permission;
-        }
-    });
-
-    req.session.player = player;
+    req.session.player = req.body.player;
     res.redirect('/game');
 })
 
@@ -90,7 +86,9 @@ app.use(function(req, res, next){
         res.redirect('/');
     }
 
-    res.render('board.ejs', { player: req.session.player });
+    me = game.players.filter((player) => player.name === req.session.player );
+
+    res.render('board.ejs', { player: me[0], status: game.status, resultVote1: game.resultVote1, resultVote2: game.resultVote2 });
 })
 
 function randomRoles(players) {
@@ -208,7 +206,7 @@ function compareVote(a, b) {
   return 0;
 }
 
-function getVote1Result() {
+function processVote1Result() {
     voteResult = {'up': 0, 'down': 0};
     game.players.some(function(player) {
       if(player.vote1 == '1') {
@@ -218,10 +216,10 @@ function getVote1Result() {
       }
     })
 
-    return voteResult;
+    game.resultVote1 = voteResult;
 }
 
-function getVote2Result() {
+function processVote2Result() {
     game.players.forEach(function(player, index) {
         addPlayerVote2(player.vote2);
     });
@@ -231,7 +229,7 @@ function getVote2Result() {
     ghostPlayers = game.players.filter(isGhostPlayer);
     ghostPlayer = ghostPlayers.length > 0 ? ghostPlayers[0]: null;
 
-    return { hasWon: hasWon, voteDetail: votePlayers, hasTraitor: (!ghostPlayer || ghostPlayer.role !== traitorRole) };
+    game.resultVote2 = { hasWon: hasWon, voteDetail: votePlayers, hasTraitor: (!ghostPlayer || ghostPlayer.role !== traitorRole) };
 }
  
 // On enclenche le socket d'échange
@@ -263,10 +261,12 @@ io.sockets.on('connection', function (socket) {
         game.players = randomRoles(game.players);
         game.word = getWord(wordFamille);
         io.in('game').emit('newRole', { players: game.players });
+        game.status = 'role';
     })
 
     socket.on('revealWord', function (object) {
         io.in('game').emit('revealWord', { players: game.players , word: game.word });
+        game.status = 'word';
     })
 
     socket.on('wordFound', function (object) {
@@ -274,16 +274,19 @@ io.sockets.on('connection', function (socket) {
             clearInterval(game.countdown);
         }
         io.in('game').emit('wordFound');
+        game.status = 'vote1';
     })
 
     socket.on('displayVote1', function (object) {
         resetVote(1);
         io.in('game').emit('displayVote1');
+        game.status = 'vote1';
     })
 
     socket.on('displayVote2', function () {
         resetVote(2);
         io.in('game').emit('displayVote2', game.players.filter(isNotGameMaster));
+        game.status = 'vote2';
     })
 
     socket.on('vote1', function (object) {
@@ -294,7 +297,9 @@ io.sockets.on('connection', function (socket) {
         });
 
         if(everybodyHasVoted(1)) {
-            io.in('game').emit('vote1Ended', getVote1Result());
+            processVote1Result();
+            io.in('game').emit('vote1Ended', game.resultVote1);
+            game.status = 'vote2';
         }
     })
 
@@ -306,7 +311,9 @@ io.sockets.on('connection', function (socket) {
         });
 
         if(everybodyHasVoted(2)) {
-            io.in('game').emit('vote2Ended', getVote2Result());
+            processVote2Result();
+            io.in('game').emit('vote2Ended', game.resultVote2);
+            game.status = 'end';
         }
     })
 
@@ -324,6 +331,7 @@ io.sockets.on('connection', function (socket) {
         }, 1000);
 
         io.in('game').emit('startGame', {});
+        game.status = 'in_progress';
     })
  
 }) 

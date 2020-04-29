@@ -6,6 +6,10 @@ body {
     display: none;
 }
 
+.content .hidden.current {
+    display: block;
+}
+
 a.remove, #countdown a, #startGame a {
     color: #ffc107;
 }
@@ -118,7 +122,7 @@ footer.footer {
 }
 
 #displayVote1, #vote1 button, #vote1Result, #displayVote2, #vote2 button, #vote2Result {
-    margin: 5px 0 15px 0;
+    margin: 5px auto 15px auto;
 }
 
 #vote1 button, #vote1Result {

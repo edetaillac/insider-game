@@ -21,13 +21,8 @@ app.use(function(req, res, next){
                 {name: 'Manu', role: '', vote1: null, vote2: null, nbVote2: 0, isGhost: false, permission: 'admin'},
                 {name: 'Hélène', role: '', vote1: null, vote2: null, nbVote2: 0, isGhost: false, permission: null},
             ],
-            word: '',
             online: 0,
-            settings: { traitorOptional: true },
-            countdown: null,
-            resultVote1: null,
-            resultVote2: null,
-            status: ''
+            settings: { traitorOptional: true }
         };
     }
     next();
@@ -78,6 +73,7 @@ app.use(function(req, res, next){
 
 .post('/game', function (req, res) {    
     req.session.player = req.body.player;
+    resetGame();
     res.redirect('/game');
 })
 
@@ -91,15 +87,25 @@ app.use(function(req, res, next){
     res.render('board.ejs', { player: me[0], status: game.status, resultVote1: game.resultVote1, resultVote2: game.resultVote2 });
 })
 
-function randomRoles(players) {
+function resetGame() {
     removeGhostPlayer();
 
-    players.forEach(function(player, index) {
+    game.players.forEach(function(player, index) {
         player.role = defaultRole;
         player.vote1 = null;
         player.vote2 = null;
         player.nbVote2 = 0;
     });
+
+    game.word = '';
+    game.countdown = null;
+    game.resultVote1 = null;
+    game.resultVote2 = null;
+    game.status = '';
+}
+
+function randomRoles(players) {
+    resetGame();
 
     players = shuffle(players);
     setRole(gameMasterRole);

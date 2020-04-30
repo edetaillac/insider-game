@@ -3,27 +3,36 @@
 
 <ul id="playerList">
     <% players.forEach(function(player, index) { %>
-        <li><%= player.name %> <% if(player.name !== 'Manu') { %><a href="/deletePlayer?player=<%= player.name %>" class="remove"><i class="far fa-trash-alt"></i></a><% } %></li>
+        <li><%= player.name %> <a href="/deletePlayer?player=<%= player.name %>" class="remove"><i class="far fa-trash-alt"></i></a></li>
     <% }); %>
 </ul>
 
 <form id="playerAddForm" method="post" name="playerForm" action="addPlayer">
     <div class="form-group">
         <label for="playerName">Ajouter le joueur</label>
+        <p>
+            <input type="checkbox" name="admin" /> Admin
+        </p> 
         <input type="text" name="player" class="form-control" id="playerName" style="width: 60%; display: inline;" placeholder="John Doe">
         <button type="submit" class="btn btn-warning">Ajouter</button>
+    </div>
+    <div class="info">
+        <p>
+            L'admin sera chef de jeu pour déclencher les actions suivantes:
+            <ul>
+                <li>Tirage au sort des rôles</li>
+                <li>Déclencher le chrono</li>
+                <li>Arréter le chrono</li>
+                <li>Déclencher les votes</li>
+            </ul>
+        </p>
     </div>
 </form>
 
 <%- contentFor('footer') %>
-
-
-<%- contentFor('footer') %>
-<footer class="footer">
-    <div class="container">
-        <a href='/' class="btn btn-dark cta" id="newGame">Retour au jeu</a>
-    </div>
-</footer>
+<div class="container">
+    <a href='/' class="btn btn-dark cta" id="newGame">Retour au jeu</a>
+</div>
 
 <%- contentFor('script') %>
 <script>

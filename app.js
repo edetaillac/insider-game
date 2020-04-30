@@ -57,8 +57,9 @@ app.use(function(req, res, next){
 })
 
 .post('/addPlayer', function (req, res) {
+    console.log(req.body.admin);
     game.players.push(
-        {name: req.body.player, role: '', isGhost: false, permission: null},
+        {name: req.body.player, role: '', isGhost: false, permission: (req.body.admin === 'on' ? 'admin' : null) },
     );
 
     res.redirect('/adminPlayer');

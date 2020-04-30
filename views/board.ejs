@@ -2,7 +2,6 @@
 <div class="player">
     <% if (player.permission == 'admin') { %>
         <div class="playerStatus"></div>
-        <p><small>Status: <%= status %></small></p>
     <% } %>
     C'est parti <strong><%= player.name %></strong> !
     <span class="homelink">Si ce n'est pas toi, <a href="/">clique ici</a> !</span>
@@ -93,11 +92,9 @@
 
 <%- contentFor('footer') %>
 <% if (player.permission == 'admin') { %>
-    <footer class="footer">
-        <div class="container">
-            <button class="btn btn-dark cta" id="newGame">Lancer une partie</button>
-        </div>
-    </footer>
+<div class="container">
+    <button class="btn btn-dark cta" id="newGame">Lancer une partie</button>
+</div>
 <% } %>
          
 <%- contentFor('script') %>

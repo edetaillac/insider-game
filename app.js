@@ -18,11 +18,13 @@ app.use(function(req, res, next){
     if (typeof(game) == 'undefined') {
         game = {
             players: [
-                {name: 'Manu', role: '', vote1: null, vote2: null, resultVote1: null, nbVote2: 0, isGhost: false, permission: 'admin'},
-                {name: 'Hélène', role: '', vote1: null, vote2: null, resultVote1: null, nbVote2: 0, isGhost: false, permission: null},
+                {name: 'Manu', role: '', vote1: null, vote2: null, nbVote2: 0, isGhost: false, permission: 'admin'},
+                {name: 'Hélène', role: '', vote1: null, vote2: null, nbVote2: 0, isGhost: false, permission: null},
             ],
             online: 0,
-            settings: { traitorOptional: true }
+            settings: { traitorOptional: true },
+            resultVote1: null,
+            resultVote2: null
         };
     }
     next();
@@ -59,7 +61,7 @@ app.use(function(req, res, next){
 .post('/addPlayer', function (req, res) {
     console.log(req.body.admin);
     game.players.push(
-        {name: req.body.player, role: '', vote1: null, vote2: null, resultVote1: null, nbVote2: 0, isGhost: false, permission: (req.body.admin === 'on' ? 'admin' : null) },
+        {name: req.body.player, role: '', vote1: null, vote2: null, nbVote2: 0, isGhost: false, permission: (req.body.admin === 'on' ? 'admin' : null) },
     );
 
     res.redirect('/adminPlayer');

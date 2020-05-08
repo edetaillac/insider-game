@@ -74,7 +74,6 @@ app.use(function(req, res, next){
 
 .post('/game', function (req, res) {    
     req.session.player = req.body.player;
-    resetGame();
     res.redirect('/game');
 })
 

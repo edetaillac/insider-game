@@ -18,8 +18,8 @@ app.use(function(req, res, next){
     if (typeof(game) == 'undefined') {
         game = {
             players: [
-                {name: 'Manu', role: '', vote1: null, vote2: null, nbVote2: 0, isGhost: false, permission: 'admin'},
                 {name: 'Hélène', role: '', vote1: null, vote2: null, nbVote2: 0, isGhost: false, permission: null},
+                {name: 'Manu', role: '', vote1: null, vote2: null, nbVote2: 0, isGhost: false, permission: 'admin'},
             ],
             online: 0,
             settings: { traitorOptional: true },
@@ -117,9 +117,19 @@ function randomRoles(players) {
 
     setRole(traitorRole);
 
-    players.sort((a,b) => a.isGhost ? 1 : -1 );
+    players.sort(comparePlayer);
     
     return players;
+}
+
+function comparePlayer(a, b) {
+    if (a.isGhost) {
+       return 1; 
+    } else if (a.name > b.name) {
+        return 0;
+    };
+
+    return -1;
 }
 
 function setRole(role) {

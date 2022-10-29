@@ -8,7 +8,7 @@
     "express": "4.x",
     "express-ejs-layouts": "^2.5.0",
     "express-session": "^1.17.1",
-    "socket.io": "1.x"
+    "socket.io": "4.x"
   },
   "author": "emmanuel.detaillac@gmail.com&gt;",
   "description": "Simple Insider game to remote playing"

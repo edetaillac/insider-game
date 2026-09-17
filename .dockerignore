@@ -1,0 +1,8 @@
+node_modules
+.git
+screenshots
+docs
+*.md
+.DS_Store
+docker-compose*.yml
+eslint.config.js

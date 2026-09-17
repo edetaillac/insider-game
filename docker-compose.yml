@@ -1,14 +1,16 @@
-version: '3.7'
 services:
   node:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: .
     container_name: insider
+    environment:
+      - PORT=8080
+      # - SESSION_SECRET=change-me
+    ports:
+      - "8080:8080"
+    # Dev : sources montées et rechargement à chaud
+    command: ["node", "--watch", "app.js"]
     volumes:
       - "./app.js:/usr/src/app/app.js"
       - "./public:/usr/src/app/public"
       - "./views:/usr/src/app/views"
       - "./words:/usr/src/app/words"
-    ports:
-      - "8080:8080"

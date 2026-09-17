@@ -1,19 +1,16 @@
-FROM node:lts-alpine
+FROM node:22-alpine
 
-# Create app directory
+ENV NODE_ENV=production
 WORKDIR /usr/src/app
 
-# Install app dependencies
-# A wildcard is used to ensure both package.json AND package-lock.json are copied
-# where available (npm@5+)
-COPY package*.json ./
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev --no-fund --no-audit
 
-RUN npm install
-# If you are building your code for production
-# RUN npm ci --only=production
+COPY app.js ./
+COPY public ./public
+COPY views ./views
+COPY words ./words
 
-# Bundle app source
-COPY . .
-
+USER node
 EXPOSE 8080
-CMD [ "node", "app.js" ]
+CMD ["node", "app.js"]

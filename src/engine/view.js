@@ -30,6 +30,7 @@ export function view(game, playerId) {
     const finderPlayer = finderId ? game.players.find((p) => p.id === finderId) : undefined;
     const masterId = Object.keys(game.roles ?? {}).find((id) => game.roles?.[id] === 'master') ?? null;
     const masterPlayer = masterId !== null ? game.players.find((p) => p.id === masterId) : undefined;
+    const tallies = phase.name === 'tiebreak' || phase.name === 'ended' ? phase.tallies : null;
 
     /** @param {CandidateId} id */
     const candidateName = (id) => (id === CENTER ? CENTER_LABEL : (game.players.find((p) => p.id === id)?.name ?? id));
@@ -70,6 +71,7 @@ export function view(game, playerId) {
             ? { startedAt: phase.startedAt, deadline: phase.deadline }
             : null,
         candidates: candidateList,
+        tallies,
         result,
         actions: allowedActions(game, playerId)
     };

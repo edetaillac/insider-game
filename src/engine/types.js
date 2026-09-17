@@ -72,6 +72,7 @@
  *   finder: { id: PlayerId, name: string }|null,
  *   timer: { startedAt: number, deadline: number }|null,
  *   candidates: Array<{ id: CandidateId, name: string }>|null,
+ *   tallies: Record<CandidateId, number>|null,
  *   result: { outcome: Outcome, reason: Reason, insiderId: PlayerId|null, centerCard: Role|null,
  *             tallies: Record<CandidateId, number>|null, pointed: CandidateId|null }|null,
  *   actions: CommandType[]

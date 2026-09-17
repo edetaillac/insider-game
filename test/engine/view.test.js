@@ -162,3 +162,12 @@ test('master reste exposé en vote1 et en ended', () => {
     assert.equal(ended.phase.name, 'ended');
     assert.deepEqual(view(ended, v1.master).master, { id: v1.master, name: masterName });
 });
+
+test('tallies est exposé en tiebreak et vaut phase.tallies, null en vote2', () => {
+    const ctx = inVote2(4, NO_VARIANT);
+    assert.equal(view(ctx.game, ctx.commons[0]).tallies, null);
+    const [c0, c1] = candidates(ctx.game);
+    const tb = run(ctx.game, ctx.deps, ...ctx.game.players.map((p, i) => ({ type: 'vote2', actor: p.id, candidate: i < 2 ? c0 : c1 })));
+    assert.equal(tb.phase.name, 'tiebreak');
+    assert.deepEqual(view(tb, ctx.commons[0]).tallies, tb.phase.tallies);
+});

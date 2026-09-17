@@ -50,6 +50,9 @@ export function createApp({ settings = {}, words, now }) {
 
     function broadcast() {
         for (const [socketId, playerId] of attached) {
+            if (!table.game.players.some((p) => p.id === playerId)) {
+                continue;
+            }
             io.to(socketId).emit('state', table.snapshot(playerId));
         }
     }

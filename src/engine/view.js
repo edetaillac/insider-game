@@ -25,7 +25,7 @@ export function view(game, playerId) {
     const ended = phase.name === 'ended';
     const ballots = 'ballots' in phase ? phase.ballots : null;
     /** @param {PlayerId} id */
-    const hasVoted = (id) => Boolean(ballots && id in ballots);
+    const hasVoted = (id) => Boolean(ballots && Object.hasOwn(ballots, id));
     const finderId = 'finderId' in phase ? phase.finderId : null;
     const finderPlayer = finderId ? game.players.find((p) => p.id === finderId) : undefined;
 

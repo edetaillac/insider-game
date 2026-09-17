@@ -126,7 +126,7 @@ export function canAct(game, type, actor) {
  * @returns {CommandType[]}
  */
 export function allowedActions(game, playerId) {
-    const hasVoted = 'ballots' in game.phase && playerId in game.phase.ballots;
+    const hasVoted = 'ballots' in game.phase && Object.hasOwn(game.phase.ballots, playerId);
     return /** @type {CommandType[]} */ (Object.keys(PHASES_BY_COMMAND)).filter((type) =>
         !SERVER_ONLY.has(type)
         && PHASES_BY_COMMAND[type].includes(game.phase.name)
@@ -141,10 +141,10 @@ export function allowedActions(game, playerId) {
  * @returns {Result}
  */
 export function apply(game, command, deps) {
-    const phases = PHASES_BY_COMMAND[command.type];
-    if (!phases) {
+    if (typeof command.type !== 'string' || !Object.hasOwn(PHASES_BY_COMMAND, command.type)) {
         return fail('INVALID_ARGUMENT', `unknown command ${String(command.type)}`);
     }
+    const phases = PHASES_BY_COMMAND[command.type];
     if (!phases.includes(game.phase.name)) {
         return fail('WRONG_PHASE', `${command.type} is not allowed in phase ${game.phase.name}`);
     }

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { candidates, CENTER } from '../../src/engine/game.js';
+import { candidates, CENTER, allowedActions } from '../../src/engine/game.js';
 import { view, CENTER_LABEL } from '../../src/engine/view.js';
 import { lobby, started, inVote1, inVote2, run } from './helpers.js';
 
@@ -134,4 +134,11 @@ test('result est null hors ended et les commandes serveur n\'apparaissent jamais
 test('version de la vue égale la version du jeu', () => {
     const ctx = started(4);
     assert.equal(view(ctx.game, 'p1').version, ctx.game.version);
+});
+
+test('allowedActions ne lève pas quand ballots est vide', () => {
+    const ctx = inVote1(4);
+    assert.equal(ctx.game.phase.name, 'vote1');
+    assert.deepEqual(ctx.game.phase.ballots, {});
+    assert.doesNotThrow(() => allowedActions(ctx.game, ctx.game.players[0].id));
 });

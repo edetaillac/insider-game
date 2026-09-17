@@ -77,6 +77,14 @@ test('une commande inconnue renvoie INVALID_ARGUMENT', () => {
     assert.equal(r.error, 'INVALID_ARGUMENT');
 });
 
+test('une commande dont le type est une clé héritée de Object renvoie INVALID_ARGUMENT sans lever', () => {
+    const { game, deps } = lobby(2);
+    expectFail(game, deps, /** @type {any} */ ({ type: 'toString', actor: 'p1' }), 'INVALID_ARGUMENT');
+    expectFail(game, deps, /** @type {any} */ ({ type: '__proto__', actor: 'p1' }), 'INVALID_ARGUMENT');
+    expectFail(game, deps, /** @type {any} */ ({ type: 'constructor', actor: 'p1' }), 'INVALID_ARGUMENT');
+    expectFail(game, deps, /** @type {any} */ ({ type: 'hasOwnProperty', actor: 'p1' }), 'INVALID_ARGUMENT');
+});
+
 test('un échec ne modifie pas l\'état d\'entrée', () => {
     const { game, deps } = lobby(2);
     const before = structuredClone(game);

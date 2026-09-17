@@ -8,7 +8,7 @@ test('une partie complète à 4 clients, du join à la fin, sans fuite de secret
         const players = await joinAll(srv.url, ['Alice', 'Bob', 'Carol', 'Dan']);
         assert.equal(players[0].latest.view.me.isHost, true);
         assert.equal(players[1].latest.view.me.isHost, false);
-        await Promise.all(players.map((p) => (p.latest.online.length === 4 ? Promise.resolve() : new Promise((r) => p.socket.once('state', r)))));
+        await Promise.all(players.map((p) => (p.latest.online.length === 4 ? Promise.resolve() : waitFor(p.socket, 'state', (s) => s.online.length === 4))));
         assert.equal(players[3].latest.online.length, 4);
         assert.equal(players[3].latest.minPlayers, 4);
 

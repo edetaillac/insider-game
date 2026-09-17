@@ -7,7 +7,9 @@
         "target": "es2022",
         "module": "nodenext",
         "moduleResolution": "nodenext",
-        "types": ["node"]
+        "types": ["node"],
+        "skipLibCheck": true,
+        "maxNodeModuleJsDepth": 0
     },
     "include": ["src/**/*.js"]
 }

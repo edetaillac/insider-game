@@ -85,7 +85,9 @@ socket.on('state', (envelope) => {
         patchPresence(screen, envelope);
     }
     if (envelope.view.timer) {
-        startTicker();
+        if (ticker === null) {
+            startTicker();
+        }
     } else {
         stopTicker();
     }

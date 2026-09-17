@@ -58,11 +58,17 @@ const socket = io({ auth: (cb) => cb({ token: readToken() }) });
 function showJoin(error) {
     current = null;
     stopTicker();
-    screen.innerHTML = renderJoin(error);
+    const typedName = screen.querySelector('input[name="name"]')?.value ?? '';
+    screen.innerHTML = renderJoin(error, typedName);
     screen.querySelector('input[name="name"]')?.focus();
 }
 
-socket.on('needJoin', () => showJoin());
+socket.on('needJoin', () => {
+    if (screen.querySelector('form[data-form="join"]')) {
+        return;
+    }
+    showJoin();
+});
 socket.on('joinFailed', ({ error, message }) => showJoin(messageFor({ ok: false, error, message })));
 socket.on('joined', ({ token }) => saveToken(token));
 

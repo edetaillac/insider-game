@@ -175,11 +175,11 @@ function ended(envelope) {
 
 const SCREENS = { lobby, roles, word, playing, discussion, vote1, vote2, tiebreak, ended };
 
-/** @param {string} [error] */
-export function renderJoin(error) {
+/** @param {string} [error] @param {string} [name] */
+export function renderJoin(error, name = '') {
     return `<h2>Qui es-tu ?</h2>
     <form data-form="join" autocomplete="off" class="join-form">
-        <input type="text" name="name" class="form-control" placeholder="Ton prénom" maxlength="20" required autofocus />
+        <input type="text" name="name" class="form-control" placeholder="Ton prénom" maxlength="20" required autofocus value="${e(name)}" />
         <button type="submit" class="btn btn-dark cta">Rejoindre</button>
         ${error ? `<p class="error">${e(error)}</p>` : ''}
     </form>`;

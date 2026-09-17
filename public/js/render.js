@@ -9,6 +9,11 @@ function button(type, label, args = {}, cls = 'btn btn-warning') {
     return `<button type="button" class="${cls}" data-cmd="${e(type)}" data-args='${e(JSON.stringify(args))}'>${e(label)}</button>`;
 }
 
+/** Bouton avec une icône Font Awesome devant le libellé. */
+function iconButton(type, icon, label, args = {}, cls = 'btn btn-warning btn-lg') {
+    return `<button type="button" class="${cls}" data-cmd="${e(type)}" data-args='${e(JSON.stringify(args))}'><i class="fas ${e(icon)}" aria-hidden="true"></i> ${e(label)}</button>`;
+}
+
 function can(view, type) {
     return view.actions.includes(type);
 }
@@ -51,7 +56,7 @@ function playersList(envelope, { kick = false } = {}) {
         const you = p.id === view.me.id ? ' (toi)' : '';
         const hostTag = p.isHost ? ' <span class="badge badge-dark">hôte</span>' : '';
         const kickBtn = kick && !p.isHost && p.id !== view.me.id
-            ? ` ${button('kick', '✕', { id: p.id }, 'btn btn-sm btn-link remove')}`
+            ? ` <button type="button" class="remove" data-cmd="kick" data-args='${e(JSON.stringify({ id: p.id }))}' aria-label="Retirer ${e(p.name)}"><i class="fas fa-times" aria-hidden="true"></i></button>`
             : '';
         return `<li>${presenceDot(envelope, p.id)} ${e(p.name)}${you}${hostTag}${kickBtn}</li>`;
     });
@@ -62,7 +67,7 @@ function timerBlock(view, label) {
     if (!view.timer) {
         return '';
     }
-    return `<div class="countdown"><span id="timer" data-timer="${e(view.timer.deadline)}">--:--</span>${label ? `<small>${e(label)}</small>` : ''}</div>`;
+    return `<div class="countdown${label ? ' indicative' : ''}"><span id="timer" data-timer="${e(view.timer.deadline)}">--:--</span>${label ? `<small>${e(label)}</small>` : ''}</div>`;
 }
 
 function voteProgress(view) {
@@ -133,7 +138,7 @@ function vote1(envelope) {
     const { view } = envelope;
     const finder = e(view.finder?.name ?? '?');
     const buttons = can(view, 'vote1')
-        ? `<div class="vote-buttons">${button('vote1', '👍 Oui', { value: true }, 'btn btn-warning btn-lg')}${button('vote1', '👎 Non', { value: false }, 'btn btn-warning btn-lg')}</div>`
+        ? `<div class="vote-buttons">${iconButton('vote1', 'fa-thumbs-up', 'Oui', { value: true })}${iconButton('vote1', 'fa-thumbs-down', 'Non', { value: false })}</div>`
         : '';
     return `<h2>${finder} a trouvé le mot.<br/>Est-ce le Traître ?</h2>${buttons}${voteProgress(view)}`;
 }
@@ -169,7 +174,7 @@ function ended(envelope) {
     const actions = [
         can(view, 'startRound') ? button('startRound', 'Rejouer', {}, 'btn btn-dark cta') : '',
         can(view, 'reset') ? button('reset', 'Retour au salon', {}, 'btn btn-outline-dark') : ''
-    ].join(' ');
+    ].filter(Boolean).join(' ');
     return `<h2>${e(r ? outcomeSentence(r) : 'Fin de partie')}</h2><p>${insider}. Le mot était <strong>${e(view.word ?? '?')}</strong>.</p>${tallies}<div class="actions">${actions || waiting('En attente de l\'hôte...')}</div>`;
 }
 

@@ -220,12 +220,61 @@ function notImplemented() {
     return fail('INVALID_ARGUMENT', 'not implemented');
 }
 
+// Manche
+
+/**
+ * Distribution officielle. Sans variante : un insider parmi les non Maîtres.
+ * Avec variante : parmi les n-1 cartes (1 insider, n-2 common) on en retire une au hasard vers le
+ * centre et on la remplace par une common, d'où P(centre = insider) = 1/(n-1).
+ * @param {Game} game
+ * @param {() => number} rng
+ * @returns {{ roles: Record<PlayerId, Role>, centerCard: Role|null }}
+ */
+function assignRoles(game, rng) {
+    const order = shuffle(game.players.map((p) => p.id), rng);
+    const masterId = order[0];
+    const others = order.slice(1);
+    /** @type {Role[]} */
+    let cards = ['insider', ...Array(others.length - 1).fill('common')];
+    /** @type {Role|null} */
+    let centerCard = null;
+    if (game.settings.traitorOptional) {
+        cards = shuffle(cards, rng);
+        centerCard = /** @type {Role} */ (cards.pop());
+        cards.push('common');
+    }
+    cards = shuffle(cards, rng);
+    /** @type {Record<PlayerId, Role>} */
+    const roles = { [masterId]: 'master' };
+    others.forEach((id, i) => {
+        roles[id] = cards[i];
+    });
+    return { roles, centerCard };
+}
+
+/**
+ * @param {Game} game
+ * @param {Extract<Command, {type: 'startRound'}>} _command
+ * @param {Deps} deps
+ * @returns {Result}
+ */
+function startRound(game, _command, deps) {
+    if (game.players.length < game.settings.minPlayers) {
+        return fail('TOO_FEW_PLAYERS', `need at least ${game.settings.minPlayers} players`);
+    }
+    if (game.players.length > effectiveMaxPlayers(game)) {
+        return fail('TOO_MANY_PLAYERS', `max ${effectiveMaxPlayers(game)} players`);
+    }
+    const { roles, centerCard } = assignRoles(game, deps.rng);
+    return next(game, { roles, centerCard, word: null, phase: { name: 'roles' } });
+}
+
 /** @type {Record<CommandType, (game: Game, command: any, deps: Deps) => Result>} */
 const HANDLERS = {
     addPlayer,
     removePlayer,
     reset,
-    startRound: notImplemented,
+    startRound,
     setWord: notImplemented,
     drawWord: notImplemented,
     startTimer: notImplemented,
@@ -240,6 +289,5 @@ const HANDLERS = {
 // Exporté pour les tests de grille et la vue.
 export { PHASES_BY_COMMAND, ALL_PHASES };
 
-// shuffle et pick sont utilisés par startRound et drawWord (tâches suivantes).
-void shuffle;
+// pick est utilisé par drawWord (tâche suivante).
 void pick;

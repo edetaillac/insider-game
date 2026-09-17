@@ -1,0 +1,73 @@
+// src/engine/view.js
+// Seule fonction qui expose des secrets. Tout ce que le client rend vient d'ici.
+
+import { allowedActions, candidates, CENTER } from './game.js';
+
+/** @typedef {import('./types.js').Game} Game */
+/** @typedef {import('./types.js').PlayerId} PlayerId */
+/** @typedef {import('./types.js').CandidateId} CandidateId */
+/** @typedef {import('./types.js').View} View */
+
+export const CENTER_LABEL = 'Pas de Traître';
+
+/**
+ * @param {Game} game
+ * @param {PlayerId} playerId
+ * @returns {View}
+ */
+export function view(game, playerId) {
+    const me = game.players.find((p) => p.id === playerId);
+    if (!me) {
+        throw new Error(`view: unknown player ${playerId}`);
+    }
+    const phase = game.phase;
+    const myRole = game.roles?.[playerId] ?? null;
+    const ended = phase.name === 'ended';
+    const ballots = 'ballots' in phase ? phase.ballots : null;
+    /** @param {PlayerId} id */
+    const hasVoted = (id) => Boolean(ballots && id in ballots);
+    const finderId = 'finderId' in phase ? phase.finderId : null;
+    const finderPlayer = finderId ? game.players.find((p) => p.id === finderId) : undefined;
+
+    /** @param {CandidateId} id */
+    const candidateName = (id) => (id === CENTER ? CENTER_LABEL : (game.players.find((p) => p.id === id)?.name ?? id));
+
+    /** @type {View['candidates']} */
+    let candidateList = null;
+    if (phase.name === 'vote2') {
+        candidateList = candidates(game).map((id) => ({ id, name: candidateName(id) }));
+    } else if (phase.name === 'tiebreak') {
+        candidateList = phase.tied.map((id) => ({ id, name: candidateName(id) }));
+    }
+
+    const wordVisible = game.word !== null && (ended || myRole === 'master' || myRole === 'insider');
+
+    /** @type {View['result']} */
+    let result = null;
+    if (phase.name === 'ended') {
+        const insiderId = Object.keys(game.roles ?? {}).find((id) => game.roles?.[id] === 'insider') ?? null;
+        result = {
+            outcome: phase.outcome,
+            reason: phase.reason,
+            insiderId,
+            centerCard: game.centerCard,
+            tallies: phase.tallies,
+            pointed: phase.pointed
+        };
+    }
+
+    return {
+        version: game.version,
+        phase: phase.name,
+        me: { id: me.id, name: me.name, isHost: me.isHost, role: myRole, hasVoted: hasVoted(me.id) },
+        players: game.players.map((p) => ({ id: p.id, name: p.name, isHost: p.isHost, hasVoted: hasVoted(p.id) })),
+        word: wordVisible ? game.word : null,
+        finder: finderPlayer ? { id: finderPlayer.id, name: finderPlayer.name } : null,
+        timer: (phase.name === 'playing' || phase.name === 'discussion')
+            ? { startedAt: phase.startedAt, deadline: phase.deadline }
+            : null,
+        candidates: candidateList,
+        result,
+        actions: allowedActions(game, playerId)
+    };
+}

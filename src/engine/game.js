@@ -269,18 +269,101 @@ function startRound(game, _command, deps) {
     return next(game, { roles, centerCard, word: null, phase: { name: 'roles' } });
 }
 
+/**
+ * @param {Game} game
+ * @param {Extract<Command, {type: 'setWord'}>} command
+ * @returns {Result}
+ */
+function setWord(game, command) {
+    const word = String(command.word ?? '').trim();
+    if (word === '') {
+        return fail('INVALID_ARGUMENT', 'word is empty');
+    }
+    return next(game, { word, phase: { name: 'word' } });
+}
+
+/**
+ * @param {Game} game
+ * @param {Extract<Command, {type: 'drawWord'}>} _command
+ * @param {Deps} deps
+ * @returns {Result}
+ */
+function drawWord(game, _command, deps) {
+    if (deps.words.length === 0) {
+        return fail('INVALID_ARGUMENT', 'no words to draw from');
+    }
+    return next(game, { word: pick(deps.words, deps.rng), phase: { name: 'word' } });
+}
+
+/**
+ * @param {Game} game
+ * @param {Extract<Command, {type: 'startTimer'}>} _command
+ * @param {Deps} deps
+ * @returns {Result}
+ */
+function startTimer(game, _command, deps) {
+    const now = deps.now();
+    return next(game, { phase: { name: 'playing', startedAt: now, deadline: now + game.settings.timerMs } });
+}
+
+/**
+ * @param {Game} game
+ * @param {Extract<Command, {type: 'wordFound'}>} command
+ * @param {Deps} deps
+ * @returns {Result}
+ */
+function wordFound(game, command, deps) {
+    if (game.phase.name !== 'playing') {
+        return fail('WRONG_PHASE', 'not playing');
+    }
+    const finder = game.players.find((p) => p.id === command.finderId);
+    if (!finder || game.roles?.[finder.id] === 'master') {
+        return fail('INVALID_ARGUMENT', 'finder must be a non-master player');
+    }
+    const now = deps.now();
+    const elapsed = now - game.phase.startedAt;
+    return next(game, { phase: { name: 'discussion', finderId: finder.id, startedAt: now, deadline: now + elapsed } });
+}
+
+/**
+ * @param {Game} game
+ * @param {Extract<Command, {type: 'timeout'}>} _command
+ * @param {Deps} deps
+ * @returns {Result}
+ */
+function timeout(game, _command, deps) {
+    if (game.phase.name !== 'playing') {
+        return fail('WRONG_PHASE', 'not playing');
+    }
+    if (deps.now() < game.phase.deadline) {
+        return fail('NOT_YET', 'deadline not reached');
+    }
+    return next(game, { phase: { name: 'ended', outcome: 'allLose', reason: 'timeout', finderId: null, tallies: null, pointed: null } });
+}
+
+/**
+ * @param {Game} game
+ * @returns {Result}
+ */
+function closeDiscussion(game) {
+    if (game.phase.name !== 'discussion') {
+        return fail('WRONG_PHASE', 'not in discussion');
+    }
+    return next(game, { phase: { name: 'vote1', finderId: game.phase.finderId, ballots: {} } });
+}
+
 /** @type {Record<CommandType, (game: Game, command: any, deps: Deps) => Result>} */
 const HANDLERS = {
     addPlayer,
     removePlayer,
     reset,
     startRound,
-    setWord: notImplemented,
-    drawWord: notImplemented,
-    startTimer: notImplemented,
-    wordFound: notImplemented,
-    timeout: notImplemented,
-    closeDiscussion: notImplemented,
+    setWord,
+    drawWord,
+    startTimer,
+    wordFound,
+    timeout,
+    closeDiscussion,
     vote1: notImplemented,
     vote2: notImplemented,
     tiebreak: notImplemented
@@ -288,6 +371,3 @@ const HANDLERS = {
 
 // Exporté pour les tests de grille et la vue.
 export { PHASES_BY_COMMAND, ALL_PHASES };
-
-// pick est utilisé par drawWord (tâche suivante).
-void pick;

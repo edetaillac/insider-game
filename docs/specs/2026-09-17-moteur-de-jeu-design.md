@@ -52,7 +52,7 @@ Les rôles internes sont `master`, `insider`, `common`. Les libellés français 
  * } Phase */
 ```
 
-Défauts de `createGame(settings)` : `traitorOptional: true`, `timerMs: 300000`, `minPlayers: 4`, `maxPlayers: 8`. Avec la variante active, `maxPlayers` effectif est 7 (livret).
+Défauts de `createGame(settings)` : `traitorOptional: true`, `timerMs: 300000`, `minPlayers: 4`, `maxPlayers: 8`. Avec la variante active, `maxPlayers` effectif est 7 (livret). `createGame` lève une `Error` sur des réglages incohérents (`minPlayers < 2`, `minPlayers > maxPlayers`, `timerMs <= 0`) : les réglages viennent du code, pas du réseau. `startRound` refuse en plus toute manche à moins de 2 joueurs.
 
 Invariants garantis par la structure : un bulletin ne peut exister qu'en phase de vote ; les décomptes sont toujours dérivés des bulletins ; la carte du centre n'est jamais un joueur ; l'ordre des joueurs est l'ordre d'arrivée ; l'état est immuable (toute transition renvoie un nouvel objet, l'ancien n'est pas muté).
 
@@ -63,11 +63,11 @@ Invariants garantis par la structure : un bulletin ne peut exister qu'en phase d
 // deps = { rng: () => number, now: () => number, words: string[] }
 ```
 
-Chaque commande porte `type` et `actor` (PlayerId posé par le serveur). Les commandes serveur (`addPlayer`, `removePlayer`, `timeout`) portent `actor: 'server'`. Ordre des vérifications : phase, acteur, arguments. Toute erreur renvoie `{ ok: false, error }` avec un code stable (`WRONG_PHASE`, `FORBIDDEN`, `INVALID_ARGUMENT`, `TOO_FEW_PLAYERS`, `TOO_MANY_PLAYERS`, `DUPLICATE_NAME`, `NOT_YET`) et l'état d'entrée intact.
+Chaque commande porte `type` et `actor` (PlayerId posé par le serveur). Les commandes serveur (`addPlayer`, `removePlayer`, `timeout`) portent `actor: 'server'`. Ordre des vérifications : phase, acteur, arguments. Toute erreur renvoie `{ ok: false, error, message }` avec un code stable (`WRONG_PHASE`, `FORBIDDEN`, `INVALID_ARGUMENT`, `TOO_FEW_PLAYERS`, `TOO_MANY_PLAYERS`, `DUPLICATE_ID`, `DUPLICATE_NAME`, `UNKNOWN_PLAYER`, `NOT_YET`), un `message` libre pour le débogage, et l'état d'entrée intact. Le réducteur ne lève jamais : un `type` inconnu ou une clé du prototype (`toString`, `__proto__`) donne `INVALID_ARGUMENT`. Tout accès indexé par une donnée venue de l'extérieur passe par `Object.hasOwn`.
 
 | Commande | Phase source | Qui | Effet |
 |---|---|---|---|
-| `addPlayer {id, name, isHost}` | lobby, ended | serveur | ajoute le joueur, nom non vide (après trim) et unique, refuse au-delà de `maxPlayers` |
+| `addPlayer {id, name, isHost}` | lobby, ended | serveur | ajoute le joueur. `id` chaîne non vide, différente de `center` et `server` (sinon `INVALID_ARGUMENT`), unique (`DUPLICATE_ID`) ; nom non vide après trim et unique, sensible à la casse (`DUPLICATE_NAME`) ; refuse au-delà de `maxPlayers` |
 | `removePlayer {id}` | lobby, ended | serveur | retire le joueur |
 | `startRound` | lobby, ended | hôte | tire les rôles et la carte du centre, `word` à null, `roles`. Refuse sous `minPlayers` |
 | `setWord {word}` | roles | Maître | mot saisi non vide, `word` |
@@ -108,10 +108,12 @@ Résolution d'un candidat pointé `c` :
  *   phase: Phase['name'],
  *   me: { id: PlayerId, name: string, isHost: boolean, role: Role|null, hasVoted: boolean },
  *   players: Array<{ id: PlayerId, name: string, isHost: boolean, hasVoted: boolean }>,
+ *   master: { id: PlayerId, name: string }|null,      // public dès roles (livret A-2)
  *   word: string|null,
  *   finder: { id: PlayerId, name: string }|null,
  *   timer: { startedAt: number, deadline: number }|null,
  *   candidates: Array<{ id: CandidateId, name: string }>|null,
+ *   tallies: Record<CandidateId, number>|null,        // tiebreak et ended
  *   result: { outcome, reason, insiderId: PlayerId|null, centerCard: Role|null,
  *             tallies: Record<CandidateId, number>|null, pointed: CandidateId|null }|null,
  *   actions: string[]
@@ -119,6 +121,8 @@ Résolution d'un candidat pointé `c` :
 ```
 
 Règles d'exposition :
+- `master` : null en lobby, le Maître pour tout le monde dès `roles`, y compris en `ended`. C'est le seul rôle public
+- `tallies` : le dépouillement en `tiebreak` (pour afficher l'égalité) et en `ended`, null sinon
 - `me.role` : dès `roles`, le sien seulement. Les rôles des autres ne sortent jamais avant `ended` ; en `ended`, `result.insiderId` et `result.centerCard` sont exposés à tous
 - `word` : Maître et Traître dès `word`, tout le monde en `ended`, null sinon
 - `timer` : en `playing` et `discussion`

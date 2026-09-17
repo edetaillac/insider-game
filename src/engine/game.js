@@ -33,9 +33,19 @@ export const DEFAULT_SETTINGS = Object.freeze({
  * @returns {Game}
  */
 export function createGame(settings = {}) {
+    const merged = { ...DEFAULT_SETTINGS, ...settings };
+    if (merged.minPlayers < 2) {
+        throw new Error(`invalid settings: minPlayers must be >= 2, got ${merged.minPlayers}`);
+    }
+    if (merged.minPlayers > merged.maxPlayers) {
+        throw new Error(`invalid settings: minPlayers (${merged.minPlayers}) must be <= maxPlayers (${merged.maxPlayers})`);
+    }
+    if (merged.timerMs <= 0) {
+        throw new Error(`invalid settings: timerMs must be > 0, got ${merged.timerMs}`);
+    }
     return {
         version: 0,
-        settings: { ...DEFAULT_SETTINGS, ...settings },
+        settings: merged,
         players: [],
         roles: null,
         centerCard: null,
@@ -257,8 +267,9 @@ function assignRoles(game, rng) {
  * @returns {Result}
  */
 function startRound(game, _command, deps) {
-    if (game.players.length < game.settings.minPlayers) {
-        return fail('TOO_FEW_PLAYERS', `need at least ${game.settings.minPlayers} players`);
+    const minPlayers = Math.max(2, game.settings.minPlayers);
+    if (game.players.length < minPlayers) {
+        return fail('TOO_FEW_PLAYERS', `need at least ${minPlayers} players`);
     }
     if (game.players.length > effectiveMaxPlayers(game)) {
         return fail('TOO_MANY_PLAYERS', `max ${effectiveMaxPlayers(game)} players`);

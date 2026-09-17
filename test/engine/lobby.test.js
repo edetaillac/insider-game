@@ -21,6 +21,16 @@ test('createGame fusionne les settings fournis', () => {
     assert.equal(game.settings.minPlayers, 4);
 });
 
+test('createGame lève sur des settings incohérents', () => {
+    assert.throws(() => createGame({ minPlayers: 1 }), /invalid settings/);
+    assert.throws(() => createGame({ minPlayers: 9 }), /invalid settings/);
+    assert.throws(() => createGame({ timerMs: 0 }), /invalid settings/);
+});
+
+test('createGame accepte des settings cohérents', () => {
+    assert.doesNotThrow(() => createGame({ minPlayers: 2, traitorOptional: false }));
+});
+
 test('addPlayer ajoute dans l\'ordre d\'arrivée et incrémente la version', () => {
     const { game } = lobby(3);
     assert.deepEqual(game.players.map((p) => p.id), ['p1', 'p2', 'p3']);

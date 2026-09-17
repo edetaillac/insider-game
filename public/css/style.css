@@ -15,12 +15,18 @@ body {
     display: block;
 }
 
-a.remove, #countdown a, #startGame a {
+a.remove, button.remove, #countdown a, #startGame a {
     color: #ffc107;
 }
 
-a.remove:active, #countdown a:active, #startGame a:active {
+a.remove:active, button.remove:active, #countdown a:active, #startGame a:active {
     color: #000;
+}
+
+button.remove {
+    background: transparent;
+    border: 0;
+    padding: 0 6px;
 }
 
 .container-fluid {

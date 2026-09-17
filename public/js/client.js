@@ -53,7 +53,7 @@ function startTicker() {
     ticker = setInterval(() => patchTimer(screen, offset), 250);
 }
 
-const socket = io({ auth: { token: readToken() } });
+const socket = io({ auth: (cb) => cb({ token: readToken() }) });
 
 function showJoin(error) {
     current = null;
@@ -111,7 +111,12 @@ screen.addEventListener('click', (event) => {
     const cmd = target.closest('[data-cmd]');
     if (cmd) {
         unlock();
-        const args = JSON.parse(cmd.getAttribute('data-args') || '{}');
+        let args = {};
+        try {
+            args = JSON.parse(cmd.getAttribute('data-args') || '{}');
+        } catch {
+            args = {};
+        }
         send({ type: cmd.getAttribute('data-cmd'), ...args });
     }
 });

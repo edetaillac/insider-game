@@ -40,7 +40,7 @@ Règles avancées, variante "Il n'y a pas de Traître ?" (4 à 7 joueurs)
 | Nombre de joueurs | 4 à 8, 4 à 7 avec variante | aucune borne | à borner dans le lobby |
 | Rôles | 1 Maître, 1 Traître, Citoyens | idem | conforme |
 | Thème | carte ou thème libre du Maître | liste de 855 mots ou saisie du Maître | conforme |
-| Sablier | durée du sablier physique | 300 s serveur | conforme, durée à confirmer |
+| Sablier | 5 minutes (sablier de la boîte) | 300 s serveur | conforme |
 | Réponses | Oui, Non, Je ne sais pas | hors application (oral) | conforme |
 | Fin de sablier | tous perdent | son "dong", rien d'autre | manquant |
 | Qui a trouvé | connu de tous | non modélisé, "Mot trouvé" sans nom | manquant, bloque B-2 et l'égalité B-3 |
@@ -79,11 +79,11 @@ Hors périmètre pour l'instant, à rouvrir après les premières parties : la v
 - Vérifié le 17/09 : le Maître vote au B-3 comme au B-2. Le code actuel est conforme
 - Vérifié le 17/09 : la discussion B-1 est chronométrée par le sablier retourné, sans obligation de s'y tenir
 - Reste à vérifier : le seuil du B-3, "le plus de votes" (pluralité) en règle de base contre "une majorité pointe" pour la carte du centre en variante. Deux seuils ou une approximation de rédaction
-- Reste à vérifier : la durée du sablier de la boîte, les 300 s du code viennent-elles de là
+- Vérifié le 17/09 : le sablier de la boîte fait 5 minutes, les 300 s du code sont conformes
 
 ## Actions
 
 - [ ] Valider D1 à D5
-- [ ] Trancher le seuil du B-3 et la durée du sablier
+- [ ] Trancher le seuil du B-3 (pluralité ou majorité pour la carte du centre)
 - [ ] Retirer `public/pdf/help.pdf` du repo : c'est la planche d'icônes du jeu Concept, pas Insider, reste du projet précédent
 - [ ] Traduire chaque ligne du tableau de conformité en cas de test du moteur

@@ -182,6 +182,9 @@ function fail(error, message) {
  * @returns {Result}
  */
 function addPlayer(game, command) {
+    if (typeof command.id !== 'string' || command.id.trim() === '' || command.id === CENTER || command.id === SERVER) {
+        return fail('INVALID_ARGUMENT', 'invalid player id');
+    }
     const name = String(command.name ?? '').trim();
     if (name === '') {
         return fail('INVALID_ARGUMENT', 'player name is empty');

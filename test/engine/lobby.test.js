@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createGame, apply, SERVER, DEFAULT_SETTINGS } from '../../src/engine/game.js';
+import { createGame, apply, SERVER, CENTER, DEFAULT_SETTINGS } from '../../src/engine/game.js';
 import { makeDeps, lobby, run, expectFail } from './helpers.js';
 
 test('createGame part en lobby, version 0, sans joueur, avec les défauts', () => {
@@ -34,6 +34,14 @@ test('addPlayer refuse un nom vide, un nom en doublon, un id en doublon', () => 
     expectFail(game, deps, { type: 'addPlayer', actor: SERVER, id: 'p9', name: '   ' }, 'INVALID_ARGUMENT');
     expectFail(game, deps, { type: 'addPlayer', actor: SERVER, id: 'p9', name: 'Joueur 1' }, 'DUPLICATE_NAME');
     expectFail(game, deps, { type: 'addPlayer', actor: SERVER, id: 'p1', name: 'Autre' }, 'DUPLICATE_NAME');
+});
+
+test('addPlayer refuse un id absent, vide, ou réservé (center, server)', () => {
+    const { game, deps } = lobby(2);
+    expectFail(game, deps, /** @type {any} */ ({ type: 'addPlayer', actor: SERVER, name: 'Neuf' }), 'INVALID_ARGUMENT');
+    expectFail(game, deps, { type: 'addPlayer', actor: SERVER, id: '   ', name: 'Neuf' }, 'INVALID_ARGUMENT');
+    expectFail(game, deps, { type: 'addPlayer', actor: SERVER, id: CENTER, name: 'Neuf' }, 'INVALID_ARGUMENT');
+    expectFail(game, deps, { type: 'addPlayer', actor: SERVER, id: SERVER, name: 'Neuf' }, 'INVALID_ARGUMENT');
 });
 
 test('addPlayer trim le nom', () => {

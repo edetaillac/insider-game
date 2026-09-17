@@ -2,12 +2,31 @@
 
 ## Setup
 
-Just boot the application with docker-compose.
+Prérequis : Node 22 ou plus.
+
 ```
-docker-compose up -d
+npm ci
+npm run dev        # rechargement à chaud (node --watch)
+npm start          # production
+npm run lint
 ```
 
-App is responding by default on port 8080 (Ex: `localhost:8080`)
+Ou avec Docker :
+
+```
+docker compose up -d
+```
+
+L'application répond sur le port 8080 par défaut (`localhost:8080`).
+
+Variables d'environnement :
+
+- `PORT` : port d'écoute (défaut 8080)
+- `SESSION_SECRET` : secret des sessions. Sans valeur, un secret aléatoire est généré au démarrage et les sessions sont perdues au redémarrage, ce qui est acceptable puisque l'état de la partie est en mémoire
+
+Le jeu est pensé pour être joué sur téléphone. Les joueurs se connectent à l'adresse de la machine qui héberge le serveur, sur le même réseau ou via un tunnel.
+
+État du projet et pistes de refonte : voir `docs/audit-2026-09-17.md`.
 
 ## Screenshots of Insider Game
 
@@ -28,6 +47,7 @@ App is responding by default on port 8080 (Ex: `localhost:8080`)
 
 ## Techno
 
-- Node
-- Express JS
-- Socket.io
+- Node 22, ESM
+- Express 5
+- Socket.io 4
+- EJS

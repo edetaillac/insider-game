@@ -22,8 +22,8 @@ export default [
         files: ['public/js/**/*.js'],
         languageOptions: {
             ecmaVersion: 2024,
-            sourceType: 'script',
-            globals: { ...globals.browser, ...globals.jquery }
+            sourceType: 'module',
+            globals: { ...globals.browser, io: 'readonly' }
         },
         rules: {
             'no-undef': 'error',

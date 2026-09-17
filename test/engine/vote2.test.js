@@ -108,16 +108,22 @@ test('égalité : passage en tiebreak avec les ex aequo dans l\'ordre des candid
 
 test('tiebreak : seul le trouveur, seulement parmi les ex aequo, résout avec la raison tiebreak', () => {
     const ctx = inVote2(4, NO_VARIANT);
-    const [c0, c1, c2] = candidates(ctx.game);
-    const tb = castAll(ctx, ctx.game, (_id, i) => (i < 2 ? c0 : c1));
-    const other = ctx.game.players.map((p) => p.id).find((id) => id !== ctx.finderId);
-    expectFail(tb, ctx.deps, { type: 'tiebreak', actor: other, candidate: c0 }, 'FORBIDDEN');
-    expectFail(tb, ctx.deps, { type: 'tiebreak', actor: ctx.finderId, candidate: c2 }, 'INVALID_ARGUMENT');
-    const ended = run(tb, ctx.deps, { type: 'tiebreak', actor: ctx.finderId, candidate: c0 });
+    const cands = candidates(ctx.game);
+    // Les candidats sont dans l'ordre d'arrivée : on réordonne les votes pour forcer l'égalité
+    // sur ctx.insider et un autre candidat, quelle que soit sa position dans `cands`.
+    const otherCandidate = cands.find((c) => c !== ctx.insider);
+    const thirdCandidate = cands.find((c) => c !== ctx.insider && c !== otherCandidate);
+    const tb = castAll(ctx, ctx.game, (_id, i) => (i < 2 ? ctx.insider : otherCandidate));
+    assert.equal(tb.phase.name, 'tiebreak');
+    assert.deepEqual([...tb.phase.tied].sort(), [ctx.insider, otherCandidate].sort());
+    const notFinder = ctx.game.players.map((p) => p.id).find((id) => id !== ctx.finderId);
+    expectFail(tb, ctx.deps, { type: 'tiebreak', actor: notFinder, candidate: ctx.insider }, 'FORBIDDEN');
+    expectFail(tb, ctx.deps, { type: 'tiebreak', actor: ctx.finderId, candidate: thirdCandidate }, 'INVALID_ARGUMENT');
+    const ended = run(tb, ctx.deps, { type: 'tiebreak', actor: ctx.finderId, candidate: ctx.insider });
     assert.equal(ended.phase.name, 'ended');
     assert.equal(ended.phase.reason, 'tiebreak');
-    assert.equal(ended.phase.pointed, c0);
-    assert.equal(ended.phase.outcome, ctx.game.roles[c0] === 'insider' ? 'commonsWin' : 'insiderWins');
+    assert.equal(ended.phase.pointed, ctx.insider);
+    assert.equal(ended.phase.outcome, 'commonsWin');
     assert.deepEqual(ended.phase.tallies, tb.phase.tallies);
 });
 

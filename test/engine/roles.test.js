@@ -60,6 +60,12 @@ test('startRound refuse sous minPlayers et pour un non hôte', () => {
     expectFail(four.game, four.deps, { type: 'startRound', actor: 'p2' }, 'FORBIDDEN');
 });
 
+test('startRound refuse avec trop de joueurs (TOO_MANY_PLAYERS)', () => {
+    const { game, deps } = lobby(5, { settings: { traitorOptional: false } });
+    const tooMany = { ...game, settings: { ...game.settings, maxPlayers: 4 } };
+    expectFail(tooMany, deps, { type: 'startRound', actor: 'p1' }, 'TOO_MANY_PLAYERS');
+});
+
 test('startRound depuis ended relance une manche et remet le mot à null', () => {
     const { game, deps, host } = started(4);
     const ended = { ...game, phase: /** @type {const} */ ({ name: 'ended', outcome: 'allLose', reason: 'timeout', finderId: null, tallies: null, pointed: null }), word: 'Ancien' };

@@ -198,4 +198,30 @@ footer.footer {
     font-style: italic;
 }
 
+/* Chantier branchement : cartes, chrono, toast, bandeau */
+.me { margin: 10px 0; }
+.players { list-style: none; padding: 0; display: inline-block; text-align: left; }
+.players li { margin: 6px 0; font-size: 1.1em; }
+.players .online { color: #28a745; }
+.players .offline { color: #999; }
+.card-flip { position: relative; display: block; width: 260px; max-width: 90%; height: 150px; margin: 14px auto; border: 0; background: transparent; perspective: 800px; cursor: pointer; }
+.card-flip .card-face { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; border-radius: 12px; font-size: 1.3em; transition: transform 0.5s; backface-visibility: hidden; }
+.card-flip .card-face small { font-size: 0.6em; margin-top: 8px; opacity: 0.7; }
+.card-flip .card-front { background: #222; color: #ffc107; }
+.card-flip .card-back { background: #ffc107; color: #222; transform: rotateY(180deg); }
+.card-flip[data-flipped] .card-front { transform: rotateY(180deg); }
+.card-flip[data-flipped] .card-back { transform: rotateY(0deg); }
+.countdown { font-size: 3.5em; font-weight: bold; margin: 10px 0; }
+.countdown .urgent { color: #222; }
+.countdown small { display: block; font-size: 0.3em; }
+.actions { margin: 16px 0; }
+.choices .btn { margin: 6px 0; font-size: 1.15em; padding: 12px; }
+.center-choice { margin-top: 14px; }
+.vote-buttons .btn { margin: 8px; min-width: 120px; font-size: 1.5em; }
+.progress-line, .waiting, .master-line { margin-top: 12px; }
+.found summary { list-style: none; }
+.toast-message { position: fixed; left: 50%; bottom: 90px; transform: translateX(-50%); background: #222; color: #fff; padding: 10px 16px; border-radius: 8px; z-index: 10; }
+.banner { position: fixed; top: 0; left: 0; right: 0; background: #222; color: #ffc107; padding: 6px; text-align: center; z-index: 10; }
+.error { color: #222; font-weight: bold; margin-top: 8px; }
+
 

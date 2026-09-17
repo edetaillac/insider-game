@@ -1,7 +1,7 @@
 ---
 date: 2026-09-17
 contexte: Confrontation des règles officielles Insider (livret Oink Games, 2e impression sept. 2016, scan dans public/pdf/regle.pdf) avec le comportement du code actuel, pour figer les règles que le moteur de jeu devra implémenter et tester
-statut: proposé, à valider par Manu avant le premier test du moteur
+statut: validé par Manu le 17/09/2026 (D1 à D5 et seuil du B-3)
 ---
 
 # ADR 0001, règles du jeu à implémenter
@@ -25,7 +25,7 @@ A. Coopération
 B. Accusation
 - B-1 Discussion : le Maître retourne le sablier de nouveau (le temps de discussion est donc le temps consommé en A-4). Tous discutent pour deviner le Traître. Le Maître clôt quand le groupe a une conclusion, avant la fin du sablier
 - B-2 Jugement du joueur qui a trouvé : tous les joueurs, Maître inclus, lèvent la main s'ils pensent que le trouveur est le Traître. Majorité stricte requise (à 6 joueurs, 4 mains). Si majorité : le trouveur révèle sa carte, s'il est le Traître les Citoyens gagnent, s'il est Citoyen le Traître gagne, la partie s'arrête. Si minorité : on passe au vote B-3
-- B-3 Vote : tous les joueurs, trouveur et Maître inclus (confirmé par Manu le 17/09), pointent celui qu'ils pensent être le Traître. Le plus pointé révèle sa carte : Traître, les Citoyens gagnent ; Citoyen, le Traître gagne. Égalité : le joueur qui a trouvé départage entre les ex aequo
+- B-3 Vote : tous les joueurs, trouveur et Maître inclus (confirmé par Manu le 17/09), pointent celui qu'ils pensent être le Traître. Le plus pointé révèle sa carte : Traître, les Citoyens gagnent ; Citoyen, le Traître gagne. Égalité : le joueur qui a trouvé départage entre les ex aequo. Décision : pluralité aussi pour la carte du centre en variante
 
 Règles avancées, variante "Il n'y a pas de Traître ?" (4 à 7 joueurs)
 - Préparation : on retire la carte Maître, on mélange les n-1 cartes restantes (1 Traître, n-2 Citoyens), on en retire une au hasard face cachée au centre de la table, on la remplace par une carte Citoyen, on remet le Maître, on distribue. La carte du centre est donc le Traître avec probabilité 1/(n-1)
@@ -60,17 +60,17 @@ Règles avancées, variante "Il n'y a pas de Traître ?" (4 à 7 joueurs)
 3. Vote pour le Maître. Le Maître n'est jamais candidat. Le moteur refuse la commande, il ne l'ignore pas silencieusement
 4. Le Maître voit-il le mot pendant le chrono. Il le connaît et doit répondre aux questions. Le mot reste accessible au Maître et au Traître pendant toute la partie, derrière un tap, puis il est révélé à tous à l'écran de fin
 
-## Décisions à prendre
+## Décisions (validées le 17/09/2026)
 
-D1. Défaite au temps. Implémenter A-5 (sablier expiré = tous perdent) dans le moteur comme commande `timeout`. La variante "le Maître retourne une carte" est reportée, elle demande un écran de désignation pour le Maître. Proposé : oui pour A-5 maintenant, variante plus tard
+D1. Défaite au temps. Implémenter A-5 (sablier expiré = tous perdent) dans le moteur comme commande `timeout`. La variante "le Maître retourne une carte" est reportée, elle demande un écran de désignation pour le Maître. Décision : A-5 maintenant, variante plus tard
 
-D2. Qui a trouvé. L'action "Mot trouvé" du Maître désigne le trouveur dans la liste des joueurs. Nécessaire pour B-2 automatique et pour le départage B-3. Proposé : oui, dès le moteur
+D2. Qui a trouvé. L'action "Mot trouvé" du Maître désigne le trouveur dans la liste des joueurs. Nécessaire pour B-2 automatique et pour le départage B-3. Décision : oui, dès le moteur
 
-D3. Résolution automatique de B-2. Majorité stricte des votants humains (fantôme exclu) : si atteinte, le rôle du trouveur décide et la partie s'arrête, sinon passage au vote B-3. Aujourd'hui l'hôte décide à la main d'enchaîner. Proposé : automatique, conforme au livret. Alternative : garder l'enchaînement manuel comme tolérance de table
+D3. Résolution automatique de B-2. Majorité stricte des votants humains (fantôme exclu) : si atteinte, le rôle du trouveur décide et la partie s'arrête, sinon passage au vote B-3. Aujourd'hui l'hôte décide à la main d'enchaîner. Décision : automatique, conforme au livret
 
 D4. Phase de discussion. Ajouter une phase `discussion` entre "mot trouvé" et B-2, clôturée par l'hôte, avec un chrono indicatif égal au temps consommé en questions (le sablier retourné). Confirmé par Manu le 17/09 : la discussion est chronométrée dans le livret mais le respect du temps n'est pas obligatoire à la table. Décision : phase oui, chrono affiché à titre indicatif, jamais bloquant, l'hôte clôt quand il veut
 
-D5. Probabilité du "pas de Traître". Aligner sur le livret (1/(n-1)) en tirant la carte du centre parmi les n-1 rôles hors Maître avant de distribuer. Coût nul dans un moteur réécrit. Proposé : aligner
+D5. Probabilité du "pas de Traître". Aligner sur le livret (1/(n-1)) en tirant la carte du centre parmi les n-1 rôles hors Maître avant de distribuer. Coût nul dans un moteur réécrit. Décision : aligner
 
 Hors périmètre pour l'instant, à rouvrir après les premières parties : la variante "regard avant confrontation", la variante "personne n'a trouvé", une durée de sablier configurable.
 
@@ -78,12 +78,12 @@ Hors périmètre pour l'instant, à rouvrir après les premières parties : la v
 
 - Vérifié le 17/09 : le Maître vote au B-3 comme au B-2. Le code actuel est conforme
 - Vérifié le 17/09 : la discussion B-1 est chronométrée par le sablier retourné, sans obligation de s'y tenir
-- Reste à vérifier : le seuil du B-3, "le plus de votes" (pluralité) en règle de base contre "une majorité pointe" pour la carte du centre en variante. Deux seuils ou une approximation de rédaction
+- Tranché le 17/09 : pluralité partout au B-3, joueur ou carte du centre, égalité départagée par le trouveur
 - Vérifié le 17/09 : le sablier de la boîte fait 5 minutes, les 300 s du code sont conformes
 
 ## Actions
 
-- [ ] Valider D1 à D5
-- [ ] Trancher le seuil du B-3 (pluralité ou majorité pour la carte du centre)
+- [x] Valider D1 à D5 (17/09)
+- [x] Trancher le seuil du B-3 : pluralité (17/09)
 - [ ] Retirer `public/pdf/help.pdf` du repo : c'est la planche d'icônes du jeu Concept, pas Insider, reste du projet précédent
 - [ ] Traduire chaque ligne du tableau de conformité en cas de test du moteur

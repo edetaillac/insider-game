@@ -62,7 +62,7 @@ function timerBlock(view, label) {
     if (!view.timer) {
         return '';
     }
-    return `<div class="countdown"><span id="timer" data-timer="${view.timer.deadline}">--:--</span>${label ? `<small>${e(label)}</small>` : ''}</div>`;
+    return `<div class="countdown"><span id="timer" data-timer="${e(view.timer.deadline)}">--:--</span>${label ? `<small>${e(label)}</small>` : ''}</div>`;
 }
 
 function voteProgress(view) {

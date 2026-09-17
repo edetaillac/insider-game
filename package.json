@@ -1,15 +1,29 @@
 {
-  "name": "concept-boardgame",
-  "version": "0.1.0",
-  "dependencies": {
-    "body-parser": "^1.19.0",
-    "ejs": "1.x",
-    "ent": "2.x",
-    "express": "4.x",
-    "express-ejs-layouts": "^2.5.0",
-    "express-session": "^1.17.1",
-    "socket.io": "1.x"
+  "name": "insider-game",
+  "version": "0.2.0",
+  "description": "Insider board game adapted for remote play on phones",
+  "author": "Emmanuel de Taillac <emmanuel.detaillac@gmail.com>",
+  "license": "UNLICENSED",
+  "private": true,
+  "type": "module",
+  "main": "app.js",
+  "engines": {
+    "node": ">=22"
   },
-  "author": "emmanuel.detaillac@gmail.com&gt;",
-  "description": "Simple Insider game to remote playing"
+  "scripts": {
+    "start": "node app.js",
+    "dev": "node --watch app.js",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "ejs": "^6.0.1",
+    "express": "^5.2.1",
+    "express-ejs-layouts": "^2.5.1",
+    "express-session": "^1.19.0",
+    "socket.io": "^4.8.3"
+  },
+  "devDependencies": {
+    "eslint": "^10.10.0",
+    "globals": "^17.12.0"
+  }
 }

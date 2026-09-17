@@ -1,98 +1,115 @@
-const express = require('express');
+import { createServer } from 'node:http';
+import { readFileSync } from 'node:fs';
+import { randomBytes } from 'node:crypto';
+import express from 'express';
+import session from 'express-session';
+import expressLayouts from 'express-ejs-layouts';
+import { Server } from 'socket.io';
+
+const PORT = Number(process.env.PORT ?? 8080);
+const SESSION_SECRET = process.env.SESSION_SECRET ?? randomBytes(32).toString('hex');
+
+const wordFamille = readFileSync(new URL('./words/famille.csv', import.meta.url), 'utf8')
+    .split(/\r?\n/)
+    .map((word) => word.trim())
+    .filter(Boolean);
+
+const gameMasterRole = 'Maître du jeu';
+const traitorRole = 'Traître';
+const defaultRole = 'Citoyen';
+
+function createPlayer(name, { permission = null, isGhost = false, role = '' } = {}) {
+    return { name, role, vote1: null, vote2: null, nbVote2: 0, isGhost, permission };
+}
+
+// État de la partie, en mémoire, une seule partie par process (voir docs/audit)
+const game = {
+    players: [],
+    online: 0,
+    settings: { traitorOptional: true },
+    word: '',
+    countdown: null,
+    status: '',
+    resultVote1: null,
+    resultVote2: null
+};
+
 const app = express();
+const httpServer = createServer(app);
+const io = new Server(httpServer);
 
-var server = require('http').createServer(app), // Serveur HTTP
-    io = require('socket.io').listen(server), // Socket.io pour le realtime
-    ent = require('ent'), // Ent pour l'encodage
-    session = require('express-session'),
-    bodyParser = require('body-parser'),
-    expressLayouts = require('express-ejs-layouts');
+app.use(expressLayouts)
+    .use(session({
+        secret: SESSION_SECRET,
+        resave: false,
+        saveUninitialized: false,
+        cookie: { maxAge: null }
+    }))
+    .use('/static', express.static(new URL('./public', import.meta.url).pathname))
+    .use(express.urlencoded({ extended: true }))
 
-const fs = require('fs'),
-      wordFamille = fs.readFileSync('words/famille.csv','utf8').split("\r\n"),
-      gameMasterRole = 'Maître du jeu',
-      traitorRole = 'Traître',
-      defaultRole = 'Citoyen';
+    .set('view engine', 'ejs')
+    .set('layout', 'layouts/layout')
 
-app.use(function(req, res, next){
-    if (typeof(game) == 'undefined') {
-        game = {
-            players: [
-                {name: 'Hélène', role: '', vote1: null, vote2: null, nbVote2: 0, isGhost: false, permission: null},
-                {name: 'Manu', role: '', vote1: null, vote2: null, nbVote2: 0, isGhost: false, permission: 'admin'},
-            ],
-            online: 0,
-            settings: { traitorOptional: true },
-            resultVote1: null,
-            resultVote2: null
-        };
-    }
-    next();
-})
+    .get('/', (req, res) => {
+        res.render('welcome.ejs', { players: game.players.filter((player) => !isGhostPlayer(player)) });
+    })
 
-.use(expressLayouts)
-.use(session({ secret: 'session-insider-secret', cookie: { maxAge: null }}))
-.use('/static', express.static(__dirname + '/public'))
-.use(bodyParser.urlencoded({
-   extended: true
-}))
+    .get('/adminPlayer', (req, res) => {
+        res.render('adminPlayer.ejs', { players: game.players });
+    })
 
-.set('view engine', 'ejs')
-.set('layout', 'layouts/layout')
+    .get('/deletePlayer', (req, res) => {
+        game.players = game.players.filter((player) => player.name !== req.query.player);
+        res.redirect('/adminPlayer');
+    })
 
-.get('/', function (req, res) {
-    res.render('welcome.ejs', {players: game.players.filter((player) => !isGhostPlayer(player))});
-})
-
-.get('/adminPlayer', function (req, res) {
-    res.render('adminPlayer.ejs', {players: game.players});
-})
-
-.get('/deletePlayer', function (req, res) {
-    game.players.forEach(function(playerItem, index) {
-        if(playerItem.name == req.query.player) {
-            game.players.splice(index, 1);
+    .post('/addPlayer', (req, res) => {
+        const name = (req.body.player ?? '').trim();
+        if (name !== '' && !game.players.some((player) => player.name === name)) {
+            game.players.push(createPlayer(name, { permission: req.body.admin === 'on' ? 'admin' : null }));
         }
+        res.redirect('/adminPlayer');
+    })
+
+    .post('/setWord', (req, res) => {
+        if (req.body.word && req.body.word !== '') {
+            game.word = req.body.word;
+        }
+        res.json('ok');
+    })
+
+    .post('/game', (req, res) => {
+        req.session.player = req.body.player;
+        res.redirect('/game');
+    })
+
+    .get('/game', (req, res) => {
+        const me = game.players.find((player) => player.name === req.session.player);
+        if (!req.session.player || !me) {
+            return res.redirect('/');
+        }
+
+        res.render('board.ejs', {
+            player: me,
+            status: game.status,
+            resultVote1: game.resultVote1,
+            resultVote2: game.resultVote2
+        });
     });
 
-    res.redirect('/adminPlayer');
-})
-
-.post('/addPlayer', function (req, res) {
-    console.log(req.body.admin);
-    game.players.push(
-        {name: req.body.player, role: '', vote1: null, vote2: null, nbVote2: 0, isGhost: false, permission: (req.body.admin === 'on' ? 'admin' : null) },
-    );
-
-    res.redirect('/adminPlayer');
-})
-
-.post('/setWord', function (req, res) {
-    if(req.body.word !== '') {
-        game.word = req.body.word;
+function stopCountdown() {
+    if (game.countdown !== null) {
+        clearInterval(game.countdown);
+        game.countdown = null;
     }
-    res.json('ok');
-})
-
-.post('/game', function (req, res) {    
-    req.session.player = req.body.player;
-    res.redirect('/game');
-})
-
-.get('/game', function (req, res) {
-    if(!req.session.player) {
-        res.redirect('/');
-    }
-
-    me = game.players.filter((player) => player.name === req.session.player );
-
-    res.render('board.ejs', { player: me[0], status: game.status, resultVote1: game.resultVote1, resultVote2: game.resultVote2 });
-})
+}
 
 function resetGame() {
+    stopCountdown();
     removeGhostPlayer();
 
-    game.players.forEach(function(player, index) {
+    game.players.forEach((player) => {
         player.role = defaultRole;
         player.vote1 = null;
         player.vote2 = null;
@@ -100,79 +117,62 @@ function resetGame() {
     });
 
     game.word = '';
-    game.countdown = null;
     game.resultVote1 = null;
     game.resultVote2 = null;
     game.status = '';
 }
 
-function randomRoles(players) {
+function randomRoles() {
     resetGame();
 
-    players = shuffle(players);
+    shuffle(game.players);
     setRole(gameMasterRole);
 
-    players = addGhostPlayer();
-    players = shuffle(players);
-
+    addGhostPlayer();
+    shuffle(game.players);
     setRole(traitorRole);
 
-    players.sort(comparePlayer);
-    
-    return players;
+    game.players.sort(comparePlayer);
+
+    return game.players;
 }
 
+// TODO P1 : comparateur incohérent (jamais de retour positif), à corriger avec des tests
 function comparePlayer(a, b) {
     if (a.isGhost) {
-       return 1; 
+        return 1;
     } else if (a.name > b.name) {
         return 0;
-    };
+    }
 
     return -1;
 }
 
 function setRole(role) {
-    game.players.some(function(player) {
-        if(player.role === defaultRole) {
-            player.role = role;
-            return true;
-        }
-    }); 
+    const candidate = game.players.find((player) => player.role === defaultRole);
+    if (candidate) {
+        candidate.role = role;
+    }
 }
 
 function shuffle(players) {
-    let ctr = players.length;
-    let temp;
-    let index;
-
-    while (ctr > 0) {
-        index = Math.floor(Math.random() * ctr);
+    for (let ctr = players.length; ctr > 0;) {
+        const index = Math.floor(Math.random() * ctr);
         ctr--;
-        temp = players[ctr];
-        players[ctr] = players[index];
-        players[index] = temp;
+        [players[ctr], players[index]] = [players[index], players[ctr]];
     }
 
     return players;
 }
 
 function addGhostPlayer() {
-    if(game.settings.traitorOptional) {
-        game.players.push({name: 'Pas de Traître', role: defaultRole, vote1: null, vote2: null, nbVote2: 0, isGhost: true, permission: null});
+    if (game.settings.traitorOptional) {
+        game.players.push(createPlayer('Pas de Traître', { isGhost: true, role: defaultRole }));
     }
-
-    return game.players;
 }
 
 function removeGhostPlayer() {
-    game.players = game.players.filter((player) => !isGhostPlayer(player) );
-}
-
-function getGhostPlayer() {
-    ghostPlayer = game.players.filter(isGhostPlayer);
-
-    return ghostPlayer.length > 0 ? ghostPlayer[0] : null;
+    game.players = game.players.filter((player) => !isGhostPlayer(player));
 }
 
 function getWord(data) {
@@ -180,23 +180,14 @@ function getWord(data) {
 }
 
 function everybodyHasVoted(voteNumber) {
-    const hasVoted1 = (currentValue) => currentValue.isGhost || currentValue.vote1 !== null;
-    const hasVoted2 = (currentValue) => currentValue.isGhost || currentValue.vote2 !== null;
-
-    if(voteNumber == 1) {
-        return game.players.every(hasVoted1);
-    } else {
-        return game.players.every(hasVoted2);
-    }
+    const key = voteNumber === 1 ? 'vote1' : 'vote2';
+    return game.players.every((player) => player.isGhost || player[key] !== null);
 }
 
 function resetVote(voteNumber) {
-    game.players.map(function(player) {
-        if(voteNumber === 1) {
-            player.vote1 = null;
-        } else {
-            player.vote2 = null;
-        }
+    const key = voteNumber === 1 ? 'vote1' : 'vote2';
+    game.players.forEach((player) => {
+        player[key] = null;
     });
 }
 
@@ -208,150 +199,144 @@ function isGhostPlayer(player) {
     return player.isGhost;
 }
 
-function addPlayerVote2(playerVote) {
+function humanPlayersCount() {
+    return game.players.filter((player) => !isGhostPlayer(player)).length;
+}
 
-    game.players.map(function(player) {
-        if(playerVote === player.name) {
-            player.nbVote2 += 1
+function addPlayerVote2(playerVote) {
+    game.players.forEach((player) => {
+        if (playerVote === player.name) {
+            player.nbVote2 += 1;
         }
     });
 }
 
 function compareVote(a, b) {
-  if (a.nbVote2 < b.nbVote2) return 1;
-  if (b.nbVote2 < a.nbVote2) return -1;
-
-  return 0;
+    return b.nbVote2 - a.nbVote2;
 }
 
 function processVote1Result() {
-    voteResult = {'up': 0, 'down': 0};
-    game.players.some(function(player) {
-      if(player.vote1 == '1') {
-        voteResult.up += 1;
-      } else if(!isGhostPlayer(player)) {
-        voteResult.down += 1;
-      }
-    })
+    const voteResult = { up: 0, down: 0 };
+    game.players.forEach((player) => {
+        if (player.vote1 == '1') {
+            voteResult.up += 1;
+        } else if (!isGhostPlayer(player)) {
+            voteResult.down += 1;
+        }
+    });
 
     game.resultVote1 = voteResult;
 }
 
 function processVote2Result() {
-    game.players.forEach(function(player, index) {
+    game.players.forEach((player) => {
         addPlayerVote2(player.vote2);
     });
-    votePlayers = game.players.filter(isNotGameMaster);
-    votePlayers.sort(compareVote);
-    hasWon = votePlayers[0].role === traitorRole && votePlayers[1].nbVote2 < votePlayers[0].nbVote2;
-    ghostPlayers = game.players.filter(isGhostPlayer);
-    ghostPlayer = ghostPlayers.length > 0 ? ghostPlayers[0]: null;
+    const votePlayers = game.players.filter(isNotGameMaster).sort(compareVote);
+    const [first, second] = votePlayers;
+    const hasWon = Boolean(first) && first.role === traitorRole && (second?.nbVote2 ?? -1) < first.nbVote2;
+    const ghostPlayer = game.players.find(isGhostPlayer) ?? null;
 
-    game.resultVote2 = { hasWon: hasWon, voteDetail: votePlayers, hasTraitor: (!ghostPlayer || ghostPlayer.role !== traitorRole) };
+    game.resultVote2 = {
+        hasWon,
+        voteDetail: votePlayers,
+        hasTraitor: !ghostPlayer || ghostPlayer.role !== traitorRole
+    };
 }
- 
-// On enclenche le socket d'échange
-io.sockets.on('connection', function (socket) {
- 
+
+function emitPlayerStatus() {
+    io.in('game').emit('playerStatusUpdate', {
+        online: game.online,
+        offline: Math.max(0, humanPlayersCount() - game.online)
+    });
+}
+
+io.on('connection', (socket) => {
     socket.join('game');
 
-    socket.on('newPlayer', function(data1) {
-        game.online = game.online + 1;
-        humanPlayers = game.players.filter((player) => !isGhostPlayer(player) );
-        offline = humanPlayers.length - game.online;
-        console.log('Online players : ' + game.online);
-        console.log('New player connected : ' + data1);
-        io.in('game').emit('playerStatusUpdate', { online: game.online, offline: offline });
-      });
-
-    socket.on('disconnect', function () {
-      console.log('Player disconnected');
-      game.online = game.online > 0 ? game.online - 1 : 0;
-      humanPlayers = game.players.filter((player) => !isGhostPlayer(player) );
-      offline = humanPlayers.length - game.online;
-      io.in('game').emit('playerStatusUpdate', { online: game.online, offline: offline });
+    socket.on('newPlayer', (name) => {
+        game.online += 1;
+        console.log(`New player connected: ${name} (online: ${game.online})`);
+        emitPlayerStatus();
     });
-    
-    socket.on('resetGame', function (object) {
-        if (game.countdown !== null) {
-            clearInterval(game.countdown);
-        }
-        game.players = randomRoles(game.players);
+
+    socket.on('disconnect', () => {
+        game.online = Math.max(0, game.online - 1);
+        emitPlayerStatus();
+    });
+
+    socket.on('resetGame', () => {
+        randomRoles();
         game.word = getWord(wordFamille);
         io.in('game').emit('newRole', { players: game.players });
         game.status = 'role';
-    })
+    });
 
-    socket.on('revealWord', function (object) {
-        io.in('game').emit('revealWord', { players: game.players , word: game.word });
+    socket.on('revealWord', () => {
+        io.in('game').emit('revealWord', { players: game.players, word: game.word });
         game.status = 'word';
-    })
+    });
 
-    socket.on('wordFound', function (object) {
-        if (game.countdown !== null) {
-            clearInterval(game.countdown);
-        }
+    socket.on('wordFound', () => {
+        stopCountdown();
         io.in('game').emit('wordFound');
         game.status = 'vote1';
-    })
+    });
 
-    socket.on('displayVote1', function (object) {
+    socket.on('displayVote1', () => {
         resetVote(1);
         io.in('game').emit('displayVote1');
         game.status = 'vote1';
-    })
+    });
 
-    socket.on('displayVote2', function () {
+    socket.on('displayVote2', () => {
         resetVote(2);
         io.in('game').emit('displayVote2', game.players.filter(isNotGameMaster));
         game.status = 'vote2';
-    })
+    });
 
-    socket.on('vote1', function (object) {
-        game.players.map(function(player) {
-            if(object.player === player.name) {
-                player.vote1 = object.vote;
-            }
-        });
+    socket.on('vote1', ({ player: name, vote }) => {
+        const player = game.players.find((item) => item.name === name);
+        if (player) {
+            player.vote1 = vote;
+        }
 
-        if(everybodyHasVoted(1)) {
+        if (everybodyHasVoted(1)) {
             processVote1Result();
             io.in('game').emit('vote1Ended', game.resultVote1);
             game.status = 'vote2';
         }
-    })
+    });
 
-    socket.on('vote2', function (object) {
-        game.players.map(function(player) {
-            if(object.player === player.name) {
-                player.vote2 = object.vote;
-            }
-        });
+    socket.on('vote2', ({ player: name, vote }) => {
+        const player = game.players.find((item) => item.name === name);
+        if (player) {
+            player.vote2 = vote;
+        }
 
-        if(everybodyHasVoted(2)) {
+        if (everybodyHasVoted(2)) {
             processVote2Result();
             io.in('game').emit('vote2Ended', game.resultVote2);
             game.status = 'end';
         }
-    })
+    });
 
-    socket.on('startGame', function (object) {
+    socket.on('startGame', () => {
         let counter = 300;
-        if (game.countdown !== null) {
-            clearInterval(game.countdown);
-        }  
-        game.countdown = setInterval(function(){
-            counter--
+        stopCountdown();
+        game.countdown = setInterval(() => {
+            counter--;
             if (counter === 0) {
-              clearInterval(this);
+                stopCountdown();
             }
             io.in('game').emit('countdownUpdate', counter);
         }, 1000);
 
         io.in('game').emit('startGame', {});
         game.status = 'in_progress';
-    })
- 
-}) 
- 
-server.listen(8080);
+    });
+});
+
+httpServer.listen(PORT, () => {
+    console.log(`Insider game listening on port ${PORT}`);
+});

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { candidates, CENTER, allowedActions } from '../../src/engine/game.js';
+import { candidates, CENTER, SERVER, allowedActions } from '../../src/engine/game.js';
 import { view, CENTER_LABEL } from '../../src/engine/view.js';
 import { lobby, started, inVote1, inVote2, run } from './helpers.js';
 
@@ -170,4 +170,47 @@ test('tallies est exposé en tiebreak et vaut phase.tallies, null en vote2', () 
     const tb = run(ctx.game, ctx.deps, ...ctx.game.players.map((p, i) => ({ type: 'vote2', actor: p.id, candidate: i < 2 ? c0 : c1 })));
     assert.equal(tb.phase.name, 'tiebreak');
     assert.deepEqual(view(tb, ctx.commons[0]).tallies, tb.phase.tallies);
+});
+
+test('un Citoyen ne voit jamais le mot en playing, discussion, vote1, vote2, tiebreak', () => {
+    const ctx = started(4, NO_VARIANT);
+    const citizen = ctx.commons[1];
+    const finderId = ctx.commons[0];
+    let game = run(ctx.game, ctx.deps, { type: 'setWord', actor: ctx.master, word: 'Château' }, { type: 'startTimer', actor: ctx.host });
+    assert.equal(view(game, citizen).word, null);
+    ctx.advance(1000);
+    game = run(game, ctx.deps, { type: 'wordFound', actor: ctx.master, finderId });
+    assert.equal(view(game, citizen).word, null);
+    game = run(game, ctx.deps, { type: 'closeDiscussion', actor: ctx.master });
+    assert.equal(view(game, citizen).word, null);
+    game = run(game, ctx.deps, ...game.players.map((p) => ({ type: 'vote1', actor: p.id, value: false })));
+    assert.equal(game.phase.name, 'vote2');
+    assert.equal(view(game, citizen).word, null);
+    const [c0, c1] = candidates(game);
+    game = run(game, ctx.deps, ...game.players.map((p, i) => ({ type: 'vote2', actor: p.id, candidate: i < 2 ? c0 : c1 })));
+    assert.equal(game.phase.name, 'tiebreak');
+    assert.equal(view(game, citizen).word, null);
+});
+
+test('ended par timeout : finder null, tallies null, reason timeout, mot visible de tous', () => {
+    const ctx = started(4, { settings: { ...NO_VARIANT.settings, timerMs: 10 } });
+    let game = run(ctx.game, ctx.deps, { type: 'setWord', actor: ctx.master, word: 'Château' }, { type: 'startTimer', actor: ctx.host });
+    ctx.advance(10);
+    game = run(game, ctx.deps, { type: 'timeout', actor: SERVER });
+    for (const p of game.players) {
+        const v = view(game, p.id);
+        assert.equal(v.finder, null);
+        assert.equal(v.result.tallies, null);
+        assert.equal(v.result.reason, 'timeout');
+        assert.equal(v.word, 'Château');
+    }
+});
+
+test('ended avec variante active : result.centerCard non null pour tous', () => {
+    const ctx = inVote2(5);
+    const ended = run(ctx.game, ctx.deps, ...ctx.game.players.map((p) => ({ type: 'vote2', actor: p.id, candidate: ctx.commons[0] })));
+    assert.equal(ended.phase.name, 'ended');
+    for (const p of ended.players) {
+        assert.notEqual(view(ended, p.id).result.centerCard, null);
+    }
 });

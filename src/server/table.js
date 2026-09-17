@@ -237,6 +237,7 @@ export function createTable({ settings = {}, words, now = Date.now, random = Mat
      */
     function dispatch(actor, payload) {
         if (actor === SERVER) {
+            // Branche serveur : payload de confiance, jamais atteignable depuis un socket (l'acteur vient d'un token resolu).
             return commit(apply(game, /** @type {any} */ ({ ...(/** @type {object} */ (payload)), actor: SERVER }), deps));
         }
         const checked = validate(payload);
@@ -269,6 +270,7 @@ export function createTable({ settings = {}, words, now = Date.now, random = Mat
     }
 
     return {
+        /** Etat brut du moteur, pour les tests et l'adaptateur seulement. Le transport n'emet que snapshot(playerId). */
         get game() {
             return game;
         },

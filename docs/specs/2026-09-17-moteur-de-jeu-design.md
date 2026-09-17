@@ -140,7 +140,7 @@ test/engine/*.test.js  node:test
 jsconfig.json          checkJs, strict, noEmit, include src/engine
 ```
 
-Scripts : `npm test` = `node --test test/`, `npm run typecheck` = `tsc -p jsconfig.json`. `typescript` en devDependency. Le moteur n'importe ni Express, ni socket.io, ni `node:fs`. `Math.random` et `Date.now` n'apparaissent pas dans `src/engine/`.
+Scripts : `npm test` = `node --test "test/**/*.test.js"` (sur Node 22, `node --test test/` traite le dossier comme un fichier et échoue), `npm run typecheck` = `tsc -p jsconfig.json`. `typescript` en devDependency. Le moteur n'importe ni Express, ni socket.io, ni `node:fs`. `Math.random` et `Date.now` n'apparaissent pas dans `src/engine/`.
 
 ## Tests
 

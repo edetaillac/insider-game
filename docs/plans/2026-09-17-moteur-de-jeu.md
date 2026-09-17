@@ -75,7 +75,7 @@ Puis éditer `package.json` pour que la section `scripts` devienne :
     "start": "node app.js",
     "dev": "node --watch app.js",
     "lint": "eslint .",
-    "test": "node --test test/",
+    "test": "node --test \"test/**/*.test.js\"",
     "typecheck": "tsc -p jsconfig.json"
 }
 ```

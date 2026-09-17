@@ -28,6 +28,21 @@ Le jeu est pensé pour être joué sur téléphone. Les joueurs se connectent à
 
 État du projet et pistes de refonte : voir `docs/audit-2026-09-17.md`.
 
+## Développement
+
+```
+npm test           # tests du moteur (node:test)
+npm run typecheck  # JSDoc vérifié par tsc, sans build
+npm run lint
+```
+
+Le moteur de jeu pur vit dans `src/engine/` (`createGame`, `apply`, `view`). Il n'est pas encore branché au serveur : `app.js` porte toujours la logique de 2020, le branchement est le chantier suivant.
+
+- Règles implémentées : `docs/adr/0001-regles-du-jeu.md`
+- Conception du moteur : `docs/specs/2026-09-17-moteur-de-jeu-design.md`
+- Décisions d'architecture : `docs/comite-2026-09-17-architecture-cible.md`
+- Audit initial : `docs/audit-2026-09-17.md`
+
 ## Screenshots of Insider Game
 
 ![Alt text](/screenshots/01-welcome.png?raw=true "Welcome screen")

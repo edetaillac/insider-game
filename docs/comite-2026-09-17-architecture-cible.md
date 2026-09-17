@@ -78,5 +78,5 @@ Trois questions à la fin : qu'as-tu raté, qu'as-tu cherché, qu'as-tu ignoré.
 
 - [x] ADR des règles avant le premier test (fait le 17/09)
 - [ ] Versionner le smoke script comme test d'intégration
-- [ ] Étape 1 : `engine.js` avec les bugs connus en rouge
+- [x] Étape 1 : moteur pur `src/engine/` avec ses tests (17/09)
 - [ ] Poser une date de partie quand c'est possible, go/no-go : deux parties avant fin décembre

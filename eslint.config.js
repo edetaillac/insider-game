@@ -5,11 +5,11 @@ export default [
         ignores: ['node_modules/**', 'public/js/*.min.js']
     },
     {
-        files: ['app.js', 'eslint.config.js'],
+        files: ['app.js', 'eslint.config.js', 'src/**/*.js', 'test/**/*.js'],
         languageOptions: {
             ecmaVersion: 2024,
             sourceType: 'module',
-            globals: globals.node
+            globals: { ...globals.node, structuredClone: 'readonly' }
         },
         rules: {
             'no-undef': 'error',

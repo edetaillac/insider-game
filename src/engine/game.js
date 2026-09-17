@@ -56,6 +56,7 @@ export function createGame(settings = {}) {
 
 /** @type {Phase['name'][]} */
 const ALL_PHASES = ['lobby', 'roles', 'word', 'playing', 'discussion', 'vote1', 'vote2', 'tiebreak', 'ended'];
+Object.freeze(ALL_PHASES);
 
 /** @type {Record<CommandType, Phase['name'][]>} */
 const PHASES_BY_COMMAND = {
@@ -71,8 +72,12 @@ const PHASES_BY_COMMAND = {
     vote1: ['vote1'],
     vote2: ['vote2'],
     tiebreak: ['tiebreak'],
-    reset: ALL_PHASES
+    reset: [...ALL_PHASES]
 };
+for (const key of /** @type {CommandType[]} */ (Object.keys(PHASES_BY_COMMAND))) {
+    Object.freeze(PHASES_BY_COMMAND[key]);
+}
+Object.freeze(PHASES_BY_COMMAND);
 
 /** @type {Set<CommandType>} */
 const SERVER_ONLY = new Set(['addPlayer', 'removePlayer', 'timeout']);

@@ -69,7 +69,9 @@ socket.on('needJoin', () => {
     }
     showJoin();
 });
-socket.on('joinFailed', ({ error, message }) => showJoin(messageFor({ ok: false, error, message })));
+socket.on('joinFailed', ({ error, message }) => showJoin(error === 'WRONG_PHASE'
+    ? 'Partie en cours, attends la fin de la manche.'
+    : messageFor({ ok: false, error, message })));
 socket.on('joined', ({ token }) => saveToken(token));
 
 socket.on('state', (envelope) => {

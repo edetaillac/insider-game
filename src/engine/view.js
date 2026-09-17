@@ -27,7 +27,7 @@ export function view(game, playerId) {
     /** @param {PlayerId} id */
     const hasVoted = (id) => Boolean(ballots && Object.hasOwn(ballots, id));
     const finderId = 'finderId' in phase ? phase.finderId : null;
-    const finderPlayer = finderId ? game.players.find((p) => p.id === finderId) : undefined;
+    const finderPlayer = finderId !== null ? game.players.find((p) => p.id === finderId) : undefined;
     const masterId = Object.keys(game.roles ?? {}).find((id) => game.roles?.[id] === 'master') ?? null;
     const masterPlayer = masterId !== null ? game.players.find((p) => p.id === masterId) : undefined;
     const tallies = phase.name === 'tiebreak' || phase.name === 'ended' ? phase.tallies : null;

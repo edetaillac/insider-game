@@ -352,6 +352,43 @@ function closeDiscussion(game) {
     return next(game, { phase: { name: 'vote1', finderId: game.phase.finderId, ballots: {} } });
 }
 
+// Votes
+
+/**
+ * @param {Game} game
+ * @param {Extract<Command, {type: 'vote1'}>} command
+ * @returns {Result}
+ */
+function vote1(game, command) {
+    if (game.phase.name !== 'vote1') {
+        return fail('WRONG_PHASE', 'not in vote1');
+    }
+    if (typeof command.value !== 'boolean') {
+        return fail('INVALID_ARGUMENT', 'vote1 value must be a boolean');
+    }
+    const ballots = { ...game.phase.ballots, [command.actor]: command.value };
+    if (Object.keys(ballots).length < game.players.length) {
+        return next(game, { phase: { ...game.phase, ballots } });
+    }
+    return resolveVote1(game, game.phase.finderId, ballots);
+}
+
+/**
+ * Livret B-2 : majorité stricte des joueurs, Maître et trouveur inclus.
+ * @param {Game} game
+ * @param {PlayerId} finderId
+ * @param {Record<PlayerId, boolean>} ballots
+ * @returns {Result}
+ */
+function resolveVote1(game, finderId, ballots) {
+    const yes = Object.values(ballots).filter(Boolean).length;
+    if (yes > game.players.length / 2) {
+        const outcome = game.roles?.[finderId] === 'insider' ? 'commonsWin' : 'insiderWins';
+        return next(game, { phase: { name: 'ended', outcome, reason: 'vote1', finderId, tallies: { [finderId]: yes }, pointed: finderId } });
+    }
+    return next(game, { phase: { name: 'vote2', finderId, ballots: {} } });
+}
+
 /** @type {Record<CommandType, (game: Game, command: any, deps: Deps) => Result>} */
 const HANDLERS = {
     addPlayer,
@@ -364,7 +401,7 @@ const HANDLERS = {
     wordFound,
     timeout,
     closeDiscussion,
-    vote1: notImplemented,
+    vote1,
     vote2: notImplemented,
     tiebreak: notImplemented
 };

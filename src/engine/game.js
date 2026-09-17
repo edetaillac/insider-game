@@ -215,11 +215,6 @@ function reset(game) {
     return next(game, { roles: null, centerCard: null, word: null, phase: { name: 'lobby' } });
 }
 
-/** @returns {Result} */
-function notImplemented() {
-    return fail('INVALID_ARGUMENT', 'not implemented');
-}
-
 // Manche
 
 /**
@@ -389,6 +384,94 @@ function resolveVote1(game, finderId, ballots) {
     return next(game, { phase: { name: 'vote2', finderId, ballots: {} } });
 }
 
+/**
+ * @param {Game} game
+ * @param {Extract<Command, {type: 'vote2'}>} command
+ * @returns {Result}
+ */
+function vote2(game, command) {
+    if (game.phase.name !== 'vote2') {
+        return fail('WRONG_PHASE', 'not in vote2');
+    }
+    if (!candidates(game).includes(command.candidate)) {
+        return fail('INVALID_ARGUMENT', `${String(command.candidate)} is not a valid candidate`);
+    }
+    const ballots = { ...game.phase.ballots, [command.actor]: command.candidate };
+    if (Object.keys(ballots).length < game.players.length) {
+        return next(game, { phase: { ...game.phase, ballots } });
+    }
+    return resolveVote2(game, game.phase.finderId, ballots);
+}
+
+/**
+ * Dépouillement sur tous les candidats, zéro inclus.
+ * @param {Game} game
+ * @param {Record<PlayerId, CandidateId>} ballots
+ * @returns {Record<CandidateId, number>}
+ */
+function tally(game, ballots) {
+    /** @type {Record<CandidateId, number>} */
+    const counts = Object.fromEntries(candidates(game).map((c) => [c, 0]));
+    for (const c of Object.values(ballots)) {
+        counts[c] = (counts[c] ?? 0) + 1;
+    }
+    return counts;
+}
+
+/**
+ * Pluralité. Un seul maximum : résolution. Plusieurs : le trouveur départage.
+ * @param {Game} game
+ * @param {PlayerId} finderId
+ * @param {Record<PlayerId, CandidateId>} ballots
+ * @returns {Result}
+ */
+function resolveVote2(game, finderId, ballots) {
+    const tallies = tally(game, ballots);
+    const max = Math.max(...Object.values(tallies));
+    const tied = candidates(game).filter((c) => tallies[c] === max);
+    if (tied.length === 1) {
+        return resolveCandidate(game, tied[0], 'vote2', finderId, tallies);
+    }
+    return next(game, { phase: { name: 'tiebreak', finderId, tied, tallies } });
+}
+
+/**
+ * @param {Game} game
+ * @param {Extract<Command, {type: 'tiebreak'}>} command
+ * @returns {Result}
+ */
+function tiebreak(game, command) {
+    if (game.phase.name !== 'tiebreak') {
+        return fail('WRONG_PHASE', 'not in tiebreak');
+    }
+    if (!game.phase.tied.includes(command.candidate)) {
+        return fail('INVALID_ARGUMENT', `${String(command.candidate)} is not among the tied candidates`);
+    }
+    return resolveCandidate(game, command.candidate, 'tiebreak', game.phase.finderId, game.phase.tallies);
+}
+
+/**
+ * Issue d'un candidat pointé, ADR 0001.
+ * @param {Game} game
+ * @param {CandidateId} pointed
+ * @param {Reason} reason
+ * @param {PlayerId} finderId
+ * @param {Record<CandidateId, number>} tallies
+ * @returns {Result}
+ */
+function resolveCandidate(game, pointed, reason, finderId, tallies) {
+    /** @type {import('./types.js').Outcome} */
+    let outcome;
+    if (pointed === CENTER) {
+        outcome = game.centerCard === 'insider' ? 'allWin' : 'insiderWins';
+    } else if (game.roles?.[pointed] === 'insider') {
+        outcome = 'commonsWin';
+    } else {
+        outcome = game.centerCard === 'insider' ? 'allLose' : 'insiderWins';
+    }
+    return next(game, { phase: { name: 'ended', outcome, reason, finderId, tallies, pointed } });
+}
+
 /** @type {Record<CommandType, (game: Game, command: any, deps: Deps) => Result>} */
 const HANDLERS = {
     addPlayer,
@@ -402,8 +485,8 @@ const HANDLERS = {
     timeout,
     closeDiscussion,
     vote1,
-    vote2: notImplemented,
-    tiebreak: notImplemented
+    vote2,
+    tiebreak
 };
 
 // Exporté pour les tests de grille et la vue.

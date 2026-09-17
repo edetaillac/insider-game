@@ -100,11 +100,19 @@ Puis éditer `package.json` pour que la section `scripts` devienne :
 
 - [ ] **Step 3: Étendre ESLint aux nouveaux dossiers**
 
-Dans `eslint.config.js`, remplacer `files: ['app.js', 'eslint.config.js'],` par :
+Dans `eslint.config.js`, dans le premier bloc (node), remplacer `files: ['app.js', 'eslint.config.js'],` par :
 
 ```js
         files: ['app.js', 'eslint.config.js', 'src/**/*.js', 'test/**/*.js'],
 ```
+
+et `globals: globals.node` par :
+
+```js
+            globals: { ...globals.node, structuredClone: 'readonly' }
+```
+
+(`structuredClone` est un global Node 17+, la liste `globals.node` peut ne pas le connaître selon la version.)
 
 - [ ] **Step 4: Écrire le test du rng (échoue)**
 
@@ -236,7 +244,7 @@ Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
 
 **Interfaces:**
 - Consumes: `shuffle`, `pick` de `rng.js` (importés maintenant, utilisés à partir de la Task 3)
-- Produces: `createGame(settings?: Partial<Settings>): Game`, `apply(game, command, deps): Result`, `canAct(game, type, actor): boolean`, `allowedActions(game, playerId): Command['type'][]`, `candidates(game): CandidateId[]`, `effectiveMaxPlayers(game): number`, constantes `SERVER = 'server'`, `CENTER = 'center'`, `DEFAULT_SETTINGS`. Les handlers `startRound`, `setWord`, `drawWord`, `startTimer`, `wordFound`, `timeout`, `closeDiscussion`, `vote1`, `vote2`, `tiebreak` sont déclarés dans `HANDLERS` avec une implémentation provisoire qui renvoie `fail('INVALID_ARGUMENT', 'not implemented')`, remplacée dans les tâches suivantes
+- Produces: `createGame(settings?: Partial<Settings>): Game`, `apply(game, command, deps): Result`, `canAct(game, type, actor): boolean`, `allowedActions(game, playerId): Command['type'][]` (exclut `vote1` / `vote2` pour un joueur qui a déjà voté dans la phase), `candidates(game): CandidateId[]`, `effectiveMaxPlayers(game): number`, constantes `SERVER = 'server'`, `CENTER = 'center'`, `DEFAULT_SETTINGS`. Les handlers `startRound`, `setWord`, `drawWord`, `startTimer`, `wordFound`, `timeout`, `closeDiscussion`, `vote1`, `vote2`, `tiebreak` sont déclarés dans `HANDLERS` avec une implémentation provisoire qui renvoie `fail('INVALID_ARGUMENT', 'not implemented')`, remplacée dans les tâches suivantes
 
 - [ ] **Step 1: Écrire types.js**
 
@@ -633,15 +641,19 @@ export function canAct(game, type, actor) {
 
 /**
  * Commandes qu'un joueur peut émettre maintenant. Jamais les commandes serveur.
+ * Un joueur qui a déjà un bulletin dans la phase courante ne voit plus vote1 / vote2 :
+ * `apply` accepte encore le remplacement (idempotence des rejeux), mais l'UI n'a plus à le proposer.
  * @param {Game} game
  * @param {PlayerId} playerId
  * @returns {CommandType[]}
  */
 export function allowedActions(game, playerId) {
+    const hasVoted = 'ballots' in game.phase && playerId in game.phase.ballots;
     return /** @type {CommandType[]} */ (Object.keys(PHASES_BY_COMMAND)).filter((type) =>
         !SERVER_ONLY.has(type)
         && PHASES_BY_COMMAND[type].includes(game.phase.name)
-        && canAct(game, type, playerId));
+        && canAct(game, type, playerId)
+        && !(hasVoted && (type === 'vote1' || type === 'vote2')));
 }
 
 /**
@@ -1481,7 +1493,8 @@ test('variante, le centre est un Citoyen : pointer le centre fait gagner le Tra�
 });
 
 test('un seul candidat : pas de plantage (ancien bug à 2 joueurs)', () => {
-    const ctx = inVote2(2, { settings: { traitorOptional: false, minPlayers: 2 } });
+    // À 2 joueurs il n'y a pas de Citoyen : le trouveur est forcément le Traître.
+    const ctx = inVote2(2, { finder: 'insider', settings: { traitorOptional: false, minPlayers: 2 } });
     assert.equal(candidates(ctx.game).length, 1);
     const ended = castAll(ctx, ctx.game, () => candidates(ctx.game)[0]);
     assert.equal(ended.phase.name, 'ended');
@@ -1842,7 +1855,7 @@ Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
 ```js
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { candidates, CENTER, SERVER } from '../../src/engine/game.js';
+import { candidates, CENTER } from '../../src/engine/game.js';
 import { view, CENTER_LABEL } from '../../src/engine/view.js';
 import { lobby, started, inVote1, inVote2, run } from './helpers.js';
 
@@ -1914,7 +1927,7 @@ test('en vote1 : action vote1 pour qui n\'a pas voté, hasVoted juste, candidate
     const vb = view(game, b);
     assert.equal(va.me.hasVoted, true);
     assert.equal(vb.me.hasVoted, false);
-    assert.ok(va.actions.includes('vote1'), 'un bulletin peut être remplacé, l\'action reste ouverte');
+    assert.ok(!va.actions.includes('vote1'), 'qui a voté ne voit plus l\'action');
     assert.ok(vb.actions.includes('vote1'));
     assert.equal(vb.players.find((p) => p.id === a).hasVoted, true);
     assert.equal(vb.players.find((p) => p.id === b).hasVoted, false);
@@ -1971,7 +1984,6 @@ test('result est null hors ended et les commandes serveur n\'apparaissent jamais
             }
         }
     }
-    void SERVER;
 });
 
 test('version de la vue égale la version du jeu', () => {

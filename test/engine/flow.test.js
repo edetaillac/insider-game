@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { SERVER } from '../../src/engine/game.js';
 import { started, run, expectFail } from './helpers.js';
 
+const NO_VARIANT = { settings: { traitorOptional: false } };
+
 test('setWord par le Maître fixe le mot et passe en word', () => {
     const { game, deps, master } = started(4);
     const next = run(game, deps, { type: 'setWord', actor: master, word: '  Château ' });
@@ -11,12 +13,18 @@ test('setWord par le Maître fixe le mot et passe en word', () => {
 });
 
 test('setWord refuse un mot vide et un acteur qui n\'est pas le Maître', () => {
-    const { game, deps, master, commons, host } = started(4);
+    let ctx;
+    for (let seed = 1; seed < 200 && !ctx; seed++) {
+        const candidate = started(4, { seed });
+        if (candidate.host !== candidate.master) {
+            ctx = candidate;
+        }
+    }
+    assert.ok(ctx, 'aucune seed avec un hôte non Maître trouvée');
+    const { game, deps, master, commons, host } = ctx;
     expectFail(game, deps, { type: 'setWord', actor: master, word: '   ' }, 'INVALID_ARGUMENT');
     expectFail(game, deps, { type: 'setWord', actor: commons[0], word: 'X' }, 'FORBIDDEN');
-    if (host !== master) {
-        expectFail(game, deps, { type: 'setWord', actor: host, word: 'X' }, 'FORBIDDEN');
-    }
+    expectFail(game, deps, { type: 'setWord', actor: host, word: 'X' }, 'FORBIDDEN');
 });
 
 test('drawWord tire dans deps.words via le rng', () => {
@@ -42,12 +50,12 @@ test('startTimer par le Maître ou l\'hôte ouvre playing avec la deadline', () 
 });
 
 test('startTimer par un Citoyen non hôte est refusé', () => {
-    const { game, deps, master, commons, host } = started(5);
+    // Sans variante à 5 joueurs il y a toujours 3 Citoyens : au plus un est l'hôte, il en reste toujours un non hôte.
+    const { game, deps, master, commons, host } = started(5, NO_VARIANT);
     const inWord = run(game, deps, { type: 'setWord', actor: master, word: 'A' });
-    const citizen = commons.find((id) => id !== host) ?? commons[0];
-    if (citizen !== host) {
-        expectFail(inWord, deps, { type: 'startTimer', actor: citizen }, 'FORBIDDEN');
-    }
+    const citizen = commons.find((id) => id !== host);
+    assert.ok(citizen, 'aucun Citoyen non hôte trouvé');
+    expectFail(inWord, deps, { type: 'startTimer', actor: citizen }, 'FORBIDDEN');
 });
 
 test('startTimer rejoué en playing est refusé (WRONG_PHASE), le chrono ne repart pas', () => {

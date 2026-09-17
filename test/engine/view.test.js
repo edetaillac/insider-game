@@ -142,3 +142,23 @@ test('allowedActions ne lève pas quand ballots est vide', () => {
     assert.deepEqual(ctx.game.phase.ballots, {});
     assert.doesNotThrow(() => allowedActions(ctx.game, ctx.game.players[0].id));
 });
+
+test('master est null en lobby, et exposé à tous dès roles, y compris pour un Citoyen', () => {
+    const { game } = lobby(4);
+    assert.equal(view(game, 'p1').master, null);
+    const ctx = started(4, NO_VARIANT);
+    const masterName = ctx.game.players.find((p) => p.id === ctx.master).name;
+    for (const p of ctx.game.players) {
+        assert.deepEqual(view(ctx.game, p.id).master, { id: ctx.master, name: masterName });
+    }
+});
+
+test('master reste exposé en vote1 et en ended', () => {
+    const v1 = inVote1(4, NO_VARIANT);
+    const masterName = v1.game.players.find((p) => p.id === v1.master).name;
+    assert.deepEqual(view(v1.game, v1.commons[0]).master, { id: v1.master, name: masterName });
+    const v2 = run(v1.game, v1.deps, ...v1.game.players.map((p) => ({ type: 'vote1', actor: p.id, value: false })));
+    const ended = run(v2, v1.deps, ...v2.players.map((p) => ({ type: 'vote2', actor: p.id, candidate: candidates(v2)[0] })));
+    assert.equal(ended.phase.name, 'ended');
+    assert.deepEqual(view(ended, v1.master).master, { id: v1.master, name: masterName });
+});

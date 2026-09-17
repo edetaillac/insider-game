@@ -28,6 +28,8 @@ export function view(game, playerId) {
     const hasVoted = (id) => Boolean(ballots && Object.hasOwn(ballots, id));
     const finderId = 'finderId' in phase ? phase.finderId : null;
     const finderPlayer = finderId ? game.players.find((p) => p.id === finderId) : undefined;
+    const masterId = Object.keys(game.roles ?? {}).find((id) => game.roles?.[id] === 'master') ?? null;
+    const masterPlayer = masterId !== null ? game.players.find((p) => p.id === masterId) : undefined;
 
     /** @param {CandidateId} id */
     const candidateName = (id) => (id === CENTER ? CENTER_LABEL : (game.players.find((p) => p.id === id)?.name ?? id));
@@ -62,6 +64,7 @@ export function view(game, playerId) {
         me: { id: me.id, name: me.name, isHost: me.isHost, role: myRole, hasVoted: hasVoted(me.id) },
         players: game.players.map((p) => ({ id: p.id, name: p.name, isHost: p.isHost, hasVoted: hasVoted(p.id) })),
         word: wordVisible ? game.word : null,
+        master: masterPlayer ? { id: masterPlayer.id, name: masterPlayer.name } : null,
         finder: finderPlayer ? { id: finderPlayer.id, name: finderPlayer.name } : null,
         timer: (phase.name === 'playing' || phase.name === 'discussion')
             ? { startedAt: phase.startedAt, deadline: phase.deadline }

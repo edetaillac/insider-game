@@ -68,6 +68,7 @@
  *   me: { id: PlayerId, name: string, isHost: boolean, role: Role|null, hasVoted: boolean },
  *   players: Array<{ id: PlayerId, name: string, isHost: boolean, hasVoted: boolean }>,
  *   word: string|null,
+ *   master: { id: PlayerId, name: string }|null,
  *   finder: { id: PlayerId, name: string }|null,
  *   timer: { startedAt: number, deadline: number }|null,
  *   candidates: Array<{ id: CandidateId, name: string }>|null,

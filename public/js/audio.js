@@ -42,12 +42,13 @@ export async function unlock() {
         cache.set(name, audio);
     }
     try {
-        const probe = cache.get('ding');
-        probe.muted = true;
-        await probe.play();
-        probe.pause();
-        probe.currentTime = 0;
-        probe.muted = false;
+        await Promise.all([...cache.values()].map(async (audio) => {
+            audio.muted = true;
+            await audio.play();
+            audio.pause();
+            audio.currentTime = 0;
+            audio.muted = false;
+        }));
     } catch {
         // Le déblocage a échoué, les sons resteront silencieux jusqu'au prochain geste
         unlocked = false;

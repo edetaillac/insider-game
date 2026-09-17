@@ -111,7 +111,12 @@ export function createTable({ settings = {}, words, now = Date.now, random = Mat
             const delay = Math.max(0, game.phase.deadline - now());
             timer = setTimer(() => {
                 timer = null;
-                commit(apply(game, { type: 'timeout', actor: SERVER }, deps));
+                const result = apply(game, { type: 'timeout', actor: SERVER }, deps);
+                if (result.ok) {
+                    commit(result);
+                } else {
+                    scheduleTimeout();
+                }
             }, delay);
         }
     }

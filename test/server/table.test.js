@@ -19,6 +19,12 @@ function fakeClock(start = 1_000_000) {
             timers = timers.filter((x) => x.at > t);
             for (const x of due) x.fn();
         },
+        /** Déclenche tous les timers en attente sans avancer `t`, comme un tick en avance sur la deadline. */
+        fire() {
+            const due = timers.slice();
+            timers = [];
+            for (const x of due) x.fn();
+        },
         pending: () => timers.length
     };
 }
@@ -148,6 +154,23 @@ test('le chrono est armé en playing, annulé en sortie, et applique timeout à 
     assert.equal(clock.pending(), 1);
     clock.advance(4999);
     assert.equal(t.game.phase.name, 'playing');
+    clock.advance(1);
+    assert.equal(t.game.phase.name, 'ended');
+    assert.equal(t.game.phase.reason, 'timeout');
+    assert.equal(clock.pending(), 0);
+});
+
+test('un timer NOT_YET (tick en avance sur la deadline) est réarmé au lieu de laisser la table bloquée', () => {
+    const { t, clock } = table();
+    const [a] = joinAll(t, ['Alice', 'Bob', 'Carol', 'Dan']);
+    t.dispatch(a.playerId, { type: 'startRound' });
+    const master = t.game.players.find((p) => t.game.roles?.[p.id] === 'master');
+    t.dispatch(master.id, { type: 'setWord', word: 'Lune' });
+    t.dispatch(a.playerId, { type: 'startTimer' });
+    clock.advance(4999);
+    clock.fire();
+    assert.equal(t.game.phase.name, 'playing');
+    assert.equal(clock.pending(), 1);
     clock.advance(1);
     assert.equal(t.game.phase.name, 'ended');
     assert.equal(t.game.phase.reason, 'timeout');

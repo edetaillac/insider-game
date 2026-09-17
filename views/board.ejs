@@ -99,7 +99,16 @@
          
 <%- contentFor('script') %>
 <script>
-    var socket = io.connect('localhost:8080');
+    var socket = io();
+
+    function escapeHtml(value) {
+        return String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
 
     function displayPlayerStatus(online, offline) {
         $('.playerStatus').html('');
@@ -144,7 +153,7 @@
         }
         templateVote = templateVote.replace('optionalClass', player.isGhost ? 'ghost' : '');
 
-        $('#vote2 form .choices').append(templateVote.replace(/playerName/g, player.name));
+        $('#vote2 form .choices').append(templateVote.replace(/playerName/g, escapeHtml(player.name)));
     }
 
     function updateCountdown(counter) {
@@ -222,10 +231,6 @@
 
         socket.emit('newPlayer', '<%= player.name %>');
 
-        socket.on('reconnect', function(data) {
-            socket.emit('Reconnect', '<%= player.name %>');
-        })
-
         socket.on('newRole', function(data) {
             $('.hidden').hide();
             $('#word').html('');
@@ -250,7 +255,7 @@
             $.each(data.players, function(i, obj) {
                 if(obj.name == '<%= player.name %>') {
                     if(obj.role == 'Maître du jeu' || obj.role == 'Traître') {
-                        $('#word').html("<span>Le mot à deviner est<strong>"+data.word+"</strong></span>");
+                        $('#word').html("<span>Le mot à deviner est <strong>"+escapeHtml(data.word)+"</strong></span>");
                     } else {
                         $('#word').html("<span>Le Maître du jeu ET le Traître <br />prennent connaissance du mot</span>");
                     }
@@ -300,7 +305,7 @@
             $('.hidden').hide();
             $('#vote2Result ul').html('');
             result.voteDetail.forEach(function(votePlayer, index) {
-                $('#vote2Result ul').append('<li>'+votePlayer.name+' ('+votePlayer.nbVote2+')</li>');
+                $('#vote2Result ul').append('<li>'+escapeHtml(votePlayer.name)+' ('+votePlayer.nbVote2+')</li>');
             });
             finalResult = getResultIssue(result);
             $('#vote2Result #finalResult').html(finalResult);

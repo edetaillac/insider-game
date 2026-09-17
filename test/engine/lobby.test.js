@@ -43,7 +43,7 @@ test('addPlayer refuse un nom vide, un nom en doublon, un id en doublon', () => 
     const { game, deps } = lobby(2);
     expectFail(game, deps, { type: 'addPlayer', actor: SERVER, id: 'p9', name: '   ' }, 'INVALID_ARGUMENT');
     expectFail(game, deps, { type: 'addPlayer', actor: SERVER, id: 'p9', name: 'Joueur 1' }, 'DUPLICATE_NAME');
-    expectFail(game, deps, { type: 'addPlayer', actor: SERVER, id: 'p1', name: 'Autre' }, 'DUPLICATE_NAME');
+    expectFail(game, deps, { type: 'addPlayer', actor: SERVER, id: 'p1', name: 'Autre' }, 'DUPLICATE_ID');
 });
 
 test('addPlayer refuse un id absent, vide, ou réservé (center, server)', () => {

@@ -55,7 +55,7 @@
 
 /** @typedef {Command['type']} CommandType */
 
-/** @typedef {'WRONG_PHASE'|'FORBIDDEN'|'INVALID_ARGUMENT'|'TOO_FEW_PLAYERS'|'TOO_MANY_PLAYERS'|'DUPLICATE_NAME'|'NOT_YET'|'UNKNOWN_PLAYER'} ErrorCode */
+/** @typedef {'WRONG_PHASE'|'FORBIDDEN'|'INVALID_ARGUMENT'|'TOO_FEW_PLAYERS'|'TOO_MANY_PLAYERS'|'DUPLICATE_NAME'|'DUPLICATE_ID'|'NOT_YET'|'UNKNOWN_PLAYER'} ErrorCode */
 
 /** @typedef {{ ok: true, game: Game } | { ok: false, error: ErrorCode, message: string }} Result */
 

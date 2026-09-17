@@ -199,8 +199,11 @@ function addPlayer(game, command) {
     if (name === '') {
         return fail('INVALID_ARGUMENT', 'player name is empty');
     }
-    if (game.players.some((p) => p.id === command.id || p.name === name)) {
-        return fail('DUPLICATE_NAME', `player ${command.id} / ${name} already exists`);
+    if (game.players.some((p) => p.id === command.id)) {
+        return fail('DUPLICATE_ID', `player id ${command.id} already exists`);
+    }
+    if (game.players.some((p) => p.name === name)) {
+        return fail('DUPLICATE_NAME', `player name ${name} already exists`);
     }
     if (game.players.length >= effectiveMaxPlayers(game)) {
         return fail('TOO_MANY_PLAYERS', `max ${effectiveMaxPlayers(game)} players`);

@@ -428,6 +428,11 @@ button {
     pointer-events: none;
 }
 
+.btn.btn-registered[aria-disabled="true"] {
+    background: var(--ink);
+    color: var(--yellow);
+}
+
 .btn-secondary {
     min-height: 50px;
     background: transparent;

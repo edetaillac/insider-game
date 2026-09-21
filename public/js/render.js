@@ -218,7 +218,7 @@ function vote1(envelope, local) {
     const { view } = envelope;
     const finder = view.finder?.name ?? '?';
     const selected = local.v1 !== null ? local.v1 : (typeof view.me.ballot === 'boolean' ? view.me.ballot : null);
-    const opt = (value, label, cls) => uiButton('select-v1', label, String(value), `opt ${cls}${selected === value ? ' selected' : ''}`, `<span>${e(label)}</span>${svg('check', 22)}`);
+    const opt = (value, label, cls) => uiButton('select-v1', label, String(value), `opt ${cls}${selected === value ? ' selected' : ''}`, `<span>${e(label)}</span>${svg('check', 20)}`);
     const dock = view.me.hasVoted
         ? `<button type="button" class="btn btn-registered" aria-disabled="true">Vote enregistré</button>`
         : disabledButton('Choisis une réponse');
@@ -240,7 +240,7 @@ function candidateRow(view, c, selected, score) {
     const cls = `cand${isCenter ? ' cand-center' : ''}${selected ? ' selected' : ''}`;
     const inner = isCenter
         ? `<span>${e(label)}</span>${svg('check', 20)}`
-        : `${avatar(c.name)}<span>${e(c.name)}</span>${score !== null ? `<span class="score">${score}</span>` : ''}${svg('check', 20)}`;
+        : `${avatar(c.name, 'avatar avatar-40')}<span>${e(c.name)}</span>${score !== null ? `<span class="score">${score}</span>` : ''}${svg('check', 20)}`;
     return uiButton('select-v2', label, c.id, cls, inner);
 }
 

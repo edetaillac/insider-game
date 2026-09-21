@@ -255,6 +255,13 @@ button.remove:active {
     font-size: 30px;
 }
 
+.card-flip.neutral .card-back strong {
+    padding: 0 22px;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.35;
+}
+
 .card-flip[data-flipped] .card-front {
     transform: rotateY(180deg);
 }

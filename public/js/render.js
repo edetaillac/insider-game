@@ -22,19 +22,33 @@ function playerName(view, id) {
     return view.players.find((p) => p.id === id)?.name ?? '?';
 }
 
-function card(title, secret, kind) {
-    return `<button type="button" class="card-flip ${kind}" data-flip aria-pressed="false">
+const NEUTRAL_WORD = 'Tu es Citoyen, tu ne connais pas le mot. Garde la carte à l\'écran quelques secondes, comme les autres.';
+
+/**
+ * Carte à retourner. Avec `autohide`, elle se recache seule après quelques secondes :
+ * tout le monde fait le même geste pendant la même durée, rien ne trahit qui lit vraiment.
+ */
+function card(title, secret, kind, { autohide = false } = {}) {
+    const hint = autohide ? 'Se cache toute seule' : 'Touche pour cacher';
+    return `<button type="button" class="card-flip ${kind}" data-flip${autohide ? ' data-autohide' : ''} aria-pressed="false">
         <span class="card-face card-front">${e(title)}<small>Touche pour révéler</small></span>
-        <span class="card-face card-back"><strong>${e(secret)}</strong><small>Touche pour cacher</small></span>
+        <span class="card-face card-back"><strong>${e(secret)}</strong><small>${hint}</small></span>
     </button>`;
 }
 
-function roleCard(view) {
-    return view.me.role ? card('Ton rôle', ROLE_LABELS[view.me.role], 'role') : '';
+function roleCard(view, options) {
+    return view.me.role ? card('Ton rôle', ROLE_LABELS[view.me.role], 'role', options) : '';
 }
 
-function wordCard(view) {
-    return view.word !== null ? card('Le mot', view.word, 'word') : '';
+function wordCard(view, options) {
+    return view.word !== null ? card('Le mot', view.word, 'word', options) : '';
+}
+
+/** Phase mot : la même carte pour tout le monde, le Citoyen lit une phrase neutre. */
+function wordRitualCard(view) {
+    return view.word !== null
+        ? card('Le mot', view.word, 'word', { autohide: true })
+        : card('Le mot', NEUTRAL_WORD, 'word neutral', { autohide: true });
 }
 
 function masterLine(view) {
@@ -105,14 +119,15 @@ function roles(envelope) {
     } else {
         master = waiting('Le Maître du jeu choisit le mot...');
     }
-    return `${masterLine(view)}${roleCard(view)}${master}`;
+    return `${masterLine(view)}${roleCard(view, { autohide: true })}${master}`;
 }
 
 function word(envelope) {
     const { view } = envelope;
-    const secret = view.word !== null ? wordCard(view) : waiting('Le Maître du jeu et le Traître découvrent le mot...');
-    const action = can(view, 'startTimer') ? button('startTimer', 'Lancer le chrono', {}, 'btn btn-dark cta') : '';
-    return `${masterLine(view)}${roleCard(view)}${secret}<div class="actions">${action}</div>`;
+    const action = can(view, 'startTimer')
+        ? button('startTimer', 'Lancer le chrono', {}, 'btn btn-dark cta')
+        : waiting('Tout le monde retourne sa carte, puis l\'hôte lance le chrono');
+    return `${masterLine(view)}${wordRitualCard(view)}<div class="actions">${action}</div>`;
 }
 
 function playing(envelope) {

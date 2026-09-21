@@ -91,7 +91,7 @@ L'écran se dérive de `view.phase`, `view.me`, `view.actions` et `view.candidat
 | join (client seul) | champ prénom, bouton Rejoindre (débloque l'audio) | |
 | lobby | liste des présents avec pastille (online), "En attente de l'hôte" | hôte : "Lancer la partie" (désactivé sous `MIN_PLAYERS`, raison affichée), croix pour retirer un joueur non hôte |
 | roles | carte "Ton rôle" à retourner, "X est le Maître du jeu" (depuis `view.master`) | Maître : champ "Mot à faire deviner" + "Valider", bouton "Tirer un mot au hasard" |
-| word | | Maître et Traître : carte du mot à retourner. Citoyens : "Le Maître et le Traître découvrent le mot". Maître ou hôte : "Lancer le chrono" |
+| word | la même carte "Le mot" pour tous, qui se recache seule après 5 s (ADR D6) | Maître et Traître y lisent le mot, Citoyens une phrase neutre. Maître ou hôte : "Lancer le chrono" |
 | playing | chrono en très gros, rouge sous 30 secondes | Maître : carte du mot toujours accessible. Maître ou hôte : "Mot trouvé par..." puis liste des joueurs non Maître |
 | discussion | "X a trouvé le mot", chrono indicatif | Maître ou hôte : "Passer au vote" |
 | vote1 | "X a trouvé le mot. Est-ce le Traître ?", pouce haut et bas | après vote : "Ton vote est pris, n sur N ont voté" |

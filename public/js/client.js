@@ -6,6 +6,10 @@ import { unlock, playFor } from './audio.js';
 import { messageFor } from './dom.js';
 
 const TOKEN_KEY = 'insider.token';
+// Durée d'affichage d'une carte qui se recache seule : identique pour tous, rien ne trahit qui lit vraiment
+const AUTOHIDE_MS = 5000;
+/** @type {WeakMap<Element, ReturnType<typeof setTimeout>>} */
+const autohideTimers = new WeakMap();
 const screen = document.getElementById('screen');
 const toast = document.getElementById('toast');
 const banner = document.getElementById('banner');
@@ -116,6 +120,15 @@ screen.addEventListener('click', (event) => {
     if (flip) {
         const flipped = flip.toggleAttribute('data-flipped');
         flip.setAttribute('aria-pressed', String(flipped));
+        if (flip.hasAttribute('data-autohide')) {
+            clearTimeout(autohideTimers.get(flip));
+            if (flipped) {
+                autohideTimers.set(flip, setTimeout(() => {
+                    flip.removeAttribute('data-flipped');
+                    flip.setAttribute('aria-pressed', 'false');
+                }, AUTOHIDE_MS));
+            }
+        }
         return;
     }
     const cmd = target.closest('[data-cmd]');

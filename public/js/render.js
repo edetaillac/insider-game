@@ -2,7 +2,7 @@
 // Un écran par phase, dérivé de la vue serveur et d'un état local d'interface.
 // render() est pure : (envelope, local) -> { phase, content, dock, counter }.
 
-import { escapeHtml as e, PHASE_BAR, initial, svg, ROLE_LABELS, ROLE_HINTS } from './dom.js';
+import { escapeHtml as e, PHASE_BAR, initial, svg, ROLE_LABELS, ROLE_HINTS, outcomeTitle } from './dom.js';
 
 /* Briques partagées */
 
@@ -68,15 +68,6 @@ export function dots() {
 }
 
 /* Écrans (remplacés par les Tasks 4 à 6). Chaque fonction renvoie { content, dock, phase? }. */
-
-function fallback(envelope) {
-    const { view } = envelope;
-    const actions = view.actions.map((type) => cmdButton(type, type, {}, 'btn btn-outline')).join('');
-    return {
-        content: `<p class="eyebrow">${e(view.phase)}</p><p class="p">Écran en cours de refonte.</p>`,
-        dock: actions
-    };
-}
 
 /* §2 Salon */
 function lobby(envelope, local) {
@@ -222,16 +213,116 @@ function discussion(envelope) {
     };
 }
 
+/* §10 Premier vote */
+function vote1(envelope, local) {
+    const { view } = envelope;
+    const finder = view.finder?.name ?? '?';
+    const selected = local.v1 !== null ? local.v1 : (typeof view.me.ballot === 'boolean' ? view.me.ballot : null);
+    const opt = (value, label, cls) => uiButton('select-v1', label, String(value), `opt ${cls}${selected === value ? ' selected' : ''}`, `<span>${e(label)}</span>${svg('check', 22)}`);
+    const dock = view.me.hasVoted
+        ? `<button type="button" class="btn btn-registered" aria-disabled="true">Vote enregistré</button>`
+        : disabledButton('Choisis une réponse');
+    return {
+        content: `<p class="eyebrow">Vote 1 sur 2</p>
+        <h1 class="h1">${e(finder)} est-il<br>le Traître ?</h1>
+        <p class="p narrow">Majorité stricte. Si elle est atteinte, la manche s'arrête immédiatement.</p>
+        <div class="vote1">${opt(true, 'Oui, c\'est lui', 'opt-yes')}${opt(false, 'Non', 'opt-no')}</div>
+        <div class="mt-20">${progress(view, (p) => p.hasVoted, (n, total) => `${n} sur ${total} ont voté`)}</div>
+        <p class="p" style="font-size:13px">Ton vote reste modifiable tant que tout le monde n'a pas voté.</p>`,
+        dock
+    };
+}
+
+/* Ligne de candidat partagée par vote2 et tiebreak */
+function candidateRow(view, c, selected, score) {
+    const isCenter = c.id === 'center';
+    const label = isCenter ? 'Personne, il n\'y a pas de Traître' : c.name;
+    const cls = `cand${isCenter ? ' cand-center' : ''}${selected ? ' selected' : ''}`;
+    const inner = isCenter
+        ? `<span>${e(label)}</span>${svg('check', 20)}`
+        : `${avatar(c.name)}<span>${e(c.name)}</span>${score !== null ? `<span class="score">${score}</span>` : ''}${svg('check', 20)}`;
+    return uiButton('select-v2', label, c.id, cls, inner);
+}
+
+/* §11 Second vote */
+function vote2(envelope, local) {
+    const { view } = envelope;
+    const chosen = local.v2 ?? (typeof view.me.ballot === 'string' ? view.me.ballot : null);
+    const rows = (view.candidates ?? []).map((c) => candidateRow(view, c, chosen === c.id, null)).join('');
+    const confirmed = view.me.hasVoted && chosen === view.me.ballot;
+    let dock;
+    if (chosen === null) {
+        dock = disabledButton('Choisis un joueur');
+    } else if (confirmed) {
+        dock = `<button type="button" class="btn btn-registered" aria-disabled="true">Vote enregistré</button>`;
+    } else {
+        dock = uiButton('confirm-vote', 'Confirmer mon vote');
+    }
+    return {
+        content: `<p class="eyebrow">Vote 2 sur 2</p>
+        <h1 class="h1">Qui est le Traître ?</h1>
+        <p class="p">Le plus pointé révèle son rôle.</p>
+        <div class="rows mt-14">${rows}</div>
+        <div class="mt-20">${progress(view, (p) => p.hasVoted, (n, total) => `${n} sur ${total} ont voté`)}</div>`,
+        dock
+    };
+}
+
+/* §11 Égalité */
+function tiebreak(envelope, local) {
+    const { view } = envelope;
+    const decides = can(view, 'tiebreak');
+    const finder = view.finder?.name ?? 'Le trouveur';
+    const chosen = local.v2;
+    const rows = (view.candidates ?? []).map((c) => candidateRow(view, c, decides && chosen === c.id, view.tallies?.[c.id] ?? 0)).join('');
+    const dock = decides
+        ? (chosen === null ? disabledButton('Choisis un joueur') : uiButton('confirm-vote', 'Départager'))
+        : `${note(`${finder} départage.`)}${disabledButton('En attente')}`;
+    return {
+        content: `<p class="eyebrow">Vote 2 sur 2</p>
+        <h1 class="h1">Égalité</h1>
+        <p class="p">${decides ? 'À toi de départager : le plus pointé révèle son rôle.' : `${e(finder)} départage entre les ex aequo.`}</p>
+        <div class="rows mt-14">${rows}</div>`,
+        dock
+    };
+}
+
+/* §12 Résultat */
+function ended(envelope) {
+    const { view } = envelope;
+    const r = view.result;
+    const reveal = r?.insiderId
+        ? `<div class="reveal">${avatar(playerName(view, r.insiderId), 'avatar avatar-52 gold')}<div><p class="dark-label">Le Traître était</p><p class="reveal-name">${e(playerName(view, r.insiderId))}</p></div></div>`
+        : `<div class="reveal"><div><p class="dark-label">Le Traître</p><p class="reveal-name">Il n'y avait pas de Traître</p></div></div>`;
+    const tallies = view.tallies ? Object.entries(view.tallies) : [];
+    const max = tallies.reduce((m, [, n]) => Math.max(m, n), 0);
+    const bars = tallies.length
+        ? `<div class="mt-20"><p class="label">Les votes</p>${tallies.map(([id, n]) => `<div class="tally"><div class="tally-row"><span>${e(id === 'center' ? 'Pas de Traître' : playerName(view, id))}</span><span>${n}</span></div><div class="tally-track"><div class="tally-fill${n === max && n > 0 ? ' top' : ''}" style="width:${max > 0 ? Math.round((n / max) * 100) : 0}%"></div></div></div>`).join('')}</div>`
+        : '';
+    const dock = [
+        can(view, 'startRound') ? cmdButton('startRound', 'Rejouer une manche') : '',
+        can(view, 'reset') ? cmdButton('reset', 'Retour au salon', {}, 'btn btn-secondary') : ''
+    ].filter(Boolean).join('') || `${note('L\'hôte relance quand vous êtes prêts.')}${disabledButton('En attente de l\'hôte')}`;
+    return {
+        content: `<p class="eyebrow">Fin de la manche</p>
+        <h1 class="h-xl">${e(r ? outcomeTitle(r) : 'Fin de partie')}</h1>
+        <div class="mt-20">${reveal}</div>
+        <div class="well word-line mt-14"><p class="label">Le mot</p><span class="word-value">${e(view.word ?? '?')}</span></div>
+        ${bars}`,
+        dock
+    };
+}
+
 const SCREENS = {
     lobby,
     roles,
     word,
     playing,
     discussion,
-    vote1: fallback,
-    vote2: fallback,
-    tiebreak: fallback,
-    ended: fallback
+    vote1,
+    vote2,
+    tiebreak,
+    ended
 };
 
 /** Barre de phase : `roles` bascule sur "Le mot" une fois la carte vue. */
@@ -248,7 +339,7 @@ function phaseBar(view) {
  */
 export function render(envelope, local) {
     const { view } = envelope;
-    const screen = (SCREENS[view.phase] ?? fallback)(envelope, local);
+    const screen = (SCREENS[view.phase] ?? (() => ({ content: '', dock: '' })))(envelope, local);
     return {
         phase: screen.phase ?? phaseBar(view),
         content: screen.content,

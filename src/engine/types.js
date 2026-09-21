@@ -14,8 +14,8 @@
 /**
  * @typedef {(
  *   { name: 'lobby' }
- * | { name: 'roles' }
- * | { name: 'word' }
+ * | { name: 'roles', seen: Record<PlayerId, true> }
+ * | { name: 'word', seen: Record<PlayerId, true> }
  * | { name: 'playing', startedAt: number, deadline: number }
  * | { name: 'discussion', finderId: PlayerId, startedAt: number, deadline: number }
  * | { name: 'vote1', finderId: PlayerId, ballots: Record<PlayerId, boolean> }
@@ -47,6 +47,8 @@
  * | { type: 'startTimer', actor: PlayerId }
  * | { type: 'wordFound', actor: PlayerId, finderId: PlayerId }
  * | { type: 'closeDiscussion', actor: PlayerId }
+ * | { type: 'seenRole', actor: PlayerId }
+ * | { type: 'seenWord', actor: PlayerId }
  * | { type: 'vote1', actor: PlayerId, value: boolean }
  * | { type: 'vote2', actor: PlayerId, candidate: CandidateId }
  * | { type: 'tiebreak', actor: PlayerId, candidate: CandidateId }
@@ -65,8 +67,8 @@
  * @typedef {{
  *   version: number,
  *   phase: Phase['name'],
- *   me: { id: PlayerId, name: string, isHost: boolean, role: Role|null, hasVoted: boolean },
- *   players: Array<{ id: PlayerId, name: string, isHost: boolean, hasVoted: boolean }>,
+ *   me: { id: PlayerId, name: string, isHost: boolean, role: Role|null, hasVoted: boolean, hasSeen: boolean, ballot: boolean|CandidateId|null },
+ *   players: Array<{ id: PlayerId, name: string, isHost: boolean, hasVoted: boolean, hasSeen: boolean }>,
  *   word: string|null,
  *   master: { id: PlayerId, name: string }|null,
  *   finder: { id: PlayerId, name: string }|null,

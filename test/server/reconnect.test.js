@@ -17,7 +17,7 @@ test('un joueur qui revient avec son token reprend sa place, bulletin compris', 
         assert.equal(state.view.phase, 'vote1');
         assert.equal(state.view.me.id, bob.latest.view.me.id);
         assert.equal(state.view.me.hasVoted, true);
-        assert.ok(!state.view.actions.includes('vote1'));
+        assert.ok(state.view.actions.includes('vote1'));
         assert.ok(state.online.includes(bob.latest.view.me.id));
         back.close();
         closeAll(players);

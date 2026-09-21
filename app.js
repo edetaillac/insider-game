@@ -19,8 +19,8 @@ const settings = {
     timerMs: Number(env.TIMER_MS ?? 300_000)
 };
 
-const { httpServer } = createApp({ settings, words, shareUrl: env.PUBLIC_URL ?? null });
+const { httpServer } = createApp({ settings, words, shareUrl: env.PUBLIC_URL || null });
 
 httpServer.listen(PORT, () => {
-    console.log(`Insider game listening on port ${PORT} (minPlayers ${settings.minPlayers}, timer ${settings.timerMs} ms, traitorOptional ${settings.traitorOptional}, shareUrl ${env.PUBLIC_URL ?? null})`);
+    console.log(`Insider game listening on port ${PORT} (minPlayers ${settings.minPlayers}, timer ${settings.timerMs} ms, traitorOptional ${settings.traitorOptional}, shareUrl ${env.PUBLIC_URL || null})`);
 });

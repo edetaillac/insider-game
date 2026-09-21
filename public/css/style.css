@@ -124,7 +124,7 @@ button {
     text-align: left;
 }
 
-.screen {
+.screen.enter {
     animation: rise 0.25s ease both;
 }
 
@@ -238,6 +238,7 @@ button {
 }
 
 .well p { margin: 0; }
+.well .label { margin: 0 0 8px; }
 .well strong { font-weight: 700; }
 
 .share-url {
@@ -890,6 +891,26 @@ button {
 
 .tally-fill.top { background: var(--ink); }
 
+.tally-tag {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: var(--ink);
+    color: var(--yellow);
+    font-family: 'Oswald', sans-serif;
+    font-weight: 500;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    vertical-align: 2px;
+}
+
+/* Les mots longs (40 caractères maxi) se coupent au lieu de déborder de la carte ou du bloc noir */
+.card-secret,
+.dark-word,
+.word-value { overflow-wrap: anywhere; }
+
 /* Animations */
 @keyframes shrink {
     from { transform: scaleX(1); }
@@ -918,7 +939,7 @@ button {
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .screen { animation: none; }
+    .screen.enter { animation: none; }
     .dots i { animation: none; }
     .timer.urgent { animation: none; }
     .card-face { transition: none; }

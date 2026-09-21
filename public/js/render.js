@@ -57,7 +57,7 @@ export function roleRecall(view, roleLabels, roleHints) {
  * La barre de temps se vide en 5 s dès que la carte est retournée.
  */
 export function card(local, front, back) {
-    return `<button type="button" class="card" data-ui="flip" aria-pressed="${local.flipped ? 'true' : 'false'}"${local.flipped ? ' data-flipped' : ''}>
+    return `<button type="button" class="card" data-ui="flip" data-key="${e(front)}" aria-pressed="${local.flipped ? 'true' : 'false'}"${local.flipped ? ' data-flipped' : ''}>
         <span class="card-face card-front"><span class="card-eye"></span><span class="card-title">${e(front)}</span><span class="card-hint">Touche pour révéler</span></span>
         <span class="card-face card-back"><span class="card-over">${e(back.over)}</span><span class="card-secret ${e(back.secretCls)}">${e(back.secret)}</span><span class="card-text">${e(back.text)}</span><span class="timebar"></span></span>
     </button>`;
@@ -188,7 +188,7 @@ function playing(envelope, local) {
         : '';
     const dock = can(view, 'wordFound')
         ? uiButton('pick-finder', 'Le mot a été trouvé', '', isMaster ? 'btn btn-accent' : 'btn btn-primary')
-        : `${note('Seul le Maître peut déclarer le mot trouvé.')}${disabledButton('Le mot a été trouvé')}`;
+        : `${note('Le Maître ou l\'hôte déclare le mot trouvé.')}${disabledButton('Le mot a été trouvé')}`;
     return {
         content: `<div class="center">${timerBlock(view)}<p class="eyebrow" style="margin-top:8px">Temps restant</p></div>
         <div class="timer-track"><div class="timer-fill"></div></div>
@@ -296,8 +296,11 @@ function ended(envelope) {
         : `<div class="reveal"><div><p class="dark-label">Le Traître</p><p class="reveal-name">Il n'y avait pas de Traître</p></div></div>`;
     const tallies = view.tallies ? Object.entries(view.tallies) : [];
     const max = tallies.reduce((m, [, n]) => Math.max(m, n), 0);
+    const pointed = r?.pointed ?? null;
+    /* Après un départage, seul le candidat désigné par le trouveur est marqué, sinon le ou les plus pointés */
+    const isTop = (id, n) => (pointed !== null ? id === pointed : n === max && n > 0);
     const bars = tallies.length
-        ? `<div class="mt-20"><p class="label">Les votes</p>${tallies.map(([id, n]) => `<div class="tally"><div class="tally-row"><span>${e(id === 'center' ? 'Pas de Traître' : playerName(view, id))}</span><span>${n}</span></div><div class="tally-track"><div class="tally-fill${n === max && n > 0 ? ' top' : ''}" style="width:${max > 0 ? Math.round((n / max) * 100) : 0}%"></div></div></div>`).join('')}</div>`
+        ? `<div class="mt-20"><p class="label">Les votes</p>${tallies.map(([id, n]) => `<div class="tally"><div class="tally-row"><span>${e(id === 'center' ? 'Pas de Traître' : playerName(view, id))}${pointed === id ? ' <span class="tally-tag">désigné</span>' : ''}</span><span>${n}</span></div><div class="tally-track"><div class="tally-fill${isTop(id, n) ? ' top' : ''}" style="width:${max > 0 ? Math.round((n / max) * 100) : 0}%"></div></div></div>`).join('')}</div>`
         : '';
     const dock = [
         can(view, 'startRound') ? cmdButton('startRound', 'Rejouer une manche') : '',

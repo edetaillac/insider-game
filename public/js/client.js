@@ -99,10 +99,62 @@ function startTicker() {
     patchTimer();
 }
 
-/** Applique les quatre régions d'un rendu. */
-function paint(parts) {
-    screen.innerHTML = `<div class="screen">${parts.content}</div>`;
+/** Phase du dernier rendu, pour ne jouer l'animation d'entrée qu'au changement d'écran. */
+let paintedPhase = null;
+
+/**
+ * Applique les quatre régions d'un rendu. `enter` marque une entrée d'écran.
+ * La carte et le champ du mot survivent au re-rendu : la rotation 3D, la barre de 5 s,
+ * la saisie et le focus vivent dans le DOM et ne doivent pas repartir à chaque état reçu.
+ */
+function paint(parts, enter = false) {
+    const prevCard = screen.querySelector('.card');
+    const prevInput = /** @type {HTMLInputElement|null} */ (screen.querySelector('input[name="word"]'));
+    const typed = prevInput
+        ? { value: prevInput.value, focused: document.activeElement === prevInput, start: prevInput.selectionStart, end: prevInput.selectionEnd }
+        : null;
+    const tpl = document.createElement('template');
+    tpl.innerHTML = `<div class="screen${enter ? ' enter' : ''}">${parts.content}</div>`;
+    const nextRoot = /** @type {HTMLElement} */ (tpl.content.firstElementChild);
+    const nextCard = nextRoot.querySelector('.card');
+    const prevRoot = screen.firstElementChild;
+    if (prevCard instanceof HTMLElement && nextCard instanceof HTMLElement && prevRoot
+        && prevCard.parentElement === prevRoot && nextCard.parentElement === nextRoot
+        && prevCard.dataset.key === nextCard.dataset.key) {
+        // Même carte : on remplace ses voisins sans jamais la détacher, sinon le navigateur
+        // annule ses animations (barre de 5 s) et la rotation repart de zéro.
+        for (const node of [...prevRoot.childNodes]) {
+            if (node !== prevCard) {
+                node.remove();
+            }
+        }
+        let afterCard = false;
+        let anchor = prevCard;
+        for (const node of [...nextRoot.childNodes]) {
+            if (node === nextCard) {
+                afterCard = true;
+            } else if (afterCard) {
+                anchor.after(node);
+                anchor = node;
+            } else {
+                prevRoot.insertBefore(node, prevCard);
+            }
+        }
+        prevCard.toggleAttribute('data-flipped', nextCard.hasAttribute('data-flipped'));
+        prevCard.setAttribute('aria-pressed', nextCard.getAttribute('aria-pressed') ?? 'false');
+    } else {
+        screen.replaceChildren(nextRoot);
+    }
     dock.innerHTML = parts.dock;
+    const nextInput = screen.querySelector('input[name="word"]');
+    if (typed && nextInput instanceof HTMLInputElement) {
+        nextInput.value = typed.value;
+        if (typed.focused) {
+            nextInput.focus();
+            nextInput.setSelectionRange(typed.start ?? typed.value.length, typed.end ?? typed.value.length);
+        }
+        nextInput.dispatchEvent(new Event('input', { bubbles: true }));
+    }
     if (parts.phase) {
         phaseLabel.textContent = parts.phase.label;
         phaseRank.textContent = parts.phase.rank;
@@ -121,7 +173,9 @@ function paint(parts) {
 
 function repaint() {
     if (current) {
-        paint(render(current, local));
+        const enter = paintedPhase !== current.view.phase;
+        paintedPhase = current.view.phase;
+        paint(render(current, local), enter);
         if (current.view.timer) {
             startTicker();
         } else {
@@ -136,7 +190,8 @@ function showJoin(error) {
     stopTicker();
     joinError = error ?? '';
     const typedName = screen.querySelector('input[name="name"]')?.value ?? '';
-    paint(renderJoin(joinError, typedName));
+    paint(renderJoin(joinError, typedName), paintedPhase !== 'join');
+    paintedPhase = 'join';
     screen.querySelector('input[name="name"]')?.focus();
 }
 
@@ -259,7 +314,10 @@ function onSubmit(event) {
     if (form.dataset.form === 'join') {
         socket.emit('join', { name: String(data.get('name') ?? '') });
     } else if (form.dataset.form === 'setWord') {
-        send({ type: 'setWord', word: String(data.get('word') ?? '') });
+        const word = String(data.get('word') ?? '').trim();
+        if (word !== '') {
+            send({ type: 'setWord', word });
+        }
     }
 }
 

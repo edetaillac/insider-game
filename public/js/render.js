@@ -239,7 +239,7 @@ function candidateRow(view, c, selected, score) {
     const label = isCenter ? 'Personne, il n\'y a pas de Traître' : c.name;
     const cls = `cand${isCenter ? ' cand-center' : ''}${selected ? ' selected' : ''}`;
     const inner = isCenter
-        ? `<span>${e(label)}</span>${svg('check', 20)}`
+        ? `<span>${e(label)}</span>${score !== null ? `<span class="score">${score}</span>` : ''}${svg('check', 20)}`
         : `${avatar(c.name, 'avatar avatar-40')}<span>${e(c.name)}</span>${score !== null ? `<span class="score">${score}</span>` : ''}${svg('check', 20)}`;
     return uiButton('select-v2', label, c.id, cls, inner);
 }

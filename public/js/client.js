@@ -33,6 +33,7 @@ function freshLocal(view) {
     return {
         phase: view ? view.phase : null,
         flipped: false,
+        everFlipped: false,
         v1: view && view.phase === 'vote1' && typeof view.me.ballot === 'boolean' ? view.me.ballot : null,
         v2: view && (view.phase === 'vote2' || view.phase === 'tiebreak') && typeof view.me.ballot === 'string' ? view.me.ballot : null,
         finderPicking: false,
@@ -83,7 +84,8 @@ function patchTimer() {
     const remaining = deadline - now;
     el.textContent = formatCountdown(remaining);
     if (el.hasAttribute('data-urgent-able')) {
-        el.classList.toggle('urgent', remaining < 30_000);
+        // Sous 30 s, tout le bloc chrono passe en fond sombre avec les chiffres en jaune
+        (el.closest('[data-urgent-block]') ?? el).classList.toggle('urgent', remaining < 30_000);
     }
     const fill = screen.querySelector('.timer-fill');
     if (fill) {
@@ -168,7 +170,28 @@ function paint(parts, enter = false) {
     } else {
         counter.hidden = true;
     }
+    syncDockHeight();
+}
+
+/** Hauteur du socle exposée en CSS (marge basse du contenu, position du toast). Suit le socle et la rotation. */
+function syncDockHeight() {
     app.style.setProperty('--dock-h', `${dock.offsetHeight}px`);
+}
+
+if (typeof ResizeObserver !== 'undefined') {
+    new ResizeObserver(syncDockHeight).observe(dock);
+}
+
+/* Clavier virtuel : le socle suit le viewport visuel (iOS ne redimensionne pas le layout). */
+if (window.visualViewport) {
+    const vv = window.visualViewport;
+    const followKeyboard = () => {
+        const covered = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+        dock.style.bottom = covered > 0 ? `${covered}px` : '';
+        toast.style.bottom = covered > 0 ? `calc(var(--dock-h) + 12px + ${covered}px)` : '';
+    };
+    vv.addEventListener('resize', followKeyboard);
+    vv.addEventListener('scroll', followKeyboard);
 }
 
 function repaint() {
@@ -249,9 +272,7 @@ const UI = {
         local.flipped = !local.flipped;
         clearTimeout(autohideTimer);
         if (local.flipped) {
-            if (current && current.view.phase === 'word') {
-                send({ type: 'seenWord' });
-            }
+            local.everFlipped = true;
             autohideTimer = setTimeout(() => {
                 local.flipped = false;
                 repaint();
@@ -275,8 +296,20 @@ const UI = {
     'kick-cancel'() { local.kickConfirm = null; }
 };
 
+/** Motif d'un bouton inactif : son data-reason, sinon la note qui l'accompagne. */
+function reasonFor(button) {
+    return button.getAttribute('data-reason')
+        || button.parentElement?.querySelector('.dock-note')?.textContent
+        || 'Pas encore possible.';
+}
+
 function onAction(event) {
     const target = /** @type {HTMLElement} */ (event.target);
+    const blocked = target.closest('[aria-disabled="true"]');
+    if (blocked) {
+        showToast(reasonFor(blocked));
+        return;
+    }
     const ui = target.closest('[data-ui]');
     if (ui) {
         unlock();
@@ -326,7 +359,7 @@ screen.addEventListener('submit', onSubmit);
 /* Le CTA du socle peut soumettre un formulaire du contenu : il porte data-submit="<form id>". */
 dock.addEventListener('click', (event) => {
     const target = /** @type {HTMLElement} */ (event.target).closest('[data-submit]');
-    if (target) {
+    if (target && target.getAttribute('aria-disabled') !== 'true') {
         const form = /** @type {HTMLFormElement|null} */ (document.getElementById(target.getAttribute('data-submit')));
         form?.requestSubmit();
     }

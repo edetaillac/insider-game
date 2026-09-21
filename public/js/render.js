@@ -24,9 +24,21 @@ export function uiButton(action, label, arg = '', cls = 'btn btn-primary', inner
     return `<button type="button" class="${cls}" data-ui="${e(action)}"${arg !== '' ? ` data-arg="${e(arg)}"` : ''}>${inner || e(label)}</button>`;
 }
 
-/** Bouton inactif qui porte son motif. */
-export function disabledButton(label) {
-    return `<button type="button" class="btn btn-disabled" aria-disabled="true">${e(label)}</button>`;
+/** Bouton inactif. `reason` est affiché en toast au tap (repli : la note du socle). */
+export function disabledButton(label, reason = '') {
+    return `<button type="button" class="btn btn-disabled" aria-disabled="true"${reason ? ` data-reason="${e(reason)}"` : ''}>${e(label)}</button>`;
+}
+
+/** Bouton "vote enregistré" : inactif mais lisible comme une confirmation. */
+function registeredButton() {
+    return `<button type="button" class="btn btn-registered" aria-disabled="true" data-reason="Ton vote est enregistré. Touche une autre réponse pour le changer.">Vote enregistré</button>`;
+}
+
+/** Accusé de lecture d'une carte : actif seulement une fois la carte retournée au moins une fois. */
+function seenDock(local, type, label) {
+    return local.everFlipped
+        ? cmdButton(type, label)
+        : `${note('Retourne ta carte d\'abord.')}${disabledButton(label, 'Retourne ta carte d\'abord.')}`;
 }
 
 export function note(text) {
@@ -113,7 +125,7 @@ function roles(envelope, local) {
             content: `<div class="center"><p class="p" style="margin:0 auto 14px">Personne d'autre ne voit ta carte.</p></div>
             ${card(local, 'Ton rôle', { over: 'Tu es', secret: ROLE_LABELS[view.me.role], secretCls: 'role', text: ROLE_HINTS[view.me.role] })}
             <div class="mt-20">${progress(view, (p) => p.hasSeen, (n, total) => `${n} sur ${total} ont vu leur carte`)}</div>`,
-            dock: cmdButton('seenRole', 'J\'ai vu ma carte')
+            dock: seenDock(local, 'seenRole', 'J\'ai vu ma carte')
         };
     }
     if (can(view, 'setWord')) {
@@ -126,7 +138,7 @@ function roles(envelope, local) {
             </form>
             <div class="or">ou</div>
             ${cmdButton('drawWord', 'Tirer un mot au hasard', {}, 'btn btn-outline')}`,
-            dock: `<button type="button" class="btn btn-primary btn-disabled" aria-disabled="true" data-submit="word-form">Valider le mot</button>`
+            dock: `<button type="button" class="btn btn-primary btn-disabled" aria-disabled="true" data-reason="Écris un mot d'abord." data-submit="word-form">Valider le mot</button>`
         };
     }
     const masterName = view.master?.name ?? 'Le Maître';
@@ -141,12 +153,18 @@ function roles(envelope, local) {
 /* §6 Le rituel du mot */
 function word(envelope, local) {
     const { view } = envelope;
+    // Les deux textes font la même longueur : les faces révélées gardent la même silhouette
     const back = view.word !== null
         ? { over: 'Le mot', secret: view.word, secretCls: 'word', text: 'Ne le dis pas. Réponds seulement oui, non, je ne sais pas.' }
-        : { over: 'Le mot', secret: 'Tu ne connais pas le mot', secretCls: 'neutral', text: 'Garde la carte à l\'écran, comme les autres.' };
-    const dock = can(view, 'startTimer')
-        ? `${note('Lance le chrono quand tout le monde a regardé.')}${cmdButton('startTimer', 'Lancer le chrono')}`
-        : `${note('L\'hôte lance le chrono quand tout le monde a regardé.')}${disabledButton('Lancer le chrono')}`;
+        : { over: 'Le mot', secret: 'Tu ne connais pas le mot', secretCls: 'neutral', text: 'Garde la carte à l\'écran, comme tout le monde, sans rien dire.' };
+    let dock;
+    if (!view.me.hasSeen) {
+        dock = seenDock(local, 'seenWord', 'J\'ai regardé');
+    } else if (can(view, 'startTimer')) {
+        dock = `${note('Lance le chrono quand tout le monde a regardé.')}${cmdButton('startTimer', 'Lancer le chrono')}`;
+    } else {
+        dock = `${note('L\'hôte lance le chrono quand tout le monde a regardé.')}${disabledButton('Lancer le chrono')}`;
+    }
     return {
         content: `<div class="center"><p class="p narrow" style="margin:0 auto 14px">Tout le monde retourne la même carte, en même temps. Rien ne trahit qui lit vraiment.</p></div>
         ${card(local, 'Le mot', back)}
@@ -171,7 +189,7 @@ function finderScreen(view) {
         .map((p) => `<button type="button" class="pick" data-cmd="wordFound" data-args='${e(JSON.stringify({ finderId: p.id }))}'>${avatar(p.name, 'avatar avatar-40 gold')}<span>${e(p.name)}</span>${svg('arrow')}</button>`)
         .join('');
     return {
-        content: `<h1 class="h2">Qui a trouvé ?</h1><p class="p">Le chrono continue pendant ton choix.</p><div class="rows mt-14">${rows}</div>`,
+        content: `${timerBlock(view, { small: true })}<h1 class="h2 mt-14">Qui a trouvé ?</h1><p class="p">Le chrono continue pendant ton choix.</p><div class="rows mt-14">${rows}</div>`,
         dock: uiButton('cancel-finder', 'Retour au chrono', '', 'btn btn-secondary')
     };
 }
@@ -183,14 +201,16 @@ function playing(envelope, local) {
         return finderScreen(view);
     }
     const isMaster = view.me.role === 'master';
-    const wordBlock = isMaster && view.word !== null
-        ? `<div class="dark"><p class="dark-label">Le mot à faire deviner</p><p class="dark-word">${e(view.word)}</p><p class="dark-note">Visible seulement par toi.</p></div>`
-        : '';
+    let wordBlock = '';
+    if (view.word !== null) {
+        const wordNote = isMaster ? 'Visible seulement par toi et le Traître.' : 'Tu connais le mot. Personne ne doit le deviner sur ton visage.';
+        wordBlock = `<div class="dark"><p class="dark-label">${isMaster ? 'Le mot à faire deviner' : 'Le mot'}</p><p class="dark-word">${e(view.word)}</p><p class="dark-note">${e(wordNote)}</p></div>`;
+    }
     const dock = can(view, 'wordFound')
         ? uiButton('pick-finder', 'Le mot a été trouvé', '', isMaster ? 'btn btn-accent' : 'btn btn-primary')
         : `${note('Le Maître ou l\'hôte déclare le mot trouvé.')}${disabledButton('Le mot a été trouvé')}`;
     return {
-        content: `<div class="center">${timerBlock(view)}<p class="eyebrow" style="margin-top:8px">Temps restant</p></div>
+        content: `<div class="timer-block center" data-urgent-block>${timerBlock(view)}<p class="eyebrow" style="margin:8px 0 0">Temps restant</p></div>
         <div class="timer-track"><div class="timer-fill"></div></div>
         <div class="stack mt-20">${wordBlock}${RULE_WELL}</div>`,
         dock
@@ -220,8 +240,8 @@ function vote1(envelope, local) {
     const selected = local.v1 !== null ? local.v1 : (typeof view.me.ballot === 'boolean' ? view.me.ballot : null);
     const opt = (value, label, cls) => uiButton('select-v1', label, String(value), `opt ${cls}${selected === value ? ' selected' : ''}`, `<span>${e(label)}</span>${svg('check', 20)}`);
     const dock = view.me.hasVoted
-        ? `<button type="button" class="btn btn-registered" aria-disabled="true">Vote enregistré</button>`
-        : disabledButton('Choisis une réponse');
+        ? registeredButton()
+        : disabledButton('Choisis une réponse', 'Touche Oui ou Non pour voter.');
     return {
         content: `<p class="eyebrow">Vote 1 sur 2</p>
         <h1 class="h1">${e(finder)} est-il<br>le Traître ?</h1>
@@ -233,15 +253,15 @@ function vote1(envelope, local) {
     };
 }
 
-/* Ligne de candidat partagée par vote2 et tiebreak */
-function candidateRow(view, c, selected, score) {
+/* Ligne de candidat partagée par vote2 et tiebreak. Inerte (div) quand le joueur ne choisit pas. */
+function candidateRow(view, c, selected, score, interactive = true) {
     const isCenter = c.id === 'center';
     const label = isCenter ? 'Personne, il n\'y a pas de Traître' : c.name;
     const cls = `cand${isCenter ? ' cand-center' : ''}${selected ? ' selected' : ''}`;
     const inner = isCenter
         ? `<span>${e(label)}</span>${score !== null ? `<span class="score">${score}</span>` : ''}${svg('check', 20)}`
         : `${avatar(c.name, 'avatar avatar-40')}<span>${e(c.name)}</span>${score !== null ? `<span class="score">${score}</span>` : ''}${svg('check', 20)}`;
-    return uiButton('select-v2', label, c.id, cls, inner);
+    return interactive ? uiButton('select-v2', label, c.id, cls, inner) : `<div class="${cls}">${inner}</div>`;
 }
 
 /* §11 Second vote */
@@ -252,9 +272,9 @@ function vote2(envelope, local) {
     const confirmed = view.me.hasVoted && chosen === view.me.ballot;
     let dock;
     if (chosen === null) {
-        dock = disabledButton('Choisis un joueur');
+        dock = disabledButton('Choisis un joueur', 'Touche un joueur de la liste pour voter.');
     } else if (confirmed) {
-        dock = `<button type="button" class="btn btn-registered" aria-disabled="true">Vote enregistré</button>`;
+        dock = registeredButton();
     } else {
         dock = uiButton('confirm-vote', 'Confirmer mon vote');
     }
@@ -274,9 +294,9 @@ function tiebreak(envelope, local) {
     const decides = can(view, 'tiebreak');
     const finder = view.finder?.name ?? 'Le trouveur';
     const chosen = local.v2;
-    const rows = (view.candidates ?? []).map((c) => candidateRow(view, c, decides && chosen === c.id, view.tallies?.[c.id] ?? 0)).join('');
+    const rows = (view.candidates ?? []).map((c) => candidateRow(view, c, decides && chosen === c.id, view.tallies?.[c.id] ?? 0, decides)).join('');
     const dock = decides
-        ? (chosen === null ? disabledButton('Choisis un joueur') : uiButton('confirm-vote', 'Départager'))
+        ? (chosen === null ? disabledButton('Choisis un joueur', 'Touche un des ex aequo pour départager.') : uiButton('confirm-vote', 'Départager'))
         : `${note(`${finder} départage.`)}${disabledButton('En attente')}`;
     return {
         content: `<p class="eyebrow">Vote 2 sur 2</p>
@@ -338,7 +358,7 @@ function phaseBar(view) {
 
 /**
  * @param {{ view: any, online: string[], serverTime: number, minPlayers: number, shareUrl: string|null }} envelope
- * @param {{ flipped: boolean, v1: boolean|null, v2: string|null, finderPicking: boolean, kickConfirm: string|null }} local
+ * @param {{ flipped: boolean, everFlipped: boolean, v1: boolean|null, v2: string|null, finderPicking: boolean, kickConfirm: string|null }} local
  */
 export function render(envelope, local) {
     const { view } = envelope;

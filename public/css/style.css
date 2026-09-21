@@ -6,10 +6,10 @@
     --yellow: #FFC107;
     --cream: #FFF7EF;
     --muted: #9A8F86;
-    --ink-72: rgba(20, 16, 15, 0.72);
-    --ink-60: rgba(20, 16, 15, 0.6);
-    --well: rgba(0, 0, 0, 0.12);
-    --well-strong: rgba(0, 0, 0, 0.18);
+    /* Sur le rouge, l'encre pure ne dépasse pas 4,3:1 : les encadrés éclaircissent le fond au lieu de l'assombrir
+       (5,2:1 pour l'encre dessus) et le texte reste toujours en encre pleine, l'alpha est réservé aux fonds et bordures */
+    --well: rgba(255, 255, 255, 0.14);
+    --well-strong: rgba(255, 255, 255, 0.22);
     --disabled-bg: rgba(0, 0, 0, 0.2);
     --disabled-fg: rgba(20, 16, 15, 0.55);
     --display: 'Oswald', 'Arial Narrow', sans-serif;
@@ -84,15 +84,14 @@ button {
     top: 50%;
     right: 16px;
     transform: translateY(-50%);
-    width: 44px;
+    min-width: 44px;
     height: 44px;
-    border-radius: 12px;
-    background: rgba(0, 0, 0, 0.14);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 700;
-    font-size: 14px;
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 18px;
 }
 
 .phasebar {
@@ -149,7 +148,8 @@ button {
     margin: 0;
     text-align: center;
     font-size: 13px;
-    color: var(--ink-72);
+    font-weight: 500;
+    color: var(--ink);
 }
 
 .toast {
@@ -187,23 +187,23 @@ button {
     font-size: 12px;
     letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: var(--ink-60);
+    color: var(--ink);
 }
 
 .label {
     margin: 0 0 8px;
-    font-weight: 600;
-    font-size: 13px;
-    letter-spacing: 0.08em;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: var(--ink-60);
+    color: var(--ink);
 }
 
 .lead {
     margin: 8px 0 0;
     font-size: 16px;
     line-height: 1.5;
-    color: var(--ink-72);
+    color: var(--ink);
     max-width: 30ch;
 }
 
@@ -211,7 +211,7 @@ button {
     margin: 8px 0 0;
     font-size: 15px;
     line-height: 1.55;
-    color: var(--ink-72);
+    color: var(--ink);
 }
 
 .p.narrow { max-width: 32ch; }
@@ -263,7 +263,7 @@ button {
     font-weight: 600;
     font-size: 15px;
     background: var(--well-strong);
-    color: rgba(20, 16, 15, 0.45);
+    color: var(--ink);
 }
 
 .avatar.on { background: var(--ink); color: var(--yellow); }
@@ -298,7 +298,7 @@ button {
 .chip-host {
     flex: none;
     padding: 3px 7px;
-    border: 1.5px solid rgba(20, 16, 15, 0.5);
+    border: 1.5px solid var(--ink);
     border-radius: 6px;
     font-family: var(--display);
     font-weight: 600;
@@ -339,18 +339,16 @@ button {
     font-weight: 600;
     font-size: 18px;
     line-height: 1.2;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    overflow-wrap: anywhere;
 }
 
 .row-status {
     font-weight: 600;
     font-size: 12px;
-    color: rgba(20, 16, 15, 0.65);
+    color: var(--ink);
 }
 
-.row-status.off { color: rgba(20, 16, 15, 0.5); }
+.row-status.off { font-weight: 500; font-style: italic; }
 
 .icon-btn {
     flex: none;
@@ -359,7 +357,7 @@ button {
     border: 0;
     border-radius: 10px;
     background: transparent;
-    color: rgba(20, 16, 15, 0.5);
+    color: var(--ink);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -426,7 +424,7 @@ button {
     background: var(--disabled-bg);
     color: var(--disabled-fg);
     box-shadow: none;
-    pointer-events: none;
+    cursor: default;
 }
 
 .btn.btn-registered[aria-disabled="true"] {
@@ -437,7 +435,7 @@ button {
 .btn-secondary {
     min-height: 50px;
     background: transparent;
-    color: rgba(20, 16, 15, 0.8);
+    color: var(--ink);
     box-shadow: none;
 }
 
@@ -462,7 +460,7 @@ button {
     font-size: 12px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: var(--ink-60);
+    color: var(--ink);
 }
 
 .field {
@@ -484,9 +482,25 @@ button {
     font-weight: 500;
 }
 
-.field:focus-visible {
+/* Anneau de focus global, jaune sur les fonds sombres */
+.field:focus-visible,
+.btn:focus-visible,
+.opt:focus-visible,
+.cand:focus-visible,
+.pick:focus-visible,
+.icon-btn:focus-visible,
+.mini:focus-visible,
+.card:focus-visible {
     outline: 3px solid var(--ink);
     outline-offset: 2px;
+}
+
+.dark :focus-visible,
+.found-banner :focus-visible,
+.reveal :focus-visible,
+.phasebar :focus-visible,
+.timer-block.urgent :focus-visible {
+    outline-color: var(--yellow);
 }
 
 .field-error {
@@ -505,14 +519,14 @@ button {
     font-size: 12px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: rgba(20, 16, 15, 0.7);
+    color: var(--ink);
 }
 
 .or::before, .or::after {
     content: '';
     flex: 1;
     height: 1px;
-    background: rgba(20, 16, 15, 0.22);
+    background: rgba(20, 16, 15, 0.3);
 }
 
 /* Cartes à retourner */
@@ -584,7 +598,7 @@ button {
     font-size: 13px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: rgba(20, 16, 15, 0.6);
+    color: var(--ink);
 }
 
 .card-secret {
@@ -601,15 +615,16 @@ button {
 }
 
 .card-secret.role { font-size: 42px; }
-.card-secret.word { font-size: 46px; }
+.card-secret.word { font-size: clamp(24px, 12vw, 46px); }
 .card-secret.neutral { font-size: 22px; }
 
 .card-text {
     max-width: 32ch;
+    min-height: calc(2 * 1.45em); /* deux lignes réservées : même silhouette quel que soit le texte */
     text-align: center;
     font-size: 14px;
     line-height: 1.45;
-    color: rgba(20, 16, 15, 0.75);
+    color: var(--ink);
 }
 
 .timebar {
@@ -653,8 +668,26 @@ button {
     color: var(--ink);
 }
 
-.timer.urgent { animation: pulse 1s ease-in-out infinite; }
 .timer-sm { font-size: 52px; line-height: 1; text-align: left; }
+
+/* Sous 30 s : le bloc entier passe en sombre, chiffres en jaune. Pas d'animation, le contraste tient sans mouvement */
+.timer-block {
+    padding: 12px 16px 14px;
+    border-radius: 18px;
+    transition: background 0.3s ease;
+}
+
+.timer-block.urgent { background: var(--ink); }
+.timer-block.urgent .timer,
+.timer-block.urgent .eyebrow { color: var(--yellow); }
+
+.timer.urgent {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    background: var(--ink);
+    color: var(--yellow);
+}
 
 .timer-track {
     height: 6px;
@@ -776,8 +809,8 @@ button {
     align-items: center;
     width: 100%;
     min-height: 76px;
-    padding: 0 20px;
-    border: 0;
+    padding: 0 17px;
+    border: 3px solid transparent;
     border-radius: 16px;
     font-family: var(--display);
     font-weight: 600;
@@ -786,8 +819,9 @@ button {
 }
 
 .opt-yes { background: var(--yellow); color: var(--ink); }
-.opt-no { background: rgba(0, 0, 0, 0.14); color: var(--ink); }
+.opt-no { background: var(--well); color: var(--ink); }
 .opt.selected { background: var(--ink); color: var(--yellow); }
+.opt-yes.selected { border-color: var(--yellow); }
 .opt .icon { visibility: hidden; }
 .opt.selected .icon { visibility: visible; }
 
@@ -808,8 +842,8 @@ button {
     text-align: left;
 }
 
-.cand .avatar { background: var(--well-strong); color: rgba(20, 16, 15, 0.6); }
-.cand .score { margin-left: auto; font-variant-numeric: tabular-nums; color: var(--ink-72); }
+.cand .avatar { background: var(--well-strong); color: var(--ink); }
+.cand .score { margin-left: auto; font-variant-numeric: tabular-nums; color: var(--ink); }
 .cand .icon { margin-left: auto; visibility: hidden; }
 .cand .score + .icon { margin-left: 8px; }
 .cand.selected { background: var(--ink); color: var(--cream); border-color: var(--ink); }
@@ -821,9 +855,9 @@ button {
     justify-content: center;
     min-height: 60px;
     margin-top: 14px;
-    border: 2px dashed rgba(20, 16, 15, 0.35);
+    border: 2px dashed rgba(20, 16, 15, 0.45);
     background: transparent;
-    color: rgba(20, 16, 15, 0.75);
+    color: var(--ink);
     font-size: 17px;
 }
 
@@ -927,11 +961,6 @@ button {
     to { opacity: 1; transform: none; }
 }
 
-@keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.55; }
-}
-
 @media (hover: hover) {
     .icon-btn:hover { background: rgba(0, 0, 0, 0.12); }
     .pick:hover { background: #2A2320; }
@@ -941,6 +970,6 @@ button {
 @media (prefers-reduced-motion: reduce) {
     .screen.enter { animation: none; }
     .dots i { animation: none; }
-    .timer.urgent { animation: none; }
+    .timer-block { transition: none; }
     .card-face { transition: none; }
 }

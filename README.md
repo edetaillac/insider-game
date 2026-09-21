@@ -38,7 +38,7 @@ Une manche sur téléphone se déroule ainsi :
 
 1. Chacun ouvre l'adresse, tape son prénom, rejoint. Le premier arrivé est l'hôte et lance la partie quand tout le monde est là
 2. Chacun découvre son rôle en retournant sa carte, une barre de temps se vide en cinq secondes, puis confirme qu'il l'a vue. Le Maître du jeu est annoncé à tous, il choisit le mot ou en tire un au hasard
-3. Tout le monde retourne la même carte "Le mot" en même temps : le Maître et le Traître y lisent le mot, les Citoyens une phrase neutre. La carte se recache après cinq secondes pour tous, rien ne trahit qui a vraiment lu, tout le monde voit combien de joueurs ont regardé
+3. Tout le monde retourne la même carte "Le mot" en même temps : le Maître et le Traître y lisent le mot, les Citoyens une phrase neutre. La carte se recache après cinq secondes pour tous, rien ne trahit qui a vraiment lu. Chacun confirme ensuite qu'il a regardé, tout le monde voit la progression
 4. Le Maître ou l'hôte lance le chrono de cinq minutes. Questions fermées, réponses oui, non, je ne sais pas. Si le temps s'écoule, tout le monde perd
 5. Quand le mot est trouvé, le Maître désigne le trouveur. Discussion, puis premier vote : le trouveur est-il le Traître ? Majorité stricte, la partie s'arrête si elle est atteinte
 6. Sinon second vote : qui est le Traître ? Le plus pointé révèle son rôle, le trouveur départage une égalité. Avec la variante, on peut pointer "Pas de Traître"

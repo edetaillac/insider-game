@@ -17,10 +17,10 @@ import { createTable } from './table.js';
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 
 /**
- * @param {{ settings?: Partial<Settings>, words: readonly string[], now?: () => number }} options
+ * @param {{ settings?: Partial<Settings>, words: readonly string[], now?: () => number, shareUrl?: string|null }} options
  */
-export function createApp({ settings = {}, words, now }) {
-    const table = createTable({ settings, words, now });
+export function createApp({ settings = {}, words, now, shareUrl = null }) {
+    const table = createTable({ settings, words, now, shareUrl });
 
     const app = express();
     app.use(expressLayouts)

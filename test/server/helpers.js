@@ -3,8 +3,8 @@ import { io as connect } from 'socket.io-client';
 import { createApp } from '../../src/server/app.js';
 
 /** Démarre un serveur réel sur un port éphémère. */
-export async function startServer(settings = {}, { words = ['Château', 'Abeille', 'Piano'], now } = {}) {
-    const srv = createApp({ settings: { minPlayers: 4, traitorOptional: false, ...settings }, words, now });
+export async function startServer(settings = {}, { words = ['Château', 'Abeille', 'Piano'], now, shareUrl = null } = {}) {
+    const srv = createApp({ settings: { minPlayers: 4, traitorOptional: false, ...settings }, words, now, shareUrl });
     await new Promise((resolve) => srv.httpServer.listen(0, () => resolve(undefined)));
     const address = /** @type {import('node:net').AddressInfo} */ (srv.httpServer.address());
     const url = `http://127.0.0.1:${address.port}`;

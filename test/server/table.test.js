@@ -230,3 +230,23 @@ test('les commandes serveur restent accessibles à l\'acteur server', () => {
     assert.equal(r.ok, true);
     assert.equal(t.game.players.length, 2);
 });
+
+test('snapshot porte shareUrl, null par défaut', () => {
+    const { t } = table();
+    const [a] = joinAll(t, ['Alice']);
+    assert.equal(t.snapshot(a.playerId).shareUrl, null);
+    const clock = fakeClock();
+    const withUrl = createTable({ settings: { minPlayers: 2 }, words: ['x'], now: clock.now, random: () => 0.1, setTimer: clock.setTimer, clearTimer: clock.clearTimer, shareUrl: 'http://192.168.1.10:8080' });
+    const r = withUrl.join('Zoé');
+    assert.ok(r.ok);
+    assert.equal(withUrl.snapshot(r.playerId).shareUrl, 'http://192.168.1.10:8080');
+});
+
+test('seenRole et seenWord passent la validation client', () => {
+    const { t } = table();
+    const [a] = joinAll(t, ['Alice', 'Bob', 'Carol', 'Dan']);
+    t.dispatch(a.playerId, { type: 'startRound' });
+    assert.equal(t.dispatch(a.playerId, { type: 'seenRole', junk: 1 }).ok, true);
+    assert.deepEqual(t.game.phase.seen, { [a.playerId]: true });
+    assert.equal(t.dispatch(a.playerId, { type: 'seenWord' }).error, 'WRONG_PHASE');
+});

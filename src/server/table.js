@@ -14,7 +14,7 @@ import { view } from '../engine/view.js';
 /** @typedef {import('../engine/types.js').ErrorCode} ErrorCode */
 
 /** @typedef {{ type: 'state' } | { type: 'kicked', playerId: PlayerId }} TableEvent */
-/** @typedef {{ view: View, online: PlayerId[], serverTime: number, minPlayers: number }} Snapshot */
+/** @typedef {{ view: View, online: PlayerId[], serverTime: number, minPlayers: number, shareUrl: string|null }} Snapshot */
 /** @typedef {{ ok: true, token: string, playerId: PlayerId } | { ok: false, error: ErrorCode, message: string }} JoinResult */
 
 /**
@@ -33,7 +33,9 @@ const CLIENT_COMMANDS = Object.freeze({
     vote2: Object.freeze({ candidate: 'string' }),
     tiebreak: Object.freeze({ candidate: 'string' }),
     reset: Object.freeze({}),
-    kick: Object.freeze({ id: 'string' })
+    kick: Object.freeze({ id: 'string' }),
+    seenRole: Object.freeze({}),
+    seenWord: Object.freeze({})
 });
 
 /**
@@ -76,10 +78,11 @@ function validate(payload) {
  *   now?: () => number,
  *   random?: () => number,
  *   setTimer?: (fn: () => void, delay: number) => any,
- *   clearTimer?: (handle: any) => void
+ *   clearTimer?: (handle: any) => void,
+ *   shareUrl?: string|null
  * }} options
  */
-export function createTable({ settings = {}, words, now = Date.now, random = Math.random, setTimer = setTimeout, clearTimer = clearTimeout }) {
+export function createTable({ settings = {}, words, now = Date.now, random = Math.random, setTimer = setTimeout, clearTimer = clearTimeout, shareUrl = null }) {
     let game = createGame(settings);
     const deps = { rng: random, now, words };
     /** @type {Map<string, PlayerId>} */
@@ -261,7 +264,7 @@ export function createTable({ settings = {}, words, now = Date.now, random = Mat
      * @returns {Snapshot}
      */
     function snapshot(playerId) {
-        return { view: view(game, playerId), online: online(), serverTime: now(), minPlayers: game.settings.minPlayers };
+        return { view: view(game, playerId), online: online(), serverTime: now(), minPlayers: game.settings.minPlayers, shareUrl };
     }
 
     /** @param {(event: TableEvent) => void} listener */

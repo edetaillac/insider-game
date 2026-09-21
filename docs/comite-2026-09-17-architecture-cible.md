@@ -77,7 +77,9 @@ Trois questions à la fin : qu'as-tu raté, qu'as-tu cherché, qu'as-tu ignoré.
 ## Actions
 
 - [x] ADR des règles avant le premier test (fait le 17/09)
-- [ ] Versionner le smoke script comme test d'intégration
+- [x] Versionner le smoke script comme test d'intégration (remplacé par test/server/*.test.js, 4 scénarios, 17/09)
 - [x] Étape 1 : moteur pur `src/engine/` avec ses tests (17/09)
 - [x] Étapes 2 et 3 : `state` unique, `render(view)` vanilla, identité par token, adaptateur `src/server/` (17/09)
+- [x] Polish mobile et révélation du mot sans tell (ADR D6), 21/09
+- [ ] Passer `docs/checklist-mobile.md` sur iPhone et Android réels
 - [ ] Poser une date de partie quand c'est possible, go/no-go : deux parties avant fin décembre

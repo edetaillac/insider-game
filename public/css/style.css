@@ -691,7 +691,7 @@ button {
 }
 
 .dark-note { margin: 0; font-size: 13px; color: var(--muted); }
-.dark .gold { color: var(--yellow); font-weight: 600; }
+.dark .gold, .found-banner .gold { color: var(--yellow); font-weight: 600; }
 
 .found-banner {
     display: flex;

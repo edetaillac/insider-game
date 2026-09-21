@@ -58,7 +58,7 @@ Meta viewport `width=device-width, initial-scale=1, viewport-fit=cover`. Feuille
 
 État local d'interface tenu par `client.js`, remis à zéro à chaque changement de `view.phase` : `flipped` (carte retournée), `v1` (`true | false | null`, dernier bulletin envoyé), `v2` (candidat sélectionné avant confirmation), `finderPicking`, `kickConfirm` (id du joueur dont on demande le retrait). `local.v1` et `local.v2` sont initialisés depuis `view.me.ballot` au premier rendu de la phase (reload).
 
-Délégation : `data-cmd` + `data-args` envoient une commande serveur (inchangé). `data-ui="<action>"` + `data-arg` modifient l'état local puis re-rendent : `flip`, `pick-finder`, `cancel-finder`, `select-v1`, `select-v2`, `confirm-vote`, `kick-ask`, `kick-cancel`. `flip` sur la carte du mot envoie aussi `seenWord`.
+Délégation : `data-cmd` + `data-args` envoient une commande serveur (inchangé). `data-ui="<action>"` + `data-arg` modifient l'état local puis re-rendent : `flip`, `pick-finder`, `cancel-finder`, `select-v1`, `select-v2`, `confirm-vote`, `kick-ask`, `kick-cancel`. Correctif du 21/09 : `flip` n'envoie plus rien, l'accusé (`seenRole` ou `seenWord`) passe par un CTA du socle, inactif tant que la carte n'a jamais été retournée. Même règle dans les deux phases.
 
 Barre de temps des cartes : élément `.timebar` dans la face révélée, animation CSS `shrink 5s linear both` déclenchée par `[data-flipped]`, alignée sur `AUTOHIDE_MS = 5000`. `prefers-reduced-motion` coupe `breathe` et `rise`, garde `shrink`.
 

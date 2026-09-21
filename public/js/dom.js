@@ -13,7 +13,7 @@ export const ROLE_HINTS = Object.freeze({
 export const PHASE_BAR = Object.freeze({
     lobby: { label: 'Salon', rank: '' },
     roles: { label: 'Les rôles', rank: '1 / 6' },
-    rolesWord: { label: 'Le mot', rank: '2 / 6' },
+    rolesWord: { label: 'Choix du mot', rank: '2 / 6' },
     word: { label: 'Le mot', rank: '2 / 6' },
     playing: { label: 'Enquête', rank: '3 / 6' },
     discussion: { label: 'Discussion', rank: '4 / 6' },

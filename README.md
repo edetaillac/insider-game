@@ -78,4 +78,4 @@ Le moteur de jeu pur vit dans `src/engine/` (`createGame`, `apply`, `view`). `sr
 - Node 22, ESM
 - Express 5 (coquille et statiques)
 - Socket.io 4
-- Client vanilla, Bootstrap 4
+- Client vanilla ESM sans bundler, CSS maison (tokens du handoff design), polices Oswald et IBM Plex Sans auto-hébergées

@@ -164,12 +164,70 @@ function word(envelope, local) {
     };
 }
 
+function timerBlock(view, { small = false, urgentAble = true } = {}) {
+    if (!view.timer) {
+        return '';
+    }
+    return `<p class="timer${small ? ' timer-sm' : ''}" data-timer${urgentAble ? ' data-urgent-able' : ''}>--:--</p>`;
+}
+
+const RULE_WELL = '<div class="well well-lg"><p class="label">Règle du tour</p><p>Questions fermées uniquement. Le Maître ne répond que <strong>oui</strong>, <strong>non</strong> ou <strong>je ne sais pas</strong>. Si le temps s\'écoule, tout le monde perd.</p></div>';
+
+/* §8 Qui a trouvé (écran plein) */
+function finderScreen(view) {
+    const rows = view.players
+        .filter((p) => p.id !== view.master?.id)
+        .map((p) => `<button type="button" class="pick" data-cmd="wordFound" data-args='${e(JSON.stringify({ finderId: p.id }))}'>${avatar(p.name, 'avatar avatar-40 gold')}<span>${e(p.name)}</span>${svg('arrow')}</button>`)
+        .join('');
+    return {
+        content: `<h1 class="h2">Qui a trouvé ?</h1><p class="p">Le chrono continue pendant ton choix.</p><div class="rows mt-14">${rows}</div>`,
+        dock: uiButton('cancel-finder', 'Retour au chrono', '', 'btn btn-secondary')
+    };
+}
+
+/* §7 L'enquête */
+function playing(envelope, local) {
+    const { view } = envelope;
+    if (local.finderPicking && can(view, 'wordFound')) {
+        return finderScreen(view);
+    }
+    const isMaster = view.me.role === 'master';
+    const wordBlock = isMaster && view.word !== null
+        ? `<div class="dark"><p class="dark-label">Le mot à faire deviner</p><p class="dark-word">${e(view.word)}</p><p class="dark-note">Visible seulement par toi.</p></div>`
+        : '';
+    const dock = can(view, 'wordFound')
+        ? uiButton('pick-finder', 'Le mot a été trouvé', '', isMaster ? 'btn btn-accent' : 'btn btn-primary')
+        : `${note('Seul le Maître peut déclarer le mot trouvé.')}${disabledButton('Le mot a été trouvé')}`;
+    return {
+        content: `<div class="center">${timerBlock(view)}<p class="eyebrow" style="margin-top:8px">Temps restant</p></div>
+        <div class="timer-track"><div class="timer-fill"></div></div>
+        <div class="stack mt-20">${wordBlock}${RULE_WELL}</div>`,
+        dock
+    };
+}
+
+/* §9 Discussion */
+function discussion(envelope) {
+    const { view } = envelope;
+    const finder = view.finder?.name ?? '?';
+    const isMaster = view.me.role === 'master';
+    const wordSub = isMaster && view.word !== null ? `Le mot était <span class="gold">${e(view.word)}</span>` : 'Le mot a été trouvé';
+    const dock = can(view, 'closeDiscussion')
+        ? cmdButton('closeDiscussion', 'Passer au vote')
+        : `${note('Le Maître passe au vote quand vous êtes prêts.')}${disabledButton('Passer au vote')}`;
+    return {
+        content: `<div class="found-banner">${avatar(finder, 'avatar avatar-44 gold')}<div><p class="title">${e(finder)} a trouvé</p><p class="sub">${wordSub}</p></div></div>
+        <div class="well well-lg mt-14"><p class="label">Discussion, temps indicatif</p>${timerBlock(view, { small: true, urgentAble: false })}<p class="p" style="margin-top:10px">Reprenez le fil des questions. Qui savait déjà ? Qui a orienté ? Le Maître passe au vote quand vous êtes prêts.</p></div>`,
+        dock
+    };
+}
+
 const SCREENS = {
     lobby,
     roles,
     word,
-    playing: fallback,
-    discussion: fallback,
+    playing,
+    discussion,
     vote1: fallback,
     vote2: fallback,
     tiebreak: fallback,

@@ -28,6 +28,7 @@ Variables d'environnement :
 - `TRAITOR_OPTIONAL` : variante "il n'y a pas de Traître" (`true`, mettre `false` pour la désactiver)
 - `TIMER_MS` : durée du sablier en millisecondes (300000)
 - `WORDS_FILE` : liste de mots, un par ligne (`words/famille.csv`)
+- `PUBLIC_URL` : adresse affichée au salon pour rejoindre (défaut : l'adresse ouverte par le navigateur)
 
 L'état de la partie et les identités sont en mémoire : un redémarrage du serveur renvoie tout le monde à l'écran d'accueil.
 
@@ -36,8 +37,8 @@ L'état de la partie et les identités sont en mémoire : un redémarrage du ser
 Une manche sur téléphone se déroule ainsi :
 
 1. Chacun ouvre l'adresse, tape son prénom, rejoint. Le premier arrivé est l'hôte et lance la partie quand tout le monde est là
-2. Chacun découvre son rôle en retournant sa carte, qui se recache seule. Le Maître du jeu est annoncé à tous, il choisit le mot ou en tire un au hasard
-3. Tout le monde retourne la même carte "Le mot" en même temps : le Maître et le Traître y lisent le mot, les Citoyens une phrase neutre. La carte se recache après cinq secondes pour tous, rien ne trahit qui a vraiment lu
+2. Chacun découvre son rôle en retournant sa carte, une barre de temps se vide en cinq secondes, puis confirme qu'il l'a vue. Le Maître du jeu est annoncé à tous, il choisit le mot ou en tire un au hasard
+3. Tout le monde retourne la même carte "Le mot" en même temps : le Maître et le Traître y lisent le mot, les Citoyens une phrase neutre. La carte se recache après cinq secondes pour tous, rien ne trahit qui a vraiment lu, l'hôte voit combien de joueurs ont regardé
 4. Le Maître ou l'hôte lance le chrono de cinq minutes. Questions fermées, réponses oui, non, je ne sais pas. Si le temps s'écoule, tout le monde perd
 5. Quand le mot est trouvé, le Maître désigne le trouveur. Discussion, puis premier vote : le trouveur est-il le Traître ? Majorité stricte, la partie s'arrête si elle est atteinte
 6. Sinon second vote : qui est le Traître ? Le plus pointé révèle son rôle, le trouveur départage une égalité. Avec la variante, on peut pointer "Pas de Traître"
@@ -46,7 +47,7 @@ Règles détaillées et décisions de gameplay : `docs/adr/0001-regles-du-jeu.md
 
 ## Développement
 
-Le moteur de jeu pur vit dans `src/engine/` (`createGame`, `apply`, `view`). `src/server/` l'adapte au transport socket.io, `public/js/` est le client sans framework. Un seul événement `state` porte tout ce qu'un joueur a le droit de voir.
+Le moteur de jeu pur vit dans `src/engine/` (`createGame`, `apply`, `view`). `src/server/` l'adapte au transport socket.io, `public/js/` est le client sans framework. Un seul événement `state` porte tout ce qu'un joueur a le droit de voir. Le design est celui du handoff `docs/design/handoff-2026-09-21/`, la spec des écarts est `docs/specs/2026-09-21-refonte-mobile-design.md`.
 
 - Règles implémentées : `docs/adr/0001-regles-du-jeu.md`
 - Conception du moteur : `docs/specs/2026-09-17-moteur-de-jeu-design.md`

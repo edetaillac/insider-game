@@ -13,6 +13,8 @@ contexte: Vérifications manuelles sur téléphones réels avant une partie, ce 
 - [ ] Verrouiller puis déverrouiller le téléphone revient au bon écran, le chrono est juste
 - [ ] Deux onglets du même téléphone comptent pour un seul joueur en ligne
 - [ ] Couper le réseau 10 secondes affiche le bandeau "Reconnexion...", le rétablir rattrape l'état
+- [ ] La barre de temps de la carte se vide bien en 5 s et la carte se recache au même moment
+- [ ] Le socle d'action reste visible au-dessus de la barre home (safe area)
 
 Résultats, date et appareils :
 

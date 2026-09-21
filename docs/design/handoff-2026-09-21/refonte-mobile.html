@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+body { margin:0; background:#12100F; }
+a { color:#FFC107; } a:hover { color:#ffd454; }
+@keyframes shrink { from { transform:scaleX(1) } to { transform:scaleX(0) } }
+@keyframes breathe { 0%,100% { opacity:1 } 50% { opacity:.45 } }
+@keyframes rise { from { opacity:0; transform:translateY(8px) } to { opacity:1; transform:none } }
+</style>
+</helmet>
+
+<div style="font-family:'IBM Plex Sans',system-ui,sans-serif;min-height:100vh;background:#12100F;display:flex;flex-direction:column;align-items:center;gap:20px;padding:28px 20px 48px;box-sizing:border-box">
+
+  <div style="width:100%;max-width:520px;display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+      <div style="font-family:Oswald,sans-serif;font-weight:600;font-size:20px;letter-spacing:.14em;text-transform:uppercase;color:#FFF7EF">Insider · refonte mobile</div>
+      <div style="font-size:13px;color:#8C8179">prototype cliquable — 390 × 844</div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <button type="button" onClick="{{ prev }}" style="min-height:40px;padding:0 16px;border-radius:8px;border:1px solid #3A322E;background:#1C1917;color:#FFF7EF;font-family:inherit;font-size:14px;cursor:pointer" style-hover="border-color:#6A5D55">← Précédent</button>
+      <button type="button" onClick="{{ next }}" style="min-height:40px;padding:0 16px;border-radius:8px;border:1px solid #3A322E;background:#1C1917;color:#FFF7EF;font-family:inherit;font-size:14px;cursor:pointer" style-hover="border-color:#6A5D55">Suivant →</button>
+      <div style="font-size:13px;color:#8C8179;padding-left:6px">{{ stepLabel }}</div>
+      <div style="flex:1"></div>
+      <button type="button" onClick="{{ toggleRole }}" style="min-height:40px;padding:0 16px;border-radius:8px;border:1px solid #3A322E;background:#1C1917;color:#FFC107;font-family:inherit;font-size:14px;cursor:pointer" style-hover="border-color:#FFC107">Vue : {{ roleLabel }}</button>
+    </div>
+  </div>
+
+  <div style="width:390px;height:844px;border-radius:30px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.6);background:#DE3C31;display:flex;flex-direction:column;position:relative;flex:none">
+
+    <div style="flex:none;background:#DE3C31;position:relative;display:flex;flex-direction:column;align-items:center;gap:9px;padding:16px 16px 16px">
+      <img src="assets/frise.jpg" alt="" style="display:block;height:34px" />
+      <img src="assets/title.jpg" alt="Insider" style="display:block;height:20px" />
+      <button type="button" onClick="{{ next }}" style="position:absolute;top:50%;right:16px;transform:translateY(-50%);width:44px;height:44px;border-radius:12px;border:0;background:rgba(0,0,0,.14);color:#14100F;font-family:'IBM Plex Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer">{{ playerCount }}</button>
+    </div>
+
+    <sc-if value="{{ showPhaseBar }}" hint-placeholder-val="{{ true }}">
+      <div style="flex:none;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 16px;background:#14100F">
+        <div style="font-family:Oswald,sans-serif;font-size:13px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:#FFC107">{{ phaseName }}</div>
+        <div style="font-size:12px;letter-spacing:.06em;color:#9A8F86;font-variant-numeric:tabular-nums">{{ phaseIndex }}</div>
+      </div>
+    </sc-if>
+
+    <div style="flex:1;overflow-y:auto;padding:20px 20px 8px;color:#14100F">
+
+      <sc-if value="{{ isJoin }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:rise .25s ease both">
+          <h1 style="font-family:Oswald,sans-serif;font-size:38px;font-weight:600;line-height:1.05;margin:24px 0 8px;text-transform:uppercase;letter-spacing:.01em;color:#14100F">Qui es-tu&nbsp;?</h1>
+          <p style="font-size:16px;line-height:1.5;margin:0 0 24px;color:rgba(20,16,15,.72);max-width:30ch">Ton prénom s'affiche pour les autres joueurs pendant toute la manche.</p>
+          <label style="display:block;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(20,16,15,.6);margin-bottom:8px">Prénom</label>
+          <input type="text" value="Manu" style="width:100%;box-sizing:border-box;min-height:60px;padding:0 18px;font-size:20px;font-family:inherit;font-weight:600;border:0;border-radius:14px;background:#FFF7EF;color:#14100F" />
+          <div style="display:flex;align-items:center;gap:10px;margin-top:20px;padding:14px 16px;border-radius:14px;background:rgba(0,0,0,.12)">
+            <div style="font-size:13px;line-height:1.45;color:rgba(20,16,15,.8)">Le premier arrivé devient <strong>hôte</strong> : il lance la partie et gère la table.</div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isLobby }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:rise .25s ease both">
+          <h1 style="font-family:Oswald,sans-serif;font-size:32px;font-weight:600;line-height:1.05;margin:4px 0 4px;text-transform:uppercase;color:#14100F">Salon</h1>
+          <p style="font-size:15px;margin:0 0 18px;color:rgba(20,16,15,.72)">5 joueurs à table · 4 minimum pour lancer</p>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <sc-for list="{{ players }}" as="p" hint-placeholder-count="5">
+              <div style="display:flex;align-items:center;gap:12px;min-height:60px;padding:0 12px 0 10px;border-radius:14px;background:rgba(0,0,0,.12)">
+                <div style="flex:none;width:40px;height:40px;border-radius:50%;background:#14100F;color:#FFC107;display:flex;align-items:center;justify-content:center;font-family:Oswald,sans-serif;font-size:17px;font-weight:600">{{ p.initial }}</div>
+                <div style="flex:1;min-width:0">
+                  <div style="font-size:18px;font-weight:600;line-height:1.2;color:#14100F">{{ p.name }}</div>
+                  <div style="font-size:12px;color:{{ p.stateColor }};font-weight:600;letter-spacing:.04em">{{ p.stateLabel }}</div>
+                </div>
+                <sc-if value="{{ p.isHost }}" hint-placeholder-val="{{ false }}">
+                  <div style="flex:none;font-family:Oswald,sans-serif;font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#14100F;border:1.5px solid rgba(20,16,15,.5);border-radius:6px;padding:3px 7px">Hôte</div>
+                </sc-if>
+                <sc-if value="{{ p.removable }}" hint-placeholder-val="{{ false }}">
+                  <button type="button" style="flex:none;width:44px;height:44px;border:0;border-radius:12px;background:transparent;color:rgba(20,16,15,.5);font-size:20px;line-height:1;cursor:pointer;font-family:inherit" style-hover="background:rgba(0,0,0,.12);color:#14100F">✕</button>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+          <div style="margin-top:18px;padding:14px 16px;border-radius:14px;background:rgba(0,0,0,.12);font-size:13px;line-height:1.5;color:rgba(20,16,15,.8)">
+            Partage l'adresse affichée sur ton écran d'accueil pour qu'un joueur rejoigne. On peut encore entrer jusqu'au lancement.
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isRole }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:rise .25s ease both;display:flex;flex-direction:column;align-items:center">
+          <p style="font-size:15px;margin:2px 0 14px;color:rgba(20,16,15,.72);text-align:center">Personne d'autre ne voit ta carte.</p>
+          <button type="button" onClick="{{ flip }}" style="width:100%;border:0;padding:0;background:transparent;cursor:pointer;font-family:inherit">
+            <sc-if value="{{ roleHidden }}" hint-placeholder-val="{{ true }}">
+              <div style="height:250px;border-radius:22px;background:#14100F;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;box-shadow:0 14px 34px rgba(0,0,0,.32)">
+                <div style="width:56px;height:56px;border-radius:50%;border:3px solid #FFC107;display:flex;align-items:center;justify-content:center"><div style="width:20px;height:20px;border-radius:50%;background:#FFC107"></div></div>
+                <div style="font-family:Oswald,sans-serif;font-size:24px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#FFF7EF">Ton rôle</div>
+                <div style="font-size:14px;color:#9A8F86">Touche pour révéler</div>
+              </div>
+            </sc-if>
+            <sc-if value="{{ roleShown }}" hint-placeholder-val="{{ false }}">
+              <div style="height:250px;border-radius:22px;background:#FFC107;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;box-shadow:0 14px 34px rgba(0,0,0,.32);position:relative;overflow:hidden">
+                <div style="font-size:13px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:rgba(20,16,15,.6)">Tu es</div>
+                <div style="font-family:Oswald,sans-serif;font-size:42px;font-weight:600;line-height:1;text-transform:uppercase;color:#14100F;text-align:center;padding:0 16px">{{ roleName }}</div>
+                <div style="font-size:14px;line-height:1.4;color:rgba(20,16,15,.75);text-align:center;padding:0 28px;max-width:32ch">{{ roleHint }}</div>
+                <div style="position:absolute;left:0;right:0;bottom:0;height:5px;background:#14100F;transform-origin:left;animation:shrink 5s linear both"></div>
+              </div>
+            </sc-if>
+          </button>
+          <div style="width:100%;margin-top:18px;padding:14px 16px;border-radius:14px;background:rgba(0,0,0,.12);box-sizing:border-box">
+            <div style="font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:rgba(20,16,15,.6);margin-bottom:10px">3 sur 5 ont vu leur carte</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <sc-for list="{{ players }}" as="p" hint-placeholder-count="5">
+                <div style="width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:Oswald,sans-serif;font-size:15px;font-weight:600;background:{{ p.seenBg }};color:{{ p.seenFg }}">{{ p.initial }}</div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isWordChoice }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:rise .25s ease both">
+          <sc-if value="{{ isMaster }}" hint-placeholder-val="{{ true }}">
+            <div>
+              <div style="display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border-radius:999px;background:#14100F;color:#FFC107;font-family:Oswald,sans-serif;font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;margin-bottom:14px">Tu mènes la manche</div>
+              <h1 style="font-family:Oswald,sans-serif;font-size:32px;font-weight:600;line-height:1.05;margin:0 0 8px;text-transform:uppercase;color:#14100F">Choisis le mot</h1>
+              <p style="font-size:15px;line-height:1.5;margin:0 0 20px;color:rgba(20,16,15,.72);max-width:32ch">Un nom commun que les autres peuvent deviner par questions fermées.</p>
+              <input type="text" value="" placeholder="Mot à faire deviner" style="width:100%;box-sizing:border-box;min-height:60px;padding:0 18px;font-size:20px;font-family:inherit;font-weight:600;border:0;border-radius:14px;background:#FFF7EF;color:#14100F" />
+              <div style="display:flex;align-items:center;gap:12px;margin:18px 0 0">
+                <div style="flex:1;height:1px;background:rgba(20,16,15,.22)"></div>
+                <div style="font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:rgba(20,16,15,.6)">ou</div>
+                <div style="flex:1;height:1px;background:rgba(20,16,15,.22)"></div>
+              </div>
+              <button type="button" style="width:100%;min-height:56px;margin-top:18px;border-radius:14px;border:2px solid #14100F;background:transparent;color:#14100F;font-family:inherit;font-size:17px;font-weight:600;cursor:pointer" style-hover="background:rgba(0,0,0,.1)">Tirer un mot au hasard</button>
+            </div>
+          </sc-if>
+          <sc-if value="{{ isCommon }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;align-items:center;text-align:center;padding-top:40px">
+              <div style="display:flex;gap:7px;margin-bottom:22px">
+                <div style="width:11px;height:11px;border-radius:50%;background:#14100F;animation:breathe 1.4s ease-in-out infinite"></div>
+                <div style="width:11px;height:11px;border-radius:50%;background:#14100F;animation:breathe 1.4s ease-in-out .2s infinite"></div>
+                <div style="width:11px;height:11px;border-radius:50%;background:#14100F;animation:breathe 1.4s ease-in-out .4s infinite"></div>
+              </div>
+              <h1 style="font-family:Oswald,sans-serif;font-size:28px;font-weight:600;line-height:1.1;margin:0 0 10px;text-transform:uppercase;color:#14100F">Manu choisit le mot</h1>
+              <p style="font-size:16px;line-height:1.5;margin:0;color:rgba(20,16,15,.72);max-width:28ch">Rien à faire pour l'instant. Pose ton téléphone.</p>
+              <div style="margin-top:28px;padding:16px 18px;border-radius:16px;background:rgba(0,0,0,.12);text-align:left;max-width:300px">
+                <div style="font-family:Oswald,sans-serif;font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:rgba(20,16,15,.6);margin-bottom:8px">Ton rôle</div>
+                <div style="font-family:Oswald,sans-serif;font-size:26px;font-weight:600;text-transform:uppercase;color:#14100F;line-height:1">Citoyen</div>
+                <div style="font-size:14px;line-height:1.45;color:rgba(20,16,15,.75);margin-top:6px">Tu ne connaîtras pas le mot. Trouve-le, et démasque le Traître.</div>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isWordRitual }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:rise .25s ease both;display:flex;flex-direction:column;align-items:center">
+          <p style="font-size:15px;line-height:1.5;margin:2px 0 14px;color:rgba(20,16,15,.75);text-align:center;max-width:32ch">Tout le monde retourne la même carte, en même temps. Rien ne trahit qui lit vraiment.</p>
+          <button type="button" onClick="{{ flip }}" style="width:100%;border:0;padding:0;background:transparent;cursor:pointer;font-family:inherit">
+            <sc-if value="{{ roleHidden }}" hint-placeholder-val="{{ true }}">
+              <div style="height:250px;border-radius:22px;background:#14100F;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;box-shadow:0 14px 34px rgba(0,0,0,.32)">
+                <div style="width:56px;height:56px;border-radius:50%;border:3px solid #FFC107;display:flex;align-items:center;justify-content:center"><div style="width:20px;height:20px;border-radius:50%;background:#FFC107"></div></div>
+                <div style="font-family:Oswald,sans-serif;font-size:24px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#FFF7EF">Le mot</div>
+                <div style="font-size:14px;color:#9A8F86">Touche pour révéler</div>
+              </div>
+            </sc-if>
+            <sc-if value="{{ roleShown }}" hint-placeholder-val="{{ false }}">
+              <div style="height:250px;border-radius:22px;background:#FFC107;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;box-shadow:0 14px 34px rgba(0,0,0,.32);position:relative;overflow:hidden;padding:0 24px;box-sizing:border-box">
+                <div style="font-family:Oswald,sans-serif;font-size:{{ wordSize }};font-weight:600;line-height:1.1;text-transform:uppercase;color:#14100F;text-align:center">{{ wordText }}</div>
+                <div style="font-size:14px;line-height:1.4;color:rgba(20,16,15,.75);text-align:center;max-width:32ch">{{ wordSub }}</div>
+                <div style="position:absolute;left:0;right:0;bottom:0;height:5px;background:#14100F;transform-origin:left;animation:shrink 5s linear both"></div>
+              </div>
+            </sc-if>
+          </button>
+          <div style="width:100%;margin-top:18px;padding:14px 16px;border-radius:14px;background:rgba(0,0,0,.12);box-sizing:border-box">
+            <div style="font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:rgba(20,16,15,.6);margin-bottom:10px">4 sur 5 ont regardé</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <sc-for list="{{ players }}" as="p" hint-placeholder-count="5">
+                <div style="width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:Oswald,sans-serif;font-size:15px;font-weight:600;background:{{ p.seen2Bg }};color:{{ p.seen2Fg }}">{{ p.initial }}</div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isPlaying }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:rise .25s ease both">
+          <div style="text-align:center;padding:14px 0 2px">
+            <div style="font-family:Oswald,sans-serif;font-size:88px;font-weight:600;line-height:.9;letter-spacing:-.01em;font-variant-numeric:tabular-nums;color:#14100F">4:56</div>
+            <div style="font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:rgba(20,16,15,.6);margin-top:8px">Temps restant</div>
+          </div>
+          <div style="height:6px;border-radius:3px;background:rgba(0,0,0,.16);margin:16px 0 20px;overflow:hidden">
+            <div style="height:100%;width:98%;background:#14100F;border-radius:3px"></div>
+          </div>
+          <sc-if value="{{ isMaster }}" hint-placeholder-val="{{ true }}">
+            <div style="padding:16px 18px;border-radius:16px;background:#14100F;margin-bottom:14px">
+              <div style="font-family:Oswald,sans-serif;font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#9A8F86;margin-bottom:6px">Le mot à faire deviner</div>
+              <div style="font-family:Oswald,sans-serif;font-size:34px;font-weight:600;line-height:1;text-transform:uppercase;color:#FFC107">Marmotte</div>
+              <div style="font-size:13px;color:#9A8F86;margin-top:8px">Visible seulement par toi et le Traître.</div>
+            </div>
+          </sc-if>
+          <div style="padding:16px 18px;border-radius:16px;background:rgba(0,0,0,.12)">
+            <div style="font-family:Oswald,sans-serif;font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:rgba(20,16,15,.6);margin-bottom:10px">Règle du tour</div>
+            <div style="font-size:15px;line-height:1.55;color:rgba(20,16,15,.85)">Questions fermées uniquement. Le Maître ne répond que <strong>oui</strong>, <strong>non</strong> ou <strong>je ne sais pas</strong>. Si le temps s'écoule, tout le monde perd.</div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isFinder }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:rise .25s ease both">
+          <h1 style="font-family:Oswald,sans-serif;font-size:30px;font-weight:600;line-height:1.05;margin:4px 0 6px;text-transform:uppercase;color:#14100F">Qui a trouvé&nbsp;?</h1>
+          <p style="font-size:15px;margin:0 0 18px;color:rgba(20,16,15,.72)">Le chrono est en pause pendant ton choix.</p>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <sc-for list="{{ others }}" as="p" hint-placeholder-count="4">
+              <button type="button" style="display:flex;align-items:center;gap:12px;width:100%;min-height:64px;padding:0 14px 0 10px;border:0;border-radius:14px;background:#14100F;color:#FFF7EF;font-family:inherit;text-align:left;cursor:pointer" style-hover="background:#2A2320">
+                <div style="flex:none;width:40px;height:40px;border-radius:50%;background:#FFC107;color:#14100F;display:flex;align-items:center;justify-content:center;font-family:Oswald,sans-serif;font-size:17px;font-weight:600">{{ p.initial }}</div>
+                <div style="flex:1;font-size:19px;font-weight:600">{{ p.name }}</div>
+                <div style="flex:none;color:#9A8F86;font-size:18px">→</div>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isDiscussion }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:rise .25s ease both">
+          <div style="display:flex;align-items:center;gap:12px;padding:14px;border-radius:16px;background:#14100F;margin:2px 0 18px">
+            <div style="flex:none;width:44px;height:44px;border-radius:50%;background:#FFC107;color:#14100F;display:flex;align-items:center;justify-content:center;font-family:Oswald,sans-serif;font-size:19px;font-weight:600">V</div>
+            <div>
+              <div style="font-family:Oswald,sans-serif;font-size:22px;font-weight:600;text-transform:uppercase;color:#FFF7EF;line-height:1.1">Virgile a trouvé</div>
+              <div style="font-size:13px;color:#9A8F86;margin-top:2px">Le mot était <span style="color:#FFC107;font-weight:600">Marmotte</span></div>
+            </div>
+          </div>
+          <div style="padding:18px;border-radius:16px;background:rgba(0,0,0,.12)">
+            <div style="font-family:Oswald,sans-serif;font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:rgba(20,16,15,.6);margin-bottom:8px">Discussion — temps indicatif</div>
+            <div style="font-family:Oswald,sans-serif;font-size:52px;font-weight:600;line-height:1;font-variant-numeric:tabular-nums;color:#14100F">2:14</div>
+            <div style="font-size:15px;line-height:1.55;color:rgba(20,16,15,.85);margin-top:12px">Reprenez le fil des questions. Qui savait déjà&nbsp;? Qui a orienté&nbsp;? Le Maître passe au vote quand vous êtes prêts.</div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isVote1 }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:rise .25s ease both">
+          <div style="font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:rgba(20,16,15,.6);margin:6px 0 8px">Vote 1 sur 2</div>
+          <h1 style="font-family:Oswald,sans-serif;font-size:34px;font-weight:600;line-height:1.05;margin:0 0 6px;text-transform:uppercase;color:#14100F">Virgile est-il<br />le Traître&nbsp;?</h1>
+          <p style="font-size:15px;line-height:1.5;margin:0 0 22px;color:rgba(20,16,15,.72);max-width:32ch">Majorité stricte. Si elle est atteinte, la manche s'arrête immédiatement.</p>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <button type="button" onClick="{{ pickYes }}" style="display:flex;align-items:center;justify-content:space-between;width:100%;min-height:76px;padding:0 20px;border-radius:16px;border:0;background:{{ yesBg }};color:{{ yesFg }};font-family:Oswald,sans-serif;font-size:26px;font-weight:600;text-transform:uppercase;cursor:pointer">
+              <span>Oui, c'est lui</span><span style="font-size:20px">{{ yesMark }}</span>
+            </button>
+            <button type="button" onClick="{{ pickNo }}" style="display:flex;align-items:center;justify-content:space-between;width:100%;min-height:76px;padding:0 20px;border-radius:16px;border:0;background:{{ noBg }};color:{{ noFg }};font-family:Oswald,sans-serif;font-size:26px;font-weight:600;text-transform:uppercase;cursor:pointer">
+              <span>Non</span><span style="font-size:20px">{{ noMark }}</span>
+            </button>
+          </div>
+          <div style="margin-top:20px;padding:14px 16px;border-radius:14px;background:rgba(0,0,0,.12)">
+            <div style="font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:rgba(20,16,15,.6);margin-bottom:10px">{{ voteProgress }}</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <sc-for list="{{ players }}" as="p" hint-placeholder-count="5">
+                <div style="width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:Oswald,sans-serif;font-size:15px;font-weight:600;background:{{ p.votedBg }};color:{{ p.votedFg }}">{{ p.initial }}</div>
+              </sc-for>
+            </div>
+            <div style="font-size:13px;line-height:1.45;color:rgba(20,16,15,.7);margin-top:10px">Ton vote reste modifiable tant que tout le monde n'a pas voté.</div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isVote2 }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:rise .25s ease both">
+          <div style="font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:rgba(20,16,15,.6);margin:6px 0 8px">Vote 2 sur 2</div>
+          <h1 style="font-family:Oswald,sans-serif;font-size:34px;font-weight:600;line-height:1.05;margin:0 0 6px;text-transform:uppercase;color:#14100F">Qui est le Traître&nbsp;?</h1>
+          <p style="font-size:15px;margin:0 0 18px;color:rgba(20,16,15,.72)">Le plus pointé révèle son rôle.</p>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <sc-for list="{{ candidates }}" as="c" hint-placeholder-count="5">
+              <button type="button" onClick="{{ c.pick }}" style="display:flex;align-items:center;gap:12px;width:100%;min-height:64px;padding:0 14px 0 10px;border:2px solid {{ c.border }};border-radius:14px;background:{{ c.bg }};color:{{ c.fg }};font-family:inherit;text-align:left;cursor:pointer">
+                <div style="flex:none;width:40px;height:40px;border-radius:50%;background:{{ c.avaBg }};color:{{ c.avaFg }};display:flex;align-items:center;justify-content:center;font-family:Oswald,sans-serif;font-size:17px;font-weight:600">{{ c.initial }}</div>
+                <div style="flex:1;font-size:19px;font-weight:600">{{ c.name }}</div>
+                <div style="flex:none;font-size:18px">{{ c.mark }}</div>
+              </button>
+            </sc-for>
+          </div>
+          <button type="button" onClick="{{ pickCenter }}" style="width:100%;min-height:60px;margin-top:14px;border-radius:14px;border:2px dashed {{ centerBorder }};background:{{ centerBg }};color:{{ centerFg }};font-family:inherit;font-size:17px;font-weight:600;cursor:pointer">Personne — il n'y a pas de Traître</button>
+          <div style="margin-top:18px;padding:14px 16px;border-radius:14px;background:rgba(0,0,0,.12)">
+            <div style="font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:rgba(20,16,15,.6);margin-bottom:10px">{{ voteProgress2 }}</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <sc-for list="{{ players }}" as="p" hint-placeholder-count="5">
+                <div style="width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:Oswald,sans-serif;font-size:15px;font-weight:600;background:{{ p.voted2Bg }};color:{{ p.voted2Fg }}">{{ p.initial }}</div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isEnded }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:rise .25s ease both">
+          <div style="font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:rgba(20,16,15,.6);margin:6px 0 6px">Fin de la manche</div>
+          <h1 style="font-family:Oswald,sans-serif;font-size:42px;font-weight:600;line-height:1;margin:0 0 18px;text-transform:uppercase;color:#14100F">Les Citoyens<br />gagnent</h1>
+          <div style="display:flex;align-items:center;gap:14px;padding:16px;border-radius:18px;background:#14100F">
+            <div style="flex:none;width:52px;height:52px;border-radius:50%;background:#FFC107;color:#14100F;display:flex;align-items:center;justify-content:center;font-family:Oswald,sans-serif;font-size:22px;font-weight:600">L</div>
+            <div>
+              <div style="font-family:Oswald,sans-serif;font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#9A8F86">Le Traître était</div>
+              <div style="font-family:Oswald,sans-serif;font-size:28px;font-weight:600;line-height:1.1;text-transform:uppercase;color:#FFF7EF">Laurent</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:baseline;gap:10px;margin:14px 0 4px;padding:14px 16px;border-radius:14px;background:rgba(0,0,0,.12)">
+            <div style="font-size:13px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(20,16,15,.6)">Le mot</div>
+            <div style="font-family:Oswald,sans-serif;font-size:26px;font-weight:600;text-transform:uppercase;color:#14100F">Marmotte</div>
+          </div>
+          <div style="margin-top:14px">
+            <div style="font-size:13px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(20,16,15,.6);margin-bottom:10px">Les votes</div>
+            <div style="display:flex;flex-direction:column;gap:9px">
+              <sc-for list="{{ tallies }}" as="t" hint-placeholder-count="3">
+                <div>
+                  <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:600;color:#14100F;margin-bottom:5px"><span>{{ t.name }}</span><span style="font-variant-numeric:tabular-nums">{{ t.n }}</span></div>
+                  <div style="height:10px;border-radius:5px;background:rgba(0,0,0,.14);overflow:hidden"><div style="height:100%;width:{{ t.pct }};background:{{ t.color }};border-radius:5px"></div></div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+    </div>
+
+    <sc-if value="{{ hasDock }}" hint-placeholder-val="{{ true }}">
+      <div style="flex:none;padding:12px 20px 26px;background:linear-gradient(to top, #DE3C31 62%, rgba(222,60,49,0));display:flex;flex-direction:column;gap:9px">
+        <sc-if value="{{ dockNote }}" hint-placeholder-val="{{ false }}">
+          <div style="text-align:center;font-size:13px;line-height:1.4;color:rgba(20,16,15,.75)">{{ dockNoteText }}</div>
+        </sc-if>
+        <button type="button" onClick="{{ next }}" style="width:100%;min-height:60px;border:0;border-radius:16px;background:{{ ctaBg }};color:{{ ctaFg }};font-family:Oswald,sans-serif;font-size:19px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.2)">{{ ctaLabel }}</button>
+        <sc-if value="{{ hasSecondary }}" hint-placeholder-val="{{ false }}">
+          <button type="button" style="width:100%;min-height:50px;border:0;border-radius:14px;background:transparent;color:rgba(20,16,15,.8);font-family:inherit;font-size:16px;font-weight:600;cursor:pointer" style-hover="background:rgba(0,0,0,.1)">{{ secondaryLabel }}</button>
+        </sc-if>
+      </div>
+    </sc-if>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:460,&quot;height&quot;:1020}}">
+const STEPS = [
+  { id: 'join',       phase: 'Accueil',      idx: '' },
+  { id: 'lobby',      phase: 'Salon',        idx: '' },
+  { id: 'role',       phase: 'Les rôles',    idx: '1 / 6' },
+  { id: 'wordChoice', phase: 'Le mot',       idx: '2 / 6' },
+  { id: 'wordRitual', phase: 'Le mot',       idx: '2 / 6' },
+  { id: 'playing',    phase: 'Enquête',      idx: '3 / 6' },
+  { id: 'finder',     phase: 'Enquête',      idx: '3 / 6' },
+  { id: 'discussion', phase: 'Discussion',   idx: '4 / 6' },
+  { id: 'vote1',      phase: 'Premier vote', idx: '5 / 6' },
+  { id: 'vote2',      phase: 'Second vote',  idx: '6 / 6' },
+  { id: 'ended',      phase: 'Résultat',     idx: '' }
+];
+
+const NAMES = ['Manu', 'Hélène', 'Virgile', 'Laurent', 'Fanny'];
+const DARK = '#14100F';
+const CREAM = '#FFF7EF';
+const GHOST = 'rgba(0,0,0,.18)';
+const DIM = 'rgba(20,16,15,.45)';
+
+class Component extends DCLogic {
+  state = { i: 0, master: true, flipped: false, v1: null, v2: null };
+
+  go = (d) => this.setState((s) => {
+    const i = Math.min(STEPS.length - 1, Math.max(0, s.i + d));
+    return { i, flipped: false };
+  });
+
+  renderVals() {
+    const s = this.state;
+    const step = STEPS[s.i];
+    const id = step.id;
+    const isMaster = s.master;
+
+    const seenCount = { role: 3, word: 4 };
+    const players = NAMES.map((name, k) => ({
+      name,
+      initial: name[0],
+      isHost: k === 0,
+      removable: k > 0,
+      stateLabel: k === 3 ? 'Hors ligne' : (k === 0 ? 'Toi' : 'En ligne'),
+      stateColor: k === 3 ? 'rgba(20,16,15,.5)' : 'rgba(20,16,15,.65)',
+      seenBg: k < seenCount.role ? DARK : GHOST,
+      seenFg: k < seenCount.role ? '#FFC107' : DIM,
+      seen2Bg: k < seenCount.word ? DARK : GHOST,
+      seen2Fg: k < seenCount.word ? '#FFC107' : DIM,
+      votedBg: (k < 2 || (k === 0 && s.v1)) ? DARK : GHOST,
+      votedFg: (k < 2 || (k === 0 && s.v1)) ? '#FFC107' : DIM,
+      voted2Bg: (k < 1 || (k === 0 && s.v2)) ? DARK : GHOST,
+      voted2Fg: (k < 1 || (k === 0 && s.v2)) ? '#FFC107' : DIM
+    }));
+
+    const candidates = NAMES.map((name) => {
+      const on = s.v2 === name;
+      return {
+        name, initial: name[0],
+        pick: () => this.setState({ v2: name }),
+        bg: on ? DARK : 'rgba(0,0,0,.12)',
+        fg: on ? CREAM : DARK,
+        border: on ? DARK : 'transparent',
+        avaBg: on ? '#FFC107' : 'rgba(0,0,0,.18)',
+        avaFg: on ? DARK : 'rgba(20,16,15,.6)',
+        mark: on ? '✓' : ''
+      };
+    });
+
+    const centerOn = s.v2 === 'center';
+    const v1Voted = s.v1 !== null;
+    const v2Voted = s.v2 !== null;
+
+    const cta = {
+      join:       { label: 'Rejoindre la table',   bg: DARK, fg: CREAM },
+      lobby:      { label: 'Lancer la partie',     bg: DARK, fg: CREAM, note: 'Tu es hôte : les autres attendent ton signal.' },
+      role:       { label: "J'ai vu ma carte",     bg: DARK, fg: CREAM },
+      wordChoice: isMaster
+                  ? { label: 'Valider le mot',     bg: DARK, fg: CREAM }
+                  : { label: 'Continuer',          bg: 'rgba(0,0,0,.2)', fg: 'rgba(20,16,15,.55)' },
+      wordRitual: { label: 'Lancer le chrono',     bg: DARK, fg: CREAM, note: isMaster ? '' : "L'hôte lance le chrono quand tout le monde a regardé." },
+      playing:    isMaster
+                  ? { label: 'Le mot a été trouvé', bg: '#FFC107', fg: DARK }
+                  : { label: 'Continuer',           bg: 'rgba(0,0,0,.2)', fg: 'rgba(20,16,15,.55)', note: 'Seul le Maître peut déclarer le mot trouvé.' },
+      finder:     { label: 'Retour au chrono',     bg: 'rgba(0,0,0,.2)', fg: 'rgba(20,16,15,.75)' },
+      discussion: { label: 'Passer au vote',       bg: DARK, fg: CREAM },
+      vote1:      v1Voted
+                  ? { label: 'Vote enregistré',    bg: DARK, fg: '#FFC107' }
+                  : { label: 'Choisis une réponse', bg: 'rgba(0,0,0,.2)', fg: 'rgba(20,16,15,.55)' },
+      vote2:      v2Voted
+                  ? { label: 'Confirmer mon vote', bg: DARK, fg: CREAM }
+                  : { label: 'Choisis un joueur',  bg: 'rgba(0,0,0,.2)', fg: 'rgba(20,16,15,.55)' },
+      ended:      { label: 'Rejouer une manche',   bg: DARK, fg: CREAM }
+    }[id];
+
+    const tallies = [
+      { name: 'Laurent', n: 3, pct: '100%', color: DARK },
+      { name: 'Virgile', n: 1, pct: '33%', color: 'rgba(20,16,15,.4)' },
+      { name: 'Pas de Traître', n: 1, pct: '33%', color: 'rgba(20,16,15,.4)' }
+    ];
+
+    return {
+      prev: () => this.go(-1),
+      next: () => this.go(1),
+      toggleRole: () => this.setState((p) => ({ master: !p.master })),
+      flip: () => this.setState((p) => ({ flipped: !p.flipped })),
+      pickYes: () => this.setState({ v1: 'yes' }),
+      pickNo: () => this.setState({ v1: 'no' }),
+      pickCenter: () => this.setState({ v2: 'center' }),
+
+      stepLabel: `${s.i + 1} / ${STEPS.length} — ${step.phase}`,
+      roleLabel: isMaster ? 'Maître du jeu' : 'Citoyen',
+      playerCount: '5',
+      phaseName: step.phase,
+      phaseIndex: step.idx,
+      showPhaseBar: id !== 'join',
+
+      isJoin: id === 'join',
+      isLobby: id === 'lobby',
+      isRole: id === 'role',
+      isWordChoice: id === 'wordChoice',
+      isWordRitual: id === 'wordRitual',
+      isPlaying: id === 'playing',
+      isFinder: id === 'finder',
+      isDiscussion: id === 'discussion',
+      isVote1: id === 'vote1',
+      isVote2: id === 'vote2',
+      isEnded: id === 'ended',
+
+      isMaster,
+      isCommon: !isMaster,
+      roleHidden: !s.flipped,
+      roleShown: s.flipped,
+      roleName: isMaster ? 'Maître du jeu' : 'Citoyen',
+      roleHint: isMaster ? 'Tu choisis le mot et tu réponds aux questions.' : 'Trouve le mot, puis démasque le Traître.',
+      wordText: isMaster ? 'Marmotte' : 'Tu ne connais pas le mot',
+      wordSize: isMaster ? '46px' : '22px',
+      wordSub: isMaster ? 'Ne le dis pas. Réponds seulement oui, non, je ne sais pas.' : 'Garde la carte à l’écran, comme les autres.',
+
+      players,
+      others: players.slice(1),
+      candidates,
+
+      yesBg: s.v1 === 'yes' ? DARK : '#FFC107',
+      yesFg: s.v1 === 'yes' ? '#FFC107' : DARK,
+      yesMark: s.v1 === 'yes' ? '✓' : '',
+      noBg: s.v1 === 'no' ? DARK : 'rgba(0,0,0,.14)',
+      noFg: s.v1 === 'no' ? '#FFC107' : DARK,
+      noMark: s.v1 === 'no' ? '✓' : '',
+      voteProgress: v1Voted ? 'Ton vote est pris · 3 sur 5 ont voté' : '2 sur 5 ont voté',
+      voteProgress2: v2Voted ? 'Ton vote est pris · 2 sur 5 ont voté' : '1 sur 5 ont voté',
+
+      centerBg: centerOn ? DARK : 'transparent',
+      centerFg: centerOn ? CREAM : 'rgba(20,16,15,.75)',
+      centerBorder: centerOn ? DARK : 'rgba(20,16,15,.35)',
+
+      tallies,
+
+      hasDock: true,
+      ctaLabel: cta.label,
+      ctaBg: cta.bg,
+      ctaFg: cta.fg,
+      dockNote: Boolean(cta.note),
+      dockNoteText: cta.note || '',
+      hasSecondary: id === 'ended',
+      secondaryLabel: 'Retour au salon'
+    };
+  }
+}
+</script>
+</body>
+</html>

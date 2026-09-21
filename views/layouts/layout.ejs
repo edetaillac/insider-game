@@ -2,26 +2,17 @@
 <html lang="fr">
     <head>
         <meta charset="utf-8">
-        <title>Online Insider Game</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.9.0/css/all.css">
+        <title>Insider</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+        <meta name="theme-color" content="#DE3C31">
+        <link rel="stylesheet" href="/static/css/fonts.css">
         <link rel="stylesheet" href="/static/css/style.css">
         <link rel="icon" type="image/png" sizes="32x32" href="/static/image/favicon-32x32.png">
         <link rel="icon" type="image/png" sizes="96x96" href="/static/image/favicon-96x96.png">
         <link rel="icon" type="image/png" sizes="16x16" href="/static/image/favicon-16x16.png">
     </head>
-    <body class="content">
-        <div class="container-fluid">
-            <header>
-                <img src="/static/image/title.jpg" alt="Insider" />
-            </header>
-            <div class="row">
-                <div class="col-lg-12">
-                    <%- body %>
-                </div>
-            </div>
-        </div>
+    <body>
+        <%- body %>
         <script src="/socket.io/socket.io.js"></script>
         <script type="module" src="/static/js/client.js"></script>
     </body>

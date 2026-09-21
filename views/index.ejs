@@ -1,3 +1,15 @@
-<main id="screen" aria-live="polite"></main>
-<div id="toast" class="toast-message" hidden></div>
-<div id="banner" class="banner" hidden>Reconnexion...</div>
+<div id="app" class="app">
+    <div id="banner" class="banner" role="status" hidden>Reconnexion...</div>
+    <header class="top">
+        <img class="top-eye" src="/static/image/frise.jpg" alt="" />
+        <img class="top-logo" src="/static/image/title.jpg" alt="Insider" />
+        <div id="counter" class="counter" aria-label="Joueurs à table" hidden></div>
+    </header>
+    <div id="phasebar" class="phasebar" aria-live="polite" hidden>
+        <span class="phasebar-label" data-phase-label></span>
+        <span class="phasebar-rank" data-phase-rank></span>
+    </div>
+    <main id="screen" class="content"></main>
+    <div id="dock" class="dock"></div>
+    <div id="toast" class="toast" role="status" hidden></div>
+</div>

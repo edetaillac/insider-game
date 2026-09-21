@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { escapeHtml, formatCountdown, outcomeSentence, messageFor } from '../../public/js/dom.js';
+import { escapeHtml, formatCountdown, outcomeSentence, messageFor, initial, outcomeTitle, svg, PHASE_BAR } from '../../public/js/dom.js';
 
 test('escapeHtml neutralise les cinq caractères', () => {
     assert.equal(escapeHtml('<b a="1">&\'</b>'), '&lt;b a=&quot;1&quot;&gt;&amp;&#39;&lt;/b&gt;');
@@ -31,4 +31,25 @@ test('messageFor traduit les codes d\'erreur', () => {
     assert.equal(messageFor({ ok: false, error: 'TOO_FEW_PLAYERS', message: 'x' }), 'Pas assez de joueurs.');
     assert.equal(messageFor({ ok: false, error: 'DUPLICATE_NAME', message: 'x' }), 'Ce prénom est déjà pris.');
     assert.equal(messageFor({ ok: false, error: 'SOMETHING', message: 'détail' }), 'détail');
+});
+
+test('initial prend la première lettre en capitale, ? à défaut', () => {
+    assert.equal(initial('  élodie'), 'É');
+    assert.equal(initial('Bob'), 'B');
+    assert.equal(initial(''), '?');
+    assert.equal(initial(null), '?');
+});
+
+test('outcomeTitle et PHASE_BAR', () => {
+    assert.equal(outcomeTitle({ outcome: 'allLose', reason: 'timeout' }), 'Le temps est écoulé');
+    assert.equal(outcomeTitle({ outcome: 'commonsWin', reason: 'vote2' }), 'Les Citoyens gagnent');
+    assert.equal(PHASE_BAR.playing.rank, '3 / 6');
+    assert.equal(PHASE_BAR.tiebreak.label, 'Second vote');
+});
+
+test('svg renvoie un svg inline avec aria-hidden', () => {
+    const s = svg('check', 16);
+    assert.ok(s.startsWith('<svg'));
+    assert.ok(s.includes('aria-hidden="true"'));
+    assert.ok(s.includes('width="16"'));
 });

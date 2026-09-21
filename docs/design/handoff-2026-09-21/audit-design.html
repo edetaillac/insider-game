@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+body { margin:0; background:#F4F1EC; }
+a { color:#B92E25; text-decoration:underline; text-underline-offset:2px; }
+a:hover { color:#DE3C31; }
+</style>
+</helmet>
+
+<div style="font-family:'IBM Plex Sans',system-ui,sans-serif;background:#F4F1EC;color:#1C1917;padding:0 0 96px">
+
+  <div style="background:#DE3C31;padding:56px 32px 48px">
+    <div style="max-width:760px;margin:0 auto">
+      <div style="font-family:Oswald,sans-serif;font-size:13px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:rgba(20,16,15,.7)">Audit UX / UI · septembre 2026</div>
+      <h1 style="font-family:Oswald,sans-serif;font-size:56px;font-weight:600;line-height:1;margin:14px 0 18px;text-transform:uppercase;color:#14100F;letter-spacing:-.005em">Insider sur téléphone</h1>
+      <p style="font-size:18px;line-height:1.6;margin:0;max-width:60ch;color:rgba(20,16,15,.85);text-wrap:pretty">Relecture de l'interface du client web à partir du code source — <em>render.js</em>, <em>style.css</em>, <em>layout.ejs</em>, <em>client.js</em> et le moteur de jeu. Objectif : garder la charte du jeu de société (rouge, jaune, noir, frise des yeux) et refaire l'interface pour un usage réel à cinq autour d'une table, chacun sur son téléphone.</p>
+    </div>
+  </div>
+
+  <div style="max-width:760px;margin:0 auto;padding:0 32px">
+
+    <div style="display:flex;gap:14px;flex-wrap:wrap;margin:36px 0 8px">
+      <div style="flex:1 1 200px;padding:18px 20px;border-radius:14px;background:#fff;border:1px solid #E2DDD5">
+        <div style="font-family:Oswald,sans-serif;font-size:34px;font-weight:600;color:#DE3C31;line-height:1">18</div>
+        <div style="font-size:14px;line-height:1.4;color:#5C554E;margin-top:4px">constats, dont 6 transversaux</div>
+      </div>
+      <div style="flex:1 1 200px;padding:18px 20px;border-radius:14px;background:#fff;border:1px solid #E2DDD5">
+        <div style="font-family:Oswald,sans-serif;font-size:34px;font-weight:600;color:#DE3C31;line-height:1">9</div>
+        <div style="font-size:14px;line-height:1.4;color:#5C554E;margin-top:4px">phases de jeu, 11 écrans rendus</div>
+      </div>
+      <div style="flex:1 1 200px;padding:18px 20px;border-radius:14px;background:#fff;border:1px solid #E2DDD5">
+        <div style="font-family:Oswald,sans-serif;font-size:34px;font-weight:600;color:#DE3C31;line-height:1">2,4:1</div>
+        <div style="font-size:14px;line-height:1.4;color:#5C554E;margin-top:4px">contraste jaune sur rouge, pour un minimum de 4,5:1</div>
+      </div>
+    </div>
+
+    <h2 style="font-family:Oswald,sans-serif;font-size:15px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:#DE3C31;margin:52px 0 6px">Partie 1</h2>
+    <h3 style="font-family:Oswald,sans-serif;font-size:34px;font-weight:600;line-height:1.1;margin:0 0 20px;text-transform:uppercase;color:#14100F">Ce qui coince partout</h3>
+
+    <div style="display:flex;flex-direction:column;gap:2px">
+
+      <div style="background:#fff;border:1px solid #E2DDD5;border-radius:14px;padding:22px 24px;margin-bottom:12px">
+        <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:10px">
+          <div style="font-family:Oswald,sans-serif;font-size:13px;font-weight:600;color:#fff;background:#DE3C31;border-radius:5px;padding:2px 8px;letter-spacing:.08em">01</div>
+          <h4 style="font-size:20px;font-weight:700;margin:0;line-height:1.25">Le haut de l'écran ne dit jamais ce qui se passe</h4>
+        </div>
+        <p style="font-size:16px;line-height:1.6;margin:0 0 12px;color:#3D3833">Les 100 premiers pixels sont un bandeau décoratif — logo et frise — répété à l'identique sur les onze écrans. Juste en dessous, la première ligne informative est une salutation, <em>« C'est parti Manu »</em>, présente elle aussi sur tous les écrans. Il faut descendre au troisième bloc pour apprendre dans quelle phase on est et qui doit agir.</p>
+        <div style="border-left:3px solid #DE3C31;padding-left:14px;font-size:16px;line-height:1.6;color:#1C1917"><strong>Recommandation.</strong> Ramener le bandeau à 56 px, y garder le logo, et poser sous la frise une barre de phase noire qui affiche en permanence le nom de l'étape et son rang (<em>Enquête · 3 / 6</em>). La salutation disparaît : le prénom du joueur n'est utile qu'une fois, à l'arrivée.</div>
+      </div>
+
+      <div style="background:#fff;border:1px solid #E2DDD5;border-radius:14px;padding:22px 24px;margin-bottom:12px">
+        <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:10px">
+          <div style="font-family:Oswald,sans-serif;font-size:13px;font-weight:600;color:#fff;background:#DE3C31;border-radius:5px;padding:2px 8px;letter-spacing:.08em">02</div>
+          <h4 style="font-size:20px;font-weight:700;margin:0;line-height:1.25">Le code couleur des boutons n'a pas de règle</h4>
+        </div>
+        <p style="font-size:16px;line-height:1.6;margin:0 0 12px;color:#3D3833">L'action principale est noire au salon et à la discussion (<em>btn-dark</em>), jaune à l'enquête et au vote 1 (<em>btn-warning</em>), anthracite au vote 2 (<em>btn-outline-dark</em>, redéfini en plein), et transparente pour « Pas de Traître » (<em>btn-outline-secondary</em>). Quatre traitements pour trois niveaux d'importance, distribués sans logique repérable.</p>
+        <div style="border-left:3px solid #DE3C31;padding-left:14px;font-size:16px;line-height:1.6;color:#1C1917"><strong>Recommandation.</strong> Trois niveaux, un seul par écran. <strong>Noir</strong> = l'action qui fait avancer la manche. <strong>Jaune</strong> = uniquement le secret et le privilège du Maître ; rien d'autre ne doit être jaune. <strong>Contour</strong> = alternative ou retour. Un bouton grisé n'est jamais simplement désactivé : il porte le motif (<em>« Choisis un joueur »</em>, <em>« Seul le Maître peut déclarer le mot trouvé »</em>).</div>
+      </div>
+
+      <div style="background:#fff;border:1px solid #E2DDD5;border-radius:14px;padding:22px 24px;margin-bottom:12px">
+        <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:10px">
+          <div style="font-family:Oswald,sans-serif;font-size:13px;font-weight:600;color:#fff;background:#DE3C31;border-radius:5px;padding:2px 8px;letter-spacing:.08em">03</div>
+          <h4 style="font-size:20px;font-weight:700;margin:0;line-height:1.25">L'attente est traitée comme une note de bas de page</h4>
+        </div>
+        <p style="font-size:16px;line-height:1.6;margin:0 0 12px;color:#3D3833">Cinq écrans sur onze se terminent par <em>waiting()</em> : une phrase grise à 85 % d'opacité, <em>« En attente de l'hôte… »</em>, sans indication de progression. Or dans une partie à cinq, à chaque instant quatre joueurs sur cinq sont dans cet état. C'est l'écran le plus vu du jeu et c'est le moins travaillé.</p>
+        <div style="border-left:3px solid #DE3C31;padding-left:14px;font-size:16px;line-height:1.6;color:#1C1917"><strong>Recommandation.</strong> Remplacer la phrase par un état d'attente lisible : qui on attend, combien de joueurs ont déjà agi, et ce que le joueur peut faire en attendant. Les pastilles de présence, déjà envoyées par le serveur, suffisent à afficher <em>« 3 sur 5 ont vu leur carte »</em> avec les initiales allumées. L'information existe dans la vue, elle n'est simplement pas montrée.</div>
+      </div>
+
+      <div style="background:#fff;border:1px solid #E2DDD5;border-radius:14px;padding:22px 24px;margin-bottom:12px">
+        <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:10px">
+          <div style="font-family:Oswald,sans-serif;font-size:13px;font-weight:600;color:#fff;background:#DE3C31;border-radius:5px;padding:2px 8px;letter-spacing:.08em">04</div>
+          <h4 style="font-size:20px;font-weight:700;margin:0;line-height:1.25">Contrastes sous le seuil</h4>
+        </div>
+        <p style="font-size:16px;line-height:1.6;margin:0 0 12px;color:#3D3833">Le jaune <code style="background:#F0EDE7;padding:1px 5px;border-radius:3px;font-size:14px">#FFC107</code> sur le rouge <code style="background:#F0EDE7;padding:1px 5px;border-radius:3px;font-size:14px">#DE3C31</code> plafonne à 2,4:1 — il n'est utilisé ainsi que sur le chrono urgent, mais c'est précisément le moment où il faut lire. La pastille hors-ligne <code style="background:#F0EDE7;padding:1px 5px;border-radius:3px;font-size:14px">#7A2D27</code> sur rouge tombe à 1,6:1 : elle est indistinguible de la pastille en ligne pour beaucoup de joueurs, et c'est pourtant l'unique signal qu'un téléphone a décroché.</p>
+        <div style="border-left:3px solid #DE3C31;padding-left:14px;font-size:16px;line-height:1.6;color:#1C1917"><strong>Recommandation.</strong> Le jaune ne s'affiche plus jamais sur le rouge : il vit sur le noir, où il monte à 11:1. Sur le rouge, on n'écrit qu'en noir profond ou en crème. Le statut hors-ligne passe de la couleur seule à un libellé texte à côté du nom.</div>
+      </div>
+
+      <div style="background:#fff;border:1px solid #E2DDD5;border-radius:14px;padding:22px 24px;margin-bottom:12px">
+        <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:10px">
+          <div style="font-family:Oswald,sans-serif;font-size:13px;font-weight:600;color:#fff;background:#DE3C31;border-radius:5px;padding:2px 8px;letter-spacing:.08em">05</div>
+          <h4 style="font-size:20px;font-weight:700;margin:0;line-height:1.25">Rien n'est ancré en bas, là où est le pouce</h4>
+        </div>
+        <p style="font-size:16px;line-height:1.6;margin:0 0 12px;color:#3D3833">Les actions suivent le flux du contenu, avec un <code style="background:#F0EDE7;padding:1px 5px;border-radius:3px;font-size:14px">padding-bottom</code> fixe de 48 px. Selon l'écran, le bouton principal tombe au tiers ou aux deux tiers de la hauteur. Le <code style="background:#F0EDE7;padding:1px 5px;border-radius:3px;font-size:14px">viewport</code> n'est pas en <code style="background:#F0EDE7;padding:1px 5px;border-radius:3px;font-size:14px">viewport-fit=cover</code> et aucune <code style="background:#F0EDE7;padding:1px 5px;border-radius:3px;font-size:14px">safe-area-inset</code> n'est prise en compte : sur iPhone, la barre home mange le bas de page.</p>
+        <div style="border-left:3px solid #DE3C31;padding-left:14px;font-size:16px;line-height:1.6;color:#1C1917"><strong>Recommandation.</strong> Un socle d'action fixe en bas de chaque écran, toujours au même endroit, hauteur 60 px, avec <code style="background:#F0EDE7;padding:1px 5px;border-radius:3px;font-size:14px">padding-bottom: env(safe-area-inset-bottom)</code>. Le contenu défile derrière. Le geste devient le même à toutes les phases.</div>
+      </div>
+
+      <div style="background:#fff;border:1px solid #E2DDD5;border-radius:14px;padding:22px 24px;margin-bottom:12px">
+        <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:10px">
+          <div style="font-family:Oswald,sans-serif;font-size:13px;font-weight:600;color:#fff;background:#DE3C31;border-radius:5px;padding:2px 8px;letter-spacing:.08em">06</div>
+          <h4 style="font-size:20px;font-weight:700;margin:0;line-height:1.25">250 ko de CDN pour quatre boutons et six icônes</h4>
+        </div>
+        <p style="font-size:16px;line-height:1.6;margin:0 0 12px;color:#3D3833">Bootstrap 4 et Font Awesome 5 sont chargés depuis deux CDN distincts, bloquants au rendu. La feuille maison en redéfinit ensuite la quasi-totalité — <em>btn-outline-dark</em> n'a plus rien d'un outline. En pratique on paie deux bibliothèques pour six glyphes et une grille qui n'est pas utilisée. Sur le wifi partagé d'un salon, c'est la première seconde de chaque joueur.</p>
+        <div style="border-left:3px solid #DE3C31;padding-left:14px;font-size:16px;line-height:1.6;color:#1C1917"><strong>Recommandation.</strong> Retirer les deux CDN, écrire les six composants réellement utilisés en CSS maison, remplacer les icônes par des SVG en ligne. La feuille actuelle fait déjà 7,5 ko et couvre l'essentiel.</div>
+      </div>
+
+    </div>
+
+    <h2 style="font-family:Oswald,sans-serif;font-size:15px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:#DE3C31;margin:56px 0 6px">Partie 2</h2>
+    <h3 style="font-family:Oswald,sans-serif;font-size:34px;font-weight:600;line-height:1.1;margin:0 0 6px;text-transform:uppercase;color:#14100F">Écran par écran</h3>
+    <p style="font-size:16px;line-height:1.6;color:#5C554E;margin:0 0 24px">Dans l'ordre d'une manche.</p>
+
+    <div style="display:flex;flex-direction:column;gap:12px">
+
+      <div style="background:#fff;border:1px solid #E2DDD5;border-radius:14px;padding:22px 24px">
+        <h4 style="font-family:Oswald,sans-serif;font-size:22px;font-weight:600;margin:0 0 4px;text-transform:uppercase">Rejoindre <span style="font-family:'IBM Plex Sans';font-size:14px;font-weight:400;color:#8A817A;text-transform:none">renderJoin()</span></h4>
+        <p style="font-size:16px;line-height:1.6;margin:8px 0 0;color:#3D3833">Le champ prénom et le bouton sont posés en <code style="background:#F0EDE7;padding:1px 5px;border-radius:3px;font-size:14px">flex-wrap</code> : sur un écran étroit le bouton passe sous le champ, sur un écran large il se met à côté, sans que ce soit voulu. L'erreur de saisie s'insère en troisième position du même conteneur flex et décale tout. Rien n'explique ce qu'il advient du prénom, ni qu'on ne pourra plus le changer.</p>
+        <p style="font-size:16px;line-height:1.6;margin:10px 0 0;color:#1C1917"><strong>À faire.</strong> Champ pleine largeur avec label au-dessus, bouton dans le socle bas, message d'erreur en zone réservée sous le champ pour éviter le saut, et une phrase qui annonce que le prénom sera visible par tous. Mentionner ici que le premier arrivé devient hôte : c'est une règle du jeu, elle n'est écrite nulle part dans l'interface.</p>
+      </div>
+
+      <div style="background:#fff;border:1px solid #E2DDD5;border-radius:14px;padding:22px 24px">
+        <h4 style="font-family:Oswald,sans-serif;font-size:22px;font-weight:600;margin:0 0 4px;text-transform:uppercase">Salon <span style="font-family:'IBM Plex Sans';font-size:14px;font-weight:400;color:#8A817A;text-transform:none">lobby()</span></h4>
+        <p style="font-size:16px;line-height:1.6;margin:8px 0 0;color:#3D3833">La liste est un <code style="background:#F0EDE7;padding:1px 5px;border-radius:3px;font-size:14px">inline-block</code> centré dont le contenu est aligné à gauche : les noms ne sont ni centrés ni alignés sur une marge stable, et la largeur du bloc saute quand un joueur au nom long arrive. Le bouton de retrait est une croix de 44 px sans confirmation, collée au nom — un mistap exclut un joueur de la partie. Le nombre de joueurs présents n'est écrit nulle part ; il faut compter les lignes.</p>
+        <p style="font-size:16px;line-height:1.6;margin:10px 0 0;color:#1C1917"><strong>À faire.</strong> Des lignes pleine largeur, une par joueur, avec pastille d'initiale, nom, statut en toutes lettres, et le retrait repoussé en fin de ligne derrière une confirmation. Compteur explicite en sous-titre : <em>« 5 joueurs à table · 4 minimum »</em>. Et l'adresse à partager, qui manque complètement alors que c'est la seule chose à faire dans cet écran.</p>
+      </div>
+
+      <div style="background:#fff;border:1px solid #E2DDD5;border-radius:14px;padding:22px 24px">
+        <h4 style="font-family:Oswald,sans-serif;font-size:22px;font-weight:600;margin:0 0 4px;text-transform:uppercase">Les rôles <span style="font-family:'IBM Plex Sans';font-size:14px;font-weight:400;color:#8A817A;text-transform:none">roles()</span></h4>
+        <p style="font-size:16px;line-height:1.6;margin:8px 0 0;color:#3D3833">La carte fait 320 × 160 sur un écran de 844 px de haut : elle occupe un cinquième de la hauteur pour le moment le plus important de la manche, et laisse deux tiers d'écran vides. Elle se recache seule après cinq secondes, mais rien à l'écran n'annonce le compte à rebours — le libellé dit seulement <em>« Se cache toute seule »</em>. Un joueur qui détourne le regard une seconde rate son rôle, et le code n'offre aucun moyen de le revoir. Sur cet écran le Maître découvre son rôle <em>et</em> choisit le mot : deux tâches empilées sans séparation.</p>
+        <p style="font-size:16px;line-height:1.6;margin:10px 0 0;color:#1C1917"><strong>À faire.</strong> Carte plein cadre, 250 px de haut, avec une barre de temps qui se vide visiblement pendant les cinq secondes. Séparer les deux moments : d'abord la carte de rôle pour tout le monde, puis l'écran de choix du mot pour le seul Maître. Et afficher en permanence le rôle en petit sur les écrans suivants — le secret est protégé par le fait que chacun regarde son propre téléphone, pas par l'effacement.</p>
+      </div>
+
+      <div style="background:#fff;border:1px solid #E2DDD5;border-radius:14px;padding:22px 24px">
+        <h4 style="font-family:Oswald,sans-serif;font-size:22px;font-weight:600;margin:0 0 4px;text-transform:uppercase">Le rituel du mot <span style="font-family:'IBM Plex Sans';font-size:14px;font-weight:400;color:#8A817A;text-transform:none">word()</span></h4>
+        <p style="font-size:16px;line-height:1.6;margin:8px 0 0;color:#3D3833">C'est la meilleure idée du produit : tout le monde retourne la même carte pendant la même durée, le Citoyen y lit une phrase neutre, rien ne trahit qui lit vraiment. Mais le design la dessert. La phrase neutre fait trois lignes en 16 px dans une carte prévue pour un mot en 30 px : les deux faces n'ont ni la même densité ni la même silhouette, et un joueur qui jette un œil sur le téléphone voisin voit immédiatement la différence. Le ressort du bluff est cassé par la mise en page.</p>
+        <p style="font-size:16px;line-height:1.6;margin:10px 0 0;color:#1C1917"><strong>À faire.</strong> Aligner les deux faces : même bloc, même point de départ du texte, texte neutre raccourci à une ligne de la même taille apparente. Ajouter le compteur visible et le décompte collectif <em>« 4 sur 5 ont regardé »</em>, qui remplace l'attente aveugle avant le lancement du chrono.</p>
+      </div>
+
+      <div style="background:#fff;border:1px solid #E2DDD5;border-radius:14px;padding:22px 24px">
+        <h4 style="font-family:Oswald,sans-serif;font-size:22px;font-weight:600;margin:0 0 4px;text-transform:uppercase">L'enquête <span style="font-family:'IBM Plex Sans';font-size:14px;font-weight:400;color:#8A817A;text-transform:none">playing()</span></h4>
+        <p style="font-size:16px;line-height:1.6;margin:8px 0 0;color:#3D3833">Le chrono en 76 px est juste. Le reste ne l'est pas. Le Maître doit retoucher sa carte à chaque fois qu'il veut relire le mot, pendant qu'on lui pose des questions — c'est le geste le plus fréquent de la phase et c'est un flip de carte. La règle du tour (questions fermées, trois réponses possibles) n'apparaît nulle part, alors que c'est la règle que les nouveaux joueurs oublient. Enfin <em>« Mot trouvé par… »</em> est un <code style="background:#F0EDE7;padding:1px 5px;border-radius:3px;font-size:14px">&lt;summary&gt;</code> déguisé en bouton : il n'est pas annoncé comme tel aux lecteurs d'écran, et son ouverture pousse le contenu vers le bas au lieu de s'afficher par-dessus.</p>
+        <p style="font-size:16px;line-height:1.6;margin:10px 0 0;color:#1C1917"><strong>À faire.</strong> Pour le Maître, le mot en clair dans un bloc noir permanent, sous le chrono. Une barre de progression du temps en complément du chiffre. Un rappel de la règle du tour en bas d'écran. Et la désignation du trouveur en écran plein, pas en accordéon.</p>
+      </div>
+
+      <div style="background:#fff;border:1px solid #E2DDD5;border-radius:14px;padding:22px 24px">
+        <h4 style="font-family:Oswald,sans-serif;font-size:22px;font-weight:600;margin:0 0 4px;text-transform:uppercase">Discussion <span style="font-family:'IBM Plex Sans';font-size:14px;font-weight:400;color:#8A817A;text-transform:none">discussion()</span></h4>
+        <p style="font-size:16px;line-height:1.6;margin:8px 0 0;color:#3D3833">Deux chronos se suivent dans la manche avec deux sens opposés — l'un fait perdre tout le monde s'il expire, l'autre est purement indicatif. Ils sont distingués par la seule taille de police, 76 px contre 56 px, et une légende en 14 px. C'est trop fin pour une différence de cette importance.</p>
+        <p style="font-size:16px;line-height:1.6;margin:10px 0 0;color:#1C1917"><strong>À faire.</strong> Changer le traitement, pas la taille : le chrono contraignant occupe le haut de l'écran en pleine largeur, le chrono indicatif vit dans un encadré de contenu avec son étiquette. Et afficher le mot en clair ici, la manche est jouée.</p>
+      </div>
+
+      <div style="background:#fff;border:1px solid #E2DDD5;border-radius:14px;padding:22px 24px">
+        <h4 style="font-family:Oswald,sans-serif;font-size:22px;font-weight:600;margin:0 0 4px;text-transform:uppercase">Premier vote <span style="font-family:'IBM Plex Sans';font-size:14px;font-weight:400;color:#8A817A;text-transform:none">vote1()</span></h4>
+        <p style="font-size:16px;line-height:1.6;margin:8px 0 0;color:#3D3833">Deux boutons jaunes strictement identiques, côte à côte, à 14 px l'un de l'autre, pour deux réponses opposées qui décident de la fin de la manche. Le seul différenciateur est un pouce vers le haut ou vers le bas, et un mot de trois lettres. Une fois voté, rien ne change visuellement : les boutons restent actifs et identiques, seul le texte <em>« Ton vote est pris »</em> s'ajoute en 17 px. Le joueur ne sait pas ce qu'il a voté.</p>
+        <p style="font-size:16px;line-height:1.6;margin:10px 0 0;color:#1C1917"><strong>À faire.</strong> Empiler les deux réponses au lieu de les juxtaposer, les différencier par la couleur et par un libellé complet (<em>« Oui, c'est lui »</em> / <em>« Non »</em>), afficher l'état sélectionné sans ambiguïté, et rendre le vote modifiable tant que le dernier joueur n'a pas voté. La majorité stricte, qui est la mécanique en jeu ici, doit être rappelée à l'écran.</p>
+      </div>
+
+      <div style="background:#fff;border:1px solid #E2DDD5;border-radius:14px;padding:22px 24px">
+        <h4 style="font-family:Oswald,sans-serif;font-size:22px;font-weight:600;margin:0 0 4px;text-transform:uppercase">Second vote <span style="font-family:'IBM Plex Sans';font-size:14px;font-weight:400;color:#8A817A;text-transform:none">vote2()</span></h4>
+        <p style="font-size:16px;line-height:1.6;margin:8px 0 0;color:#3D3833">Cinq boutons anthracite identiques empilés, puis un sixième en contour pour <em>« Pas de Traître »</em> — un traitement visuel différent pour une option de même nature, ce qui la fait passer pour un bouton d'annulation. Le vote part au premier tap, sans état sélectionné ni confirmation, sur un choix qui désigne nommément quelqu'un. Après le vote, les boutons restent tous identiques : impossible de se rappeler qui on a pointé.</p>
+        <p style="font-size:16px;line-height:1.6;margin:10px 0 0;color:#1C1917"><strong>À faire.</strong> Sélection puis confirmation en deux gestes, ligne sélectionnée nettement marquée, initiales pour distinguer les lignes au coup d'œil. <em>« Personne — il n'y a pas de Traître »</em> reste séparée du groupe mais avec un poids comparable, en bordure pointillée.</p>
+      </div>
+
+      <div style="background:#fff;border:1px solid #E2DDD5;border-radius:14px;padding:22px 24px">
+        <h4 style="font-family:Oswald,sans-serif;font-size:22px;font-weight:600;margin:0 0 4px;text-transform:uppercase">Égalité <span style="font-family:'IBM Plex Sans';font-size:14px;font-weight:400;color:#8A817A;text-transform:none">tiebreak()</span></h4>
+        <p style="font-size:16px;line-height:1.6;margin:8px 0 0;color:#3D3833">Le titre <em>« Égalité entre Untel (2) et Untel (2) »</em> mélange des noms et des chiffres entre parenthèses dans une phrase en 26 px gras — c'est le seul endroit du jeu où les scores sont donnés sous cette forme. Les quatre joueurs qui ne départagent pas voient une phrase d'attente nue, sans savoir combien de temps ni sur quoi.</p>
+        <p style="font-size:16px;line-height:1.6;margin:10px 0 0;color:#1C1917"><strong>À faire.</strong> Titre court, <em>« Égalité »</em>, puis les deux candidats présentés en cartes avec leur score, même composant que le vote 2. Pour les autres, l'attente nomme la personne qui tranche.</p>
+      </div>
+
+      <div style="background:#fff;border:1px solid #E2DDD5;border-radius:14px;padding:22px 24px">
+        <h4 style="font-family:Oswald,sans-serif;font-size:22px;font-weight:600;margin:0 0 4px;text-transform:uppercase">Résultat <span style="font-family:'IBM Plex Sans';font-size:14px;font-weight:400;color:#8A817A;text-transform:none">ended()</span></h4>
+        <p style="font-size:16px;line-height:1.6;margin:8px 0 0;color:#3D3833">Trois informations de valeur très inégale sont aplaties au même niveau : l'issue, l'identité du Traître, et le mot. L'identité du Traître — ce que toute la table attend — est une proposition subordonnée dans un paragraphe en 16 px. Le décompte des votes est une liste à puces sans puces, sur fond noir à 12 % : on ne lit pas un écart, on lit des chiffres. Aucun moment de bascule, alors que c'est le seul écran du jeu où il se passe quelque chose de collectif.</p>
+        <p style="font-size:16px;line-height:1.6;margin:10px 0 0;color:#1C1917"><strong>À faire.</strong> Une hiérarchie en trois temps : l'issue en très gros, la révélation du Traître en carte noire avec son initiale, le mot en encadré. Le décompte en barres proportionnelles plutôt qu'en chiffres nus. <em>« Rejouer »</em> en action principale, <em>« Retour au salon »</em> en secondaire — aujourd'hui les deux sont côte à côte au même niveau.</p>
+      </div>
+
+      <div style="background:#fff;border:1px solid #E2DDD5;border-radius:14px;padding:22px 24px">
+        <h4 style="font-family:Oswald,sans-serif;font-size:22px;font-weight:600;margin:0 0 4px;text-transform:uppercase">États système <span style="font-family:'IBM Plex Sans';font-size:14px;font-weight:400;color:#8A817A;text-transform:none">toast, banner</span></h4>
+        <p style="font-size:16px;line-height:1.6;margin:8px 0 0;color:#3D3833">Le bandeau de reconnexion et le toast d'erreur sont tous deux en <code style="background:#F0EDE7;padding:1px 5px;border-radius:3px;font-size:14px">position: fixed</code> avec le même <code style="background:#F0EDE7;padding:1px 5px;border-radius:3px;font-size:14px">z-index: 10</code> — le bandeau recouvre le haut du contenu, le toast masque le bouton principal pendant trois secondes. Le toast n'a pas de <code style="background:#F0EDE7;padding:1px 5px;border-radius:3px;font-size:14px">role="status"</code>, il n'est donc pas annoncé ; et <code style="background:#F0EDE7;padding:1px 5px;border-radius:3px;font-size:14px">aria-live="polite"</code> posé sur tout <code style="background:#F0EDE7;padding:1px 5px;border-radius:3px;font-size:14px">#screen</code> fait relire l'écran entier à chaque changement de phase.</p>
+        <p style="font-size:16px;line-height:1.6;margin:10px 0 0;color:#1C1917"><strong>À faire.</strong> Le bandeau pousse le contenu au lieu de le recouvrir, le toast se place au-dessus du socle d'action et jamais dessus, avec <code style="background:#F0EDE7;padding:1px 5px;border-radius:3px;font-size:14px">role="status"</code>. Déplacer le <code style="background:#F0EDE7;padding:1px 5px;border-radius:3px;font-size:14px">aria-live</code> sur une région de titre qui annonce la phase, pas sur tout l'écran.</p>
+      </div>
+
+    </div>
+
+    <h2 style="font-family:Oswald,sans-serif;font-size:15px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:#DE3C31;margin:56px 0 6px">Partie 3</h2>
+    <h3 style="font-family:Oswald,sans-serif;font-size:34px;font-weight:600;line-height:1.1;margin:0 0 20px;text-transform:uppercase;color:#14100F">Par où commencer</h3>
+
+    <div style="background:#14100F;border-radius:16px;padding:26px 28px;color:#FFF7EF">
+      <div style="font-family:Oswald,sans-serif;font-size:13px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#FFC107;margin-bottom:12px">Fort impact, faible coût</div>
+      <ul style="margin:0 0 24px;padding-left:20px;font-size:16px;line-height:1.7">
+        <li>Barre de phase permanente et suppression de la salutation</li>
+        <li>Socle d'action fixe en bas avec safe-area</li>
+        <li>États d'attente chiffrés à partir des données déjà envoyées</li>
+        <li>Une règle de couleur pour les boutons, appliquée partout</li>
+        <li>Compte à rebours visible sur les cartes à retournement automatique</li>
+      </ul>
+      <div style="font-family:Oswald,sans-serif;font-size:13px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#FFC107;margin-bottom:12px">Ensuite</div>
+      <ul style="margin:0 0 24px;padding-left:20px;font-size:16px;line-height:1.7">
+        <li>Refonte des deux votes : sélection, confirmation, état visible</li>
+        <li>Vue Maître dédiée pendant l'enquête, mot en clair permanent</li>
+        <li>Alignement des deux faces de la carte du rituel</li>
+        <li>Écran de résultat en trois temps</li>
+      </ul>
+      <div style="font-family:Oswald,sans-serif;font-size:13px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#FFC107;margin-bottom:12px">Chantier de fond</div>
+      <ul style="margin:0;padding-left:20px;font-size:16px;line-height:1.7">
+        <li>Sortir Bootstrap et Font Awesome, CSS maison</li>
+        <li>Reprendre l'accessibilité : régions live, annonces, contrastes</li>
+      </ul>
+    </div>
+
+    <p style="font-size:16px;line-height:1.6;color:#5C554E;margin:32px 0 0">Les onze écrans actuels sont recréés à l'identique dans <strong>Insider — Écrans actuels</strong>. La refonte est navigable phase par phase dans <strong>Insider — Refonte mobile</strong>, avec une bascule Maître / Citoyen.</p>
+
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

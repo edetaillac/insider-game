@@ -38,7 +38,7 @@ test('en roles chacun voit son rôle et jamais celui des autres, le mot est null
             assert.ok(!('role' in other), 'les autres joueurs n\'exposent pas de rôle');
         }
     }
-    assert.deepEqual(view(ctx.game, ctx.master).actions.sort(), ['drawWord', 'setWord', ...(ctx.master === ctx.host ? ['reset'] : [])].sort());
+    assert.deepEqual(view(ctx.game, ctx.master).actions.sort(), ['drawWord', 'seenRole', 'setWord', ...(ctx.master === ctx.host ? ['reset'] : [])].sort());
 });
 
 test('dès word, le Maître et le Traître voient le mot, les Citoyens non', () => {
@@ -72,7 +72,7 @@ test('en vote1 : action vote1 pour qui n\'a pas voté, hasVoted juste, candidate
     const vb = view(game, b);
     assert.equal(va.me.hasVoted, true);
     assert.equal(vb.me.hasVoted, false);
-    assert.ok(!va.actions.includes('vote1'), 'qui a voté ne voit plus l\'action');
+    assert.ok(va.actions.includes('vote1'), 'le vote reste modifiable');
     assert.ok(vb.actions.includes('vote1'));
     assert.equal(vb.players.find((p) => p.id === a).hasVoted, true);
     assert.equal(vb.players.find((p) => p.id === b).hasVoted, false);

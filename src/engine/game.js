@@ -69,6 +69,8 @@ const PHASES_BY_COMMAND = {
     wordFound: ['playing'],
     timeout: ['playing'],
     closeDiscussion: ['discussion'],
+    seenRole: ['roles'],
+    seenWord: ['word'],
     vote1: ['vote1'],
     vote2: ['vote2'],
     tiebreak: ['tiebreak'],
@@ -124,6 +126,8 @@ export function canAct(game, type, actor) {
             return isMaster || isHost;
         case 'vote1':
         case 'vote2':
+        case 'seenRole':
+        case 'seenWord':
             return Boolean(player);
         case 'tiebreak':
             return game.phase.name === 'tiebreak' && game.phase.finderId === actor;
@@ -134,19 +138,20 @@ export function canAct(game, type, actor) {
 
 /**
  * Commandes qu'un joueur peut émettre maintenant. Jamais les commandes serveur.
- * Un joueur qui a déjà un bulletin dans la phase courante ne voit plus vote1 / vote2 :
- * `apply` accepte encore le remplacement (idempotence des rejeux), mais l'UI n'a plus à le proposer.
+ * Un bulletin reste modifiable jusqu'au dernier vote : vote1 et vote2 restent listés.
+ * Un accusé "vu" déjà posé disparaît de la liste (la commande reste acceptée, idempotente).
  * @param {Game} game
  * @param {PlayerId} playerId
  * @returns {CommandType[]}
  */
 export function allowedActions(game, playerId) {
-    const hasVoted = 'ballots' in game.phase && Object.hasOwn(game.phase.ballots, playerId);
+    const phase = game.phase;
+    const hasSeen = 'seen' in phase && Object.hasOwn(phase.seen, playerId);
     return /** @type {CommandType[]} */ (Object.keys(PHASES_BY_COMMAND)).filter((type) =>
         !SERVER_ONLY.has(type)
-        && PHASES_BY_COMMAND[type].includes(game.phase.name)
+        && PHASES_BY_COMMAND[type].includes(phase.name)
         && canAct(game, type, playerId)
-        && !(hasVoted && (type === 'vote1' || type === 'vote2')));
+        && !(hasSeen && (type === 'seenRole' || type === 'seenWord')));
 }
 
 /**
@@ -283,7 +288,7 @@ function startRound(game, _command, deps) {
         return fail('TOO_MANY_PLAYERS', `max ${effectiveMaxPlayers(game)} players`);
     }
     const { roles, centerCard } = assignRoles(game, deps.rng);
-    return next(game, { roles, centerCard, word: null, phase: { name: 'roles' } });
+    return next(game, { roles, centerCard, word: null, phase: { name: 'roles', seen: {} } });
 }
 
 /**
@@ -296,7 +301,7 @@ function setWord(game, command) {
     if (word === '') {
         return fail('INVALID_ARGUMENT', 'word is empty');
     }
-    return next(game, { word, phase: { name: 'word' } });
+    return next(game, { word, phase: { name: 'word', seen: {} } });
 }
 
 /**
@@ -309,7 +314,7 @@ function drawWord(game, _command, deps) {
     if (deps.words.length === 0) {
         return fail('INVALID_ARGUMENT', 'no words to draw from');
     }
-    return next(game, { word: pick(deps.words, deps.rng), phase: { name: 'word' } });
+    return next(game, { word: pick(deps.words, deps.rng), phase: { name: 'word', seen: {} } });
 }
 
 /**
@@ -367,6 +372,30 @@ function closeDiscussion(game) {
         return fail('WRONG_PHASE', 'not in discussion');
     }
     return next(game, { phase: { name: 'vote1', finderId: game.phase.finderId, ballots: {} } });
+}
+
+/**
+ * @param {Game} game
+ * @param {Extract<Command, {type: 'seenRole'}>} command
+ * @returns {Result}
+ */
+function seenRole(game, command) {
+    if (game.phase.name !== 'roles') {
+        return fail('WRONG_PHASE', 'not in roles');
+    }
+    return next(game, { phase: { name: 'roles', seen: { ...game.phase.seen, [command.actor]: true } } });
+}
+
+/**
+ * @param {Game} game
+ * @param {Extract<Command, {type: 'seenWord'}>} command
+ * @returns {Result}
+ */
+function seenWord(game, command) {
+    if (game.phase.name !== 'word') {
+        return fail('WRONG_PHASE', 'not in word');
+    }
+    return next(game, { phase: { name: 'word', seen: { ...game.phase.seen, [command.actor]: true } } });
 }
 
 // Votes
@@ -506,6 +535,8 @@ const HANDLERS = {
     wordFound,
     timeout,
     closeDiscussion,
+    seenRole,
+    seenWord,
     vote1,
     vote2,
     tiebreak

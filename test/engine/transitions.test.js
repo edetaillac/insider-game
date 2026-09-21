@@ -58,6 +58,8 @@ function sample(type, ctx) {
         case 'startTimer': return { type, actor: master };
         case 'wordFound': return { type, actor: master, finderId: game.players.find((p) => p.id !== master).id };
         case 'closeDiscussion': return { type, actor: master };
+        case 'seenRole': return { type, actor: 'p1' };
+        case 'seenWord': return { type, actor: 'p1' };
         case 'vote1': return { type, actor: 'p1', value: true };
         case 'vote2': return { type, actor: 'p1', candidate: cands[0] ?? 'p2' };
         case 'tiebreak': return { type, actor: finderId, candidate: 'tied' in game.phase ? game.phase.tied[0] : cands[0] ?? 'p2' };
@@ -68,8 +70,8 @@ function sample(type, ctx) {
 test('la table couvre toutes les commandes et toutes les phases', () => {
     assert.deepEqual(ALL_PHASES, ['lobby', 'roles', 'word', 'playing', 'discussion', 'vote1', 'vote2', 'tiebreak', 'ended']);
     assert.deepEqual(Object.keys(PHASES_BY_COMMAND).sort(), [
-        'addPlayer', 'closeDiscussion', 'drawWord', 'removePlayer', 'reset', 'setWord', 'startRound',
-        'startTimer', 'tiebreak', 'timeout', 'vote1', 'vote2', 'wordFound'
+        'addPlayer', 'closeDiscussion', 'drawWord', 'removePlayer', 'reset', 'seenRole', 'seenWord', 'setWord',
+        'startRound', 'startTimer', 'tiebreak', 'timeout', 'vote1', 'vote2', 'wordFound'
     ]);
 });
 

@@ -1,40 +1,19 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
     <head>
-        <title>Online Insider Game</title>
-        <link rel="stylesheet" href="static/css/style.css">
-        <link rel="stylesheet" href="static/css/form.css">
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-        <link rel="stylesheet" href=
-"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.9.0/css/all.css">
+        <meta charset="utf-8">
+        <title>Insider</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+        <meta name="theme-color" content="#DE3C31">
+        <link rel="stylesheet" href="/static/css/fonts.css">
+        <link rel="stylesheet" href="/static/css/style.css">
         <link rel="icon" type="image/png" sizes="32x32" href="/static/image/favicon-32x32.png">
         <link rel="icon" type="image/png" sizes="96x96" href="/static/image/favicon-96x96.png">
         <link rel="icon" type="image/png" sizes="16x16" href="/static/image/favicon-16x16.png">
-        <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
     </head>
- 
-    <body class="content">
-        
-        <div class="container-fluid">
-            <header>
-                <img src="/static/image/title.jpg" />
-            </header>
-            <div class="row">
-                <div class="col-lg-12">
-                    <%-defineContent('content')%>
-                </div>
-            </div>
-        </div>
-
-        <footer class="footer">
-            <%-defineContent('footer')%>
-        </footer>
-
-        <!-- Javascript -->
-        <script src="https://code.jquery.com/jquery-1.10.2.min.js" integrity="sha256-C6CB9UYIS9UJeqinPHWTHVqh/E1uhG5Twh+Y5qFQmYg=" crossorigin="anonymous"></script>
+    <body>
+        <%- body %>
         <script src="/socket.io/socket.io.js"></script>
-        <script src="static/js/timer.js"></script>
-    
-        <%-defineContent('script')%>
+        <script type="module" src="/static/js/client.js"></script>
     </body>
 </html>

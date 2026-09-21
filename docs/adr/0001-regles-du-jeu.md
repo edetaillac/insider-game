@@ -72,6 +72,8 @@ D4. Phase de discussion. Ajouter une phase `discussion` entre "mot trouvé" et B
 
 D5. Probabilité du "pas de Traître". Aligner sur le livret (1/(n-1)) en tirant la carte du centre parmi les n-1 rôles hors Maître avant de distribuer. Coût nul dans un moteur réécrit. Décision : aligner
 
+D6 (21/09/2026, gameplay). Révélation du mot sans tell. Au livret, tout le monde ferme les yeux et seul le Traître regarde : personne ne sait qui a regardé. En numérique, si seuls le Maître et le Traître ont une carte à retourner, celui qui touche son téléphone est le Traître. Décision : en phase "mot", tout le monde a la même carte face cachée ; le Maître et le Traître y lisent le mot, le Citoyen une phrase neutre de longueur comparable ; la carte se recache seule après une durée fixe identique pour tous (5 s), pas au tap. Même auto-masquage sur la carte de rôle par cohérence. Pendant le jeu, seul le Maître garde le mot consultable (son rôle est public), le Traître le retient comme au livret. Implémenté côté client seulement ; si des joueurs oublient de retourner leur carte, passer au niveau 2 : commande "j'ai regardé" dans le moteur et chrono lançable seulement quand tout le monde a regardé. Niveau 2 réalisé le 21/09 : accusés `seenRole` et `seenWord` dans le moteur, progression collective affichée. Le chrono reste lançable par l'hôte sans attendre tout le monde.
+
 Hors périmètre pour l'instant, à rouvrir après les premières parties : la variante "regard avant confrontation", la variante "personne n'a trouvé", une durée de sablier configurable.
 
 ## Points vérifiés et restants

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<style>
+body { margin:0; background:#e8e6e1; }
+a { color:#b92e25; } a:hover { color:#DE3C31; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.55} }
+</style>
+</helmet>
+
+<div style="font-family:'Gill Sans','Gill Sans MT',Calibri,sans-serif;padding:48px;background:#e8e6e1;min-height:100vh">
+  <div style="max-width:1200px;margin:0 0 40px">
+    <div style="font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#8a8580;font-weight:700">État des lieux</div>
+    <h1 style="font-size:40px;font-weight:800;color:#1a1a1a;margin:8px 0 10px;letter-spacing:-.02em">Insider — écrans actuels</h1>
+    <p style="font-size:16px;line-height:1.55;color:#4a4642;max-width:62ch;margin:0;text-wrap:pretty">Recréation fidèle du client tel qu'il est aujourd'hui, à partir de <code style="background:#d9d6d0;padding:1px 5px;border-radius:3px">public/js/render.js</code>, <code style="background:#d9d6d0;padding:1px 5px;border-radius:3px">public/css/style.css</code> et <code style="background:#d9d6d0;padding:1px 5px;border-radius:3px">views/layouts/layout.ejs</code>. Cadre 390 × 844 (iPhone 14). Les captures du dépôt datent d'une version antérieure : c'est le code qui fait foi.</p>
+  </div>
+
+  <div style="display:flex;flex-wrap:wrap;gap:36px;align-items:flex-start">
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="font-size:13px;font-weight:700;color:#1a1a1a">01 · Rejoindre <span style="font-weight:400;color:#8a8580">renderJoin()</span></div>
+      <div style="width:390px;height:844px;border-radius:26px;overflow:hidden;box-shadow:0 12px 32px rgba(0,0,0,.18);background:#DE3C31;position:relative">
+        <div style="height:100px;background:#DE3C31 url('assets/frise.jpg') repeat-x bottom center;display:flex;align-items:center;justify-content:center">
+          <img src="assets/title.jpg" alt="Insider" style="display:block;max-height:48px" />
+        </div>
+        <div style="max-width:480px;margin:0 auto;padding:12px 20px 48px;text-align:center;color:#111">
+          <h2 style="margin:20px 0 12px;font-size:26px;line-height:1.2;font-weight:800;color:#111">Qui es-tu ?</h2>
+          <div style="display:flex;flex-wrap:wrap;gap:10px;max-width:360px;margin:8px auto 0">
+            <input type="text" placeholder="Ton prénom" style="flex:1 1 180px;min-height:54px;font-size:18px;border-radius:10px;border:0;padding:0 12px;background:#fff;color:#495057;font-family:inherit" />
+            <button type="button" style="flex:1 1 100%;margin-top:6px;display:block;width:100%;max-width:320px;min-height:54px;padding:0 20px;font-size:18px;font-weight:700;line-height:54px;border-radius:10px;background:#111;border:1px solid #111;color:#fff;font-family:inherit">Rejoindre</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="font-size:13px;font-weight:700;color:#1a1a1a">02 · Salon (hôte) <span style="font-weight:400;color:#8a8580">lobby()</span></div>
+      <div style="width:390px;height:844px;border-radius:26px;overflow:hidden;box-shadow:0 12px 32px rgba(0,0,0,.18);background:#DE3C31">
+        <div style="height:100px;background:#DE3C31 url('assets/frise.jpg') repeat-x bottom center;display:flex;align-items:center;justify-content:center">
+          <img src="assets/title.jpg" alt="Insider" style="display:block;max-height:48px" />
+        </div>
+        <div style="max-width:480px;margin:0 auto;padding:12px 20px 48px;text-align:center;color:#111">
+          <div style="margin:4px 0 8px;font-size:15px;color:rgba(0,0,0,.75)">C'est parti <strong>Manu</strong> <span style="vertical-align:middle;font-size:11px;letter-spacing:.04em;text-transform:uppercase;background:#343a40;color:#fff;padding:.25em .4em;border-radius:.25rem;font-weight:700">hôte</span></div>
+          <h2 style="margin:20px 0 12px;font-size:26px;line-height:1.2;font-weight:800;color:#111">Salon</h2>
+          <ul style="list-style:none;display:inline-block;margin:4px auto 0;padding:0;text-align:left">
+            <li style="display:flex;align-items:center;gap:10px;min-height:44px;font-size:20px">
+              <span style="color:#2fa84f;font-size:12px">●</span> Manu (toi) <span style="vertical-align:middle;font-size:11px;letter-spacing:.04em;text-transform:uppercase;background:#343a40;color:#fff;padding:.25em .4em;border-radius:.25rem;font-weight:700">hôte</span>
+            </li>
+            <li style="display:flex;align-items:center;gap:10px;min-height:44px;font-size:20px">
+              <span style="color:#2fa84f;font-size:12px">●</span> Hélène
+              <button type="button" style="min-width:44px;min-height:44px;padding:0 8px;border:0;background:transparent;color:#111;font-size:22px;line-height:1;font-family:inherit">✕</button>
+            </li>
+            <li style="display:flex;align-items:center;gap:10px;min-height:44px;font-size:20px">
+              <span style="color:#2fa84f;font-size:12px">●</span> Virgile
+              <button type="button" style="min-width:44px;min-height:44px;padding:0 8px;border:0;background:transparent;color:#111;font-size:22px;line-height:1;font-family:inherit">✕</button>
+            </li>
+            <li style="display:flex;align-items:center;gap:10px;min-height:44px;font-size:20px">
+              <span style="color:#7a2d27;font-size:12px">●</span> Laurent
+              <button type="button" style="min-width:44px;min-height:44px;padding:0 8px;border:0;background:transparent;color:#111;font-size:22px;line-height:1;font-family:inherit">✕</button>
+            </li>
+          </ul>
+          <div style="margin:24px 0 0">
+            <button type="button" style="display:block;width:100%;max-width:320px;min-height:54px;margin:0 auto;padding:0 20px;font-size:18px;font-weight:700;line-height:54px;border-radius:10px;background:#111;border:1px solid #111;color:#fff;font-family:inherit">Lancer la partie</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="font-size:13px;font-weight:700;color:#1a1a1a">03 · Rôles — Maître <span style="font-weight:400;color:#8a8580">roles()</span></div>
+      <div style="width:390px;height:844px;border-radius:26px;overflow:hidden;box-shadow:0 12px 32px rgba(0,0,0,.18);background:#DE3C31">
+        <div style="height:100px;background:#DE3C31 url('assets/frise.jpg') repeat-x bottom center;display:flex;align-items:center;justify-content:center">
+          <img src="assets/title.jpg" alt="Insider" style="display:block;max-height:48px" />
+        </div>
+        <div style="max-width:480px;margin:0 auto;padding:12px 20px 48px;text-align:center;color:#111">
+          <div style="margin:4px 0 8px;font-size:15px;color:rgba(0,0,0,.75)">C'est parti <strong>Manu</strong> <span style="vertical-align:middle;font-size:11px;letter-spacing:.04em;text-transform:uppercase;background:#343a40;color:#fff;padding:.25em .4em;border-radius:.25rem;font-weight:700">hôte</span></div>
+          <p style="margin:14px 0 0;font-size:17px">Tu es le <strong>Maître du jeu</strong></p>
+          <div style="position:relative;display:block;width:100%;max-width:320px;height:160px;margin:16px auto;border-radius:14px;background:#23272b;color:#ffc107;box-shadow:0 8px 20px rgba(0,0,0,.25);display:flex;flex-direction:column;justify-content:center;align-items:center;font-size:22px;font-weight:700">
+            Ton rôle<small style="margin-top:10px;font-size:13px;font-weight:400;opacity:.75">Touche pour révéler</small>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:10px;max-width:360px;margin:8px auto 0">
+            <input type="text" placeholder="Mot à faire deviner" style="flex:1 1 180px;min-height:54px;font-size:18px;border-radius:10px;border:0;padding:0 12px;background:#fff;color:#495057;font-family:inherit" />
+            <button type="button" style="flex:0 0 auto;min-height:54px;padding:0 18px;border-radius:10px;background:#ffc107;border:1px solid #ffc107;color:#111;font-weight:700;font-size:16px;font-family:inherit">Valider</button>
+          </div>
+          <p style="margin:14px 0 0;font-size:16px">ou <button type="button" style="margin-left:4px;border-radius:10px;background:#23272b;border:1px solid #23272b;color:#fff;padding:6px 12px;font-size:16px;font-family:inherit">Tirer un mot au hasard</button></p>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="font-size:13px;font-weight:700;color:#1a1a1a">04 · Rôles — Citoyen, carte retournée</div>
+      <div style="width:390px;height:844px;border-radius:26px;overflow:hidden;box-shadow:0 12px 32px rgba(0,0,0,.18);background:#DE3C31">
+        <div style="height:100px;background:#DE3C31 url('assets/frise.jpg') repeat-x bottom center;display:flex;align-items:center;justify-content:center">
+          <img src="assets/title.jpg" alt="Insider" style="display:block;max-height:48px" />
+        </div>
+        <div style="max-width:480px;margin:0 auto;padding:12px 20px 48px;text-align:center;color:#111">
+          <div style="margin:4px 0 8px;font-size:15px;color:rgba(0,0,0,.75)">C'est parti <strong>Hélène</strong></div>
+          <p style="margin:14px 0 0;font-size:17px">Manu est le <strong>Maître du jeu</strong></p>
+          <div style="position:relative;display:flex;width:100%;max-width:320px;height:160px;margin:16px auto;border-radius:14px;background:#ffc107;color:#111;box-shadow:0 8px 20px rgba(0,0,0,.25);flex-direction:column;justify-content:center;align-items:center;font-size:22px;font-weight:700">
+            <strong style="font-size:30px">Citoyen</strong><small style="margin-top:10px;font-size:13px;font-weight:400;opacity:.75">Se cache toute seule</small>
+          </div>
+          <p style="margin:14px 0 0;font-size:17px;opacity:.85">Le Maître du jeu choisit le mot...</p>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="font-size:13px;font-weight:700;color:#1a1a1a">05 · Rituel du mot — Citoyen <span style="font-weight:400;color:#8a8580">word()</span></div>
+      <div style="width:390px;height:844px;border-radius:26px;overflow:hidden;box-shadow:0 12px 32px rgba(0,0,0,.18);background:#DE3C31">
+        <div style="height:100px;background:#DE3C31 url('assets/frise.jpg') repeat-x bottom center;display:flex;align-items:center;justify-content:center">
+          <img src="assets/title.jpg" alt="Insider" style="display:block;max-height:48px" />
+        </div>
+        <div style="max-width:480px;margin:0 auto;padding:12px 20px 48px;text-align:center;color:#111">
+          <div style="margin:4px 0 8px;font-size:15px;color:rgba(0,0,0,.75)">C'est parti <strong>Hélène</strong></div>
+          <p style="margin:14px 0 0;font-size:17px">Manu est le <strong>Maître du jeu</strong></p>
+          <div style="position:relative;display:flex;width:100%;max-width:320px;height:160px;margin:16px auto;border-radius:14px;background:#ffc107;color:#111;box-shadow:0 8px 20px rgba(0,0,0,.25);flex-direction:column;justify-content:center;align-items:center">
+            <strong style="padding:0 22px;font-size:16px;font-weight:500;line-height:1.35">Tu es Citoyen, tu ne connais pas le mot. Garde la carte à l'écran quelques secondes, comme les autres.</strong>
+            <small style="margin-top:10px;font-size:13px;font-weight:400;opacity:.75">Se cache toute seule</small>
+          </div>
+          <div style="margin:24px 0 0">
+            <p style="margin:14px 0 0;font-size:17px;opacity:.85">Tout le monde retourne sa carte, puis l'hôte lance le chrono</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="font-size:13px;font-weight:700;color:#1a1a1a">06 · Partie en cours — Maître <span style="font-weight:400;color:#8a8580">playing()</span></div>
+      <div style="width:390px;height:844px;border-radius:26px;overflow:hidden;box-shadow:0 12px 32px rgba(0,0,0,.18);background:#DE3C31">
+        <div style="height:100px;background:#DE3C31 url('assets/frise.jpg') repeat-x bottom center;display:flex;align-items:center;justify-content:center">
+          <img src="assets/title.jpg" alt="Insider" style="display:block;max-height:48px" />
+        </div>
+        <div style="max-width:480px;margin:0 auto;padding:12px 20px 48px;text-align:center;color:#111">
+          <div style="margin:4px 0 8px;font-size:15px;color:rgba(0,0,0,.75)">C'est parti <strong>Manu</strong> <span style="vertical-align:middle;font-size:11px;letter-spacing:.04em;text-transform:uppercase;background:#343a40;color:#fff;padding:.25em .4em;border-radius:.25rem;font-weight:700">hôte</span></div>
+          <div style="margin:12px 0 4px;font-size:76px;font-weight:800;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums">4:56</div>
+          <p style="margin:14px 0 0;font-size:17px">Tu es le <strong>Maître du jeu</strong></p>
+          <div style="position:relative;display:flex;width:100%;max-width:320px;height:160px;margin:16px auto;border-radius:14px;background:#23272b;color:#ffc107;box-shadow:0 8px 20px rgba(0,0,0,.25);flex-direction:column;justify-content:center;align-items:center;font-size:22px;font-weight:700">
+            Le mot<small style="margin-top:10px;font-size:13px;font-weight:400;opacity:.75">Touche pour révéler</small>
+          </div>
+          <div style="margin-top:20px">
+            <button type="button" style="display:block;width:100%;max-width:320px;min-height:54px;margin:0 auto;padding:0 20px;font-size:18px;font-weight:700;line-height:54px;border-radius:10px;background:#ffc107;border:1px solid #ffc107;color:#111;font-family:inherit">Mot trouvé par...</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="font-size:13px;font-weight:700;color:#1a1a1a">07 · Discussion <span style="font-weight:400;color:#8a8580">discussion()</span></div>
+      <div style="width:390px;height:844px;border-radius:26px;overflow:hidden;box-shadow:0 12px 32px rgba(0,0,0,.18);background:#DE3C31">
+        <div style="height:100px;background:#DE3C31 url('assets/frise.jpg') repeat-x bottom center;display:flex;align-items:center;justify-content:center">
+          <img src="assets/title.jpg" alt="Insider" style="display:block;max-height:48px" />
+        </div>
+        <div style="max-width:480px;margin:0 auto;padding:12px 20px 48px;text-align:center;color:#111">
+          <div style="margin:4px 0 8px;font-size:15px;color:rgba(0,0,0,.75)">C'est parti <strong>Manu</strong> <span style="vertical-align:middle;font-size:11px;letter-spacing:.04em;text-transform:uppercase;background:#343a40;color:#fff;padding:.25em .4em;border-radius:.25rem;font-weight:700">hôte</span></div>
+          <h2 style="margin:20px 0 12px;font-size:26px;line-height:1.2;font-weight:800;color:#111">Virgile a trouvé le mot</h2>
+          <div style="margin:12px 0 4px;font-size:56px;font-weight:800;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums">2:14<small style="display:block;margin-top:6px;font-size:14px;font-weight:400">temps indicatif</small></div>
+          <div style="position:relative;display:flex;width:100%;max-width:320px;height:160px;margin:16px auto;border-radius:14px;background:#23272b;color:#ffc107;box-shadow:0 8px 20px rgba(0,0,0,.25);flex-direction:column;justify-content:center;align-items:center;font-size:22px;font-weight:700">
+            Le mot<small style="margin-top:10px;font-size:13px;font-weight:400;opacity:.75">Touche pour révéler</small>
+          </div>
+          <div style="margin:24px 0 0">
+            <button type="button" style="display:block;width:100%;max-width:320px;min-height:54px;margin:0 auto;padding:0 20px;font-size:18px;font-weight:700;line-height:54px;border-radius:10px;background:#111;border:1px solid #111;color:#fff;font-family:inherit">Passer au vote</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="font-size:13px;font-weight:700;color:#1a1a1a">08 · Vote 1 <span style="font-weight:400;color:#8a8580">vote1()</span></div>
+      <div style="width:390px;height:844px;border-radius:26px;overflow:hidden;box-shadow:0 12px 32px rgba(0,0,0,.18);background:#DE3C31">
+        <div style="height:100px;background:#DE3C31 url('assets/frise.jpg') repeat-x bottom center;display:flex;align-items:center;justify-content:center">
+          <img src="assets/title.jpg" alt="Insider" style="display:block;max-height:48px" />
+        </div>
+        <div style="max-width:480px;margin:0 auto;padding:12px 20px 48px;text-align:center;color:#111">
+          <div style="margin:4px 0 8px;font-size:15px;color:rgba(0,0,0,.75)">C'est parti <strong>Hélène</strong></div>
+          <h2 style="margin:20px 0 12px;font-size:26px;line-height:1.2;font-weight:800;color:#111">Virgile a trouvé le mot.<br />Est-ce le Traître ?</h2>
+          <div style="display:flex;justify-content:center;gap:14px;margin:20px 0 0">
+            <button type="button" style="flex:1 1 0;max-width:160px;min-height:72px;font-size:26px;border-radius:10px;background:#ffc107;border:1px solid #ffc107;color:#111;font-weight:700;font-family:inherit">👍 Oui</button>
+            <button type="button" style="flex:1 1 0;max-width:160px;min-height:72px;font-size:26px;border-radius:10px;background:#ffc107;border:1px solid #ffc107;color:#111;font-weight:700;font-family:inherit">👎 Non</button>
+          </div>
+          <p style="margin:14px 0 0;font-size:17px">2 sur 5 ont voté</p>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="font-size:13px;font-weight:700;color:#1a1a1a">09 · Vote 2 <span style="font-weight:400;color:#8a8580">vote2()</span></div>
+      <div style="width:390px;height:844px;border-radius:26px;overflow:hidden;box-shadow:0 12px 32px rgba(0,0,0,.18);background:#DE3C31">
+        <div style="height:100px;background:#DE3C31 url('assets/frise.jpg') repeat-x bottom center;display:flex;align-items:center;justify-content:center">
+          <img src="assets/title.jpg" alt="Insider" style="display:block;max-height:48px" />
+        </div>
+        <div style="max-width:480px;margin:0 auto;padding:12px 20px 48px;text-align:center;color:#111">
+          <div style="margin:4px 0 8px;font-size:15px;color:rgba(0,0,0,.75)">C'est parti <strong>Hélène</strong></div>
+          <h2 style="margin:20px 0 12px;font-size:26px;line-height:1.2;font-weight:800;color:#111">Qui est le Traître ?</h2>
+          <div style="max-width:360px;margin:16px auto 0">
+            <button type="button" style="display:block;width:100%;min-height:54px;margin:8px 0;font-size:18px;border-radius:10px;background:#23272b;border:1px solid #23272b;color:#fff;font-family:inherit">Manu</button>
+            <button type="button" style="display:block;width:100%;min-height:54px;margin:8px 0;font-size:18px;border-radius:10px;background:#23272b;border:1px solid #23272b;color:#fff;font-family:inherit">Hélène</button>
+            <button type="button" style="display:block;width:100%;min-height:54px;margin:8px 0;font-size:18px;border-radius:10px;background:#23272b;border:1px solid #23272b;color:#fff;font-family:inherit">Virgile</button>
+            <button type="button" style="display:block;width:100%;min-height:54px;margin:8px 0;font-size:18px;border-radius:10px;background:#23272b;border:1px solid #23272b;color:#fff;font-family:inherit">Laurent</button>
+            <button type="button" style="display:block;width:100%;min-height:54px;margin:8px 0;font-size:18px;border-radius:10px;background:#23272b;border:1px solid #23272b;color:#fff;font-family:inherit">Fanny</button>
+          </div>
+          <div style="max-width:360px;margin:18px auto 0">
+            <button type="button" style="display:block;width:100%;min-height:54px;font-size:17px;border-radius:10px;background:transparent;border:2px solid #111;color:#111;font-family:inherit">Pas de Traître</button>
+          </div>
+          <p style="margin:14px 0 0;font-size:17px">1 sur 5 ont voté</p>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="font-size:13px;font-weight:700;color:#1a1a1a">10 · Résultat <span style="font-weight:400;color:#8a8580">ended()</span></div>
+      <div style="width:390px;height:844px;border-radius:26px;overflow:hidden;box-shadow:0 12px 32px rgba(0,0,0,.18);background:#DE3C31;position:relative">
+        <div style="height:100px;background:#DE3C31 url('assets/frise.jpg') repeat-x bottom center;display:flex;align-items:center;justify-content:center">
+          <img src="assets/title.jpg" alt="Insider" style="display:block;max-height:48px" />
+        </div>
+        <div style="max-width:480px;margin:0 auto;padding:12px 20px 48px;text-align:center;color:#111">
+          <div style="margin:4px 0 8px;font-size:15px;color:rgba(0,0,0,.75)">C'est parti <strong>Manu</strong> <span style="vertical-align:middle;font-size:11px;letter-spacing:.04em;text-transform:uppercase;background:#343a40;color:#fff;padding:.25em .4em;border-radius:.25rem;font-weight:700">hôte</span></div>
+          <h2 style="margin:20px 0 12px;font-size:26px;line-height:1.2;font-weight:800;color:#111">Les Citoyens gagnent !</h2>
+          <p style="font-size:16px;margin:0">Laurent était le Traître. Le mot était <strong>Marmotte</strong>.</p>
+          <ul style="list-style:none;display:inline-block;margin:12px auto 0;padding:12px 20px;border-radius:12px;background:rgba(0,0,0,.12);text-align:left;font-size:18px">
+            <li style="padding:4px 0">Laurent : 3</li>
+            <li style="padding:4px 0">Virgile : 1</li>
+            <li style="padding:4px 0">Pas de Traître : 1</li>
+          </ul>
+          <div style="margin:24px 0 0">
+            <button type="button" style="display:block;width:100%;max-width:320px;min-height:54px;margin:0 auto;padding:0 20px;font-size:18px;font-weight:700;line-height:54px;border-radius:10px;background:#111;border:1px solid #111;color:#fff;font-family:inherit">Rejouer</button>
+            <button type="button" style="display:inline-block;margin-top:12px;min-height:38px;padding:6px 18px;font-size:16px;border-radius:10px;background:#23272b;border:1px solid #23272b;color:#fff;font-family:inherit">Retour au salon</button>
+          </div>
+        </div>
+        <div style="position:absolute;top:0;left:0;right:0;padding:8px;background:#23272b;color:#ffc107;text-align:center;font-weight:700">Reconnexion...</div>
+        <div style="position:absolute;left:50%;bottom:32px;transform:translateX(-50%);max-width:90%;padding:12px 18px;border-radius:10px;background:#23272b;color:#fff;box-shadow:0 8px 20px rgba(0,0,0,.3);font-size:16px">Cette action n'est plus possible.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

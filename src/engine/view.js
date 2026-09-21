@@ -26,6 +26,11 @@ export function view(game, playerId) {
     const ballots = 'ballots' in phase ? phase.ballots : null;
     /** @param {PlayerId} id */
     const hasVoted = (id) => Boolean(ballots && Object.hasOwn(ballots, id));
+    const seen = 'seen' in phase ? phase.seen : null;
+    /** @param {PlayerId} id */
+    const hasSeen = (id) => Boolean(seen && Object.hasOwn(seen, id));
+    /** @type {boolean|CandidateId|null} */
+    const myBallot = ballots && Object.hasOwn(ballots, playerId) ? ballots[playerId] : null;
     const finderId = 'finderId' in phase ? phase.finderId : null;
     const finderPlayer = finderId !== null ? game.players.find((p) => p.id === finderId) : undefined;
     const masterId = Object.keys(game.roles ?? {}).find((id) => game.roles?.[id] === 'master') ?? null;
@@ -62,8 +67,8 @@ export function view(game, playerId) {
     return {
         version: game.version,
         phase: phase.name,
-        me: { id: me.id, name: me.name, isHost: me.isHost, role: myRole, hasVoted: hasVoted(me.id) },
-        players: game.players.map((p) => ({ id: p.id, name: p.name, isHost: p.isHost, hasVoted: hasVoted(p.id) })),
+        me: { id: me.id, name: me.name, isHost: me.isHost, role: myRole, hasVoted: hasVoted(me.id), hasSeen: hasSeen(me.id), ballot: myBallot },
+        players: game.players.map((p) => ({ id: p.id, name: p.name, isHost: p.isHost, hasVoted: hasVoted(p.id), hasSeen: hasSeen(p.id) })),
         word: wordVisible ? game.word : null,
         master: masterPlayer ? { id: masterPlayer.id, name: masterPlayer.name } : null,
         finder: finderPlayer ? { id: finderPlayer.id, name: finderPlayer.name } : null,

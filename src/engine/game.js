@@ -62,6 +62,7 @@ Object.freeze(ALL_PHASES);
 const PHASES_BY_COMMAND = {
     addPlayer: ['lobby', 'ended'],
     removePlayer: ['lobby', 'ended'],
+    setHost: [...ALL_PHASES],
     startRound: ['lobby', 'ended'],
     setWord: ['roles'],
     drawWord: ['roles'],
@@ -82,7 +83,7 @@ for (const key of /** @type {CommandType[]} */ (Object.keys(PHASES_BY_COMMAND)))
 Object.freeze(PHASES_BY_COMMAND);
 
 /** @type {Set<CommandType>} */
-const SERVER_ONLY = new Set(['addPlayer', 'removePlayer', 'timeout']);
+const SERVER_ONLY = new Set(['addPlayer', 'removePlayer', 'setHost', 'timeout']);
 
 /** @param {Game} game */
 export function effectiveMaxPlayers(game) {
@@ -112,6 +113,7 @@ export function canAct(game, type, actor) {
     switch (type) {
         case 'addPlayer':
         case 'removePlayer':
+        case 'setHost':
         case 'timeout':
             return actor === SERVER;
         case 'startRound':
@@ -231,6 +233,19 @@ function removePlayer(game, command) {
         return fail('UNKNOWN_PLAYER', `no player ${command.id}`);
     }
     return next(game, { players: game.players.filter((p) => p.id !== command.id) });
+}
+
+/**
+ * Transfert du rôle d'hôte. La condition (hôte absent) relève de la présence, donc de la table.
+ * @param {Game} game
+ * @param {Extract<Command, {type: 'setHost'}>} command
+ * @returns {Result}
+ */
+function setHost(game, command) {
+    if (!game.players.some((p) => p.id === command.id)) {
+        return fail('UNKNOWN_PLAYER', `no player ${command.id}`);
+    }
+    return next(game, { players: game.players.map((p) => ({ ...p, isHost: p.id === command.id })) });
 }
 
 /**
@@ -527,6 +542,7 @@ function resolveCandidate(game, pointed, reason, finderId, tallies) {
 const HANDLERS = {
     addPlayer,
     removePlayer,
+    setHost,
     reset,
     startRound,
     setWord,

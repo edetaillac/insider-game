@@ -240,6 +240,7 @@ button {
 .well p { margin: 0; }
 .well .label { margin: 0 0 8px; }
 .well strong { font-weight: 700; }
+.host-away { margin-bottom: 20px; }
 
 .share-url {
     display: block;

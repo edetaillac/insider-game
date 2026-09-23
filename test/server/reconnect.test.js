@@ -41,3 +41,24 @@ test('deux sockets du même token comptent pour un seul joueur en ligne', async 
         await srv.stop();
     }
 });
+
+test('l\'hôte part en pleine manche : un joueur reprend la main par le transport et la partie repart', async () => {
+    const srv = await startServer();
+    try {
+        const players = await joinAll(srv.url, ['Alice', 'Bob', 'Carol', 'Dan']);
+        const [alice, bob] = players;
+        assert.equal((await command(alice.socket, { type: 'startRound' })).ok, true);
+        assert.equal((await command(bob.socket, { type: 'claimHost' })).error, 'FORBIDDEN');
+        const offline = waitFor(bob.socket, 'state', (s) => !s.online.includes(alice.latest.view.me.id));
+        alice.socket.close();
+        await offline;
+        const promoted = waitFor(bob.socket, 'state', (s) => s.view.me.isHost);
+        assert.equal((await command(bob.socket, { type: 'claimHost' })).ok, true);
+        const state = await promoted;
+        assert.equal(state.view.phase, 'roles');
+        assert.ok(state.view.actions.includes('reset'));
+        closeAll(players.slice(1));
+    } finally {
+        await srv.stop();
+    }
+});

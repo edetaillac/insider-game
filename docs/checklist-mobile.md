@@ -11,9 +11,7 @@ contexte: Vérifications manuelles sur téléphones réels avant une partie, ce 
 - [ ] La pastille Son de l'hôte coupe le son et le reste après un rechargement
 - [ ] Verrouiller le téléphone de l'hôte fait apparaître "Reprendre la main" chez les autres, et le son suit le nouvel hôte
 - [ ] Le bouton Copier du salon copie l'adresse complète
-- [ ] Maintenir le bloc « Le mot » en enquête révèle le mot, le relâcher le masque, sans loupe ni menu contextuel sur iOS
 - [ ] Posés sur la table, les téléphones du Traître et d'un Citoyen sont indiscernables pendant l'enquête (ADR D7)
-- [ ] Le geste « maintenir » est compris sans explication à table. Sinon, basculer sur un tap qui affiche 3 s (question ouverte du handoff)
 - [ ] L'écran ne se verrouille pas pendant le chrono (Wake Lock)
 - [ ] Un reload en pleine partie revient au bon écran, avec le même prénom
 - [ ] Verrouiller puis déverrouiller le téléphone revient au bon écran, le chrono est juste

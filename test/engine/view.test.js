@@ -214,3 +214,25 @@ test('ended avec variante active : result.centerCard non null pour tous', () => 
         assert.notEqual(view(ended, p.id).result.centerCard, null);
     }
 });
+
+test('D6 révisé : le Traître lit le mot au rituel seulement, puis ne le reçoit plus avant la fin', () => {
+    const ctx = started(4, NO_VARIANT);
+    const inWord = toWord(ctx);
+    assert.equal(view(inWord, ctx.insider).word, 'Château', 'au rituel, pour la carte');
+    const playing = run(inWord, ctx.deps, { type: 'startTimer', actor: ctx.host });
+    assert.equal(view(playing, ctx.insider).word, null, 'enquête');
+    assert.equal(view(playing, ctx.master).word, 'Château', 'le Maître garde le mot');
+    ctx.advance(1000);
+    const disc = run(playing, ctx.deps, { type: 'wordFound', actor: ctx.master, finderId: ctx.commons[0] });
+    assert.equal(view(disc, ctx.insider).word, null, 'discussion');
+    const v1 = run(disc, ctx.deps, { type: 'closeDiscussion', actor: ctx.master });
+    assert.equal(view(v1, ctx.insider).word, null, 'vote 1');
+    const v2 = run(v1, ctx.deps, ...v1.players.map((p) => ({ type: 'vote1', actor: p.id, value: false })));
+    assert.equal(v2.phase.name, 'vote2');
+    assert.equal(view(v2, ctx.insider).word, null, 'vote 2');
+    const tied = run(v2, ctx.deps, ...v2.players.map((p, i) => ({ type: 'vote2', actor: p.id, candidate: candidates(v2)[i % 2] })));
+    assert.equal(tied.phase.name, 'tiebreak');
+    assert.equal(view(tied, ctx.insider).word, null, 'départage');
+    const ended = run(tied, ctx.deps, { type: 'tiebreak', actor: tied.phase.finderId, candidate: tied.phase.tied[0] });
+    assert.equal(view(ended, ctx.insider).word, 'Château', 'fin de manche');
+});

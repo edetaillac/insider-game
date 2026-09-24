@@ -8,7 +8,7 @@ Treize corrections validées par le produit le 24/09/2026, après l'implémentat
 - **Gameplay (3 à 6)** : fidélité au livret, lisibilité du résultat et des votes.
 - **UX et UI (7 à 13)** : états d'attente, identité des joueurs, cohérence typographique.
 
-Ordre d'implémentation conseillé : 1, 2, 7 (ils partagent des composants), puis 3, 6, 4, 5, puis 8 à 13.
+Ordre d'implémentation conseillé : 1, 2, 7, puis 3, 6, 4, 5, puis 8 à 13.
 
 ## À propos des fichiers de design
 
@@ -19,8 +19,7 @@ Ordre d'implémentation conseillé : 1, 2, 7 (ils partagent des composants), pui
 - règles de jeu dans `src/engine/game.js` et `view.js`.
 
 Repères dans la maquette :
-- `5a` : enquête, au repos, identique pour tous les rôles ;
-- `5b` : enquête, appui maintenu (Traître) ;
+- `5a` : enquête, identique pour Citoyen et Traître ;
 - `5c` : choix du mot, vue d'un joueur ;
 - `5d` : résultat, vue hôte.
 
@@ -30,74 +29,49 @@ Repères dans la maquette :
 
 ---
 
-## 1 · Enquête : même écran pour tous les rôles
+## 1 · Enquête : le mot disparaît pour le Traître
 
-**Problème.** Pendant `playing`, seuls le Maître et le Traître ont le bloc `.dark` avec le mot. Les téléphones sont posés sur la table pendant 5 minutes : la silhouette de l'écran trahit le Traître.
+**Problème.** Pendant `playing`, le Maître et le Traître ont le bloc `.dark` avec le mot. Les téléphones sont posés sur la table pendant 5 minutes : la silhouette de l'écran trahit le Traître.
 
-**Règle.** À l'écran d'enquête, un Citoyen et le Traître doivent avoir **exactement** le même rendu au repos : même DOM, même taille, mêmes couleurs.
+**Décision (retour au livret, et à la version initiale de D6).** Le Traître lit le mot **une seule fois**, au rituel du mot. Ensuite, il ne l'a plus. S'il l'oublie, c'est le jeu. Seul le Maître garde le mot à l'écran, puisque son rôle est public.
 
-### Composant « bloc secret » (nouveau, réutilisé au point 2)
+### Moteur et vue
 
-`secretBlock({ label, reveal, revealCls, hint })` dans `render.js`, classe `.secret`.
+- `src/engine/view.js` : en phase `playing`, `discussion`, `vote1`, `vote2` et `tiebreak`, `word` vaut `null` pour le Traître. Seul le Maître le reçoit. En `word`, rien ne change : le Traître le reçoit pour la carte. En `ended`, tout le monde le reçoit (inchangé).
+- C'est plus sûr que de le masquer côté client : le mot ne transite plus vers le téléphone du Traître.
 
-Au repos (5a) :
-- bouton plein largeur, hauteur min 84 px, padding `16px 18px`, rayon 16 px, fond `--ink`, texte `--cream`, gap 14 px, en flex centré verticalement ;
-- œil à gauche : cercle 40 px, bordure `2.5px solid var(--yellow)`, point central 14 px `--yellow` (même motif que `.card-eye`, en plus petit) ;
-- libellé : Oswald 600 12 px, `letter-spacing:.14em`, capitales, `--muted` (`Le mot`) ;
-- indication : Oswald 600 20 px capitales `--cream` (`Maintiens pour voir`).
+### Rendu (5a)
 
-Appui maintenu (5b) :
-- fond `--yellow`, texte `--ink`, `transform:scale(.98)` ;
-- l'œil disparaît ; libellé `Le mot` (Oswald 12 px) ;
-- valeur : Oswald 600 34 px capitales, interligne 1, `overflow-wrap:anywhere` ;
-- **hauteur identique au repos** (min-height 84 px, la valeur tient sur une ligne ; au-delà, coupure autorisée mais même hauteur minimale).
-
-Contenu révélé selon le rôle :
-- Traître : le mot ;
-- Citoyen : `Tu ne connais pas le mot`, en Oswald 22 px (même classe `.neutral` que la carte du rituel du mot).
-
-Maître : le bloc est **ouvert en permanence** (son rôle est public), avec le libellé `Le mot à faire deviner`. On garde l'actuel `.dark`, qui ne trahit rien.
-
-Interaction :
-- `pointerdown` révèle, `pointerup`, `pointercancel`, `pointerleave` et `blur` masquent ; pas de minimum de durée ;
-- clavier : `Espace` ou `Entrée` maintenus révèlent, le relâchement masque ;
-- `aria-pressed` suit l'état ; `aria-label="Le mot, maintenir pour voir"` ;
-- `touch-action:none; user-select:none; -webkit-touch-callout:none` pour éviter la loupe et le menu contextuel iOS ;
-- **pas de son, pas de vibration** ;
-- l'état est local et se perd au re-rendu (le rendu par défaut est toujours masqué).
-
-Dans `playing()` :
-- supprimer le `wordBlock` conditionnel ;
-- insérer `secretBlock` pour **tous** les joueurs sauf le Maître, à la même place (sous la barre du chrono, `margin-top:20px`), puis `RULE_WELL` (`margin-top:14px`) ;
-- supprimer les notes `Visible seulement par toi et le Traître.` et `Tu connais le mot. Personne ne doit le deviner sur ton visage.` : elles différenciaient les écrans.
-
-Côté vue (`view.js`) : rien ne change pour les données. Le Citoyen reçoit toujours `word: null` ; le texte neutre est local.
-
-### Chrono
-
-Le passage en bloc sombre (`.timer-block.urgent`) reste à 30 s, identique pour tous. Vérifier qu'aucune autre classe ne dépend du rôle sur cet écran.
+`playing()` :
+- Citoyen et Traître : chrono, barre, puis `RULE_WELL` en `margin-top:20px`, sans aucun bloc mot. Leurs rendus sont **identiques**.
+- Maître : le bloc `.dark` actuel, libellé `Le mot à faire deviner`, note `Visible seulement par toi.` (au lieu de « par toi et le Traître »).
+- Supprimer la note Traître `Tu connais le mot. Personne ne doit le deviner sur ton visage.`
+- `discussion()` : le sous-titre `Le mot était …` reste réservé au Maître (déjà le cas).
 
 ### Tests
 
-- `render(playing)` pour un Citoyen et pour le Traître : même HTML, une fois le mot et le texte révélé retirés (les comparer après avoir retiré le contenu de `.secret-reveal`).
-- Le Maître a le bloc ouvert, sans « Maintiens ».
+- `view(game, insiderId).word === null` en `playing`, `discussion`, `vote1`, `vote2` et `tiebreak` ; non nul en `word` et en `ended`.
+- `render(playing)` : HTML identique pour un Citoyen et pour le Traître.
+
+### ADR
+
+Mettre à jour D6 dans `docs/adr/0001-regles-du-jeu.md` : annuler la dernière phrase du correctif du 21/09 (« le Traître comme le Maître gardent le mot consultable »). Pendant l'enquête, seul le Maître garde le mot.
 
 ---
 
-## 2 · Rôle masqué pendant l'attente
+## 2 · Plus de rappel du rôle
 
-**Problème.** Dans `roles()`, une fois la carte vue et quand on n'est pas Maître, `roleRecall()` affiche `Ton rôle : Traître` en clair alors que l'écran dit de poser le téléphone.
+**Problème.** Dans `roles()`, une fois la carte vue et quand on n'est pas Maître, `roleRecall()` affiche `Ton rôle : Traître` en clair, alors que l'écran dit de poser le téléphone.
+
+**Décision.** On voit sa carte une fois. Le rôle n'est plus rappelé nulle part ensuite. Même logique qu'au point 1.
 
 **Écran 5c** (remplace la branche « attente du mot » de `roles()`) :
 - bloc centré, `padding-top:36px` ;
 - avatar du Maître 64 px, `.avatar.ink`, Oswald 26 px ;
 - titre `.h2` (32 px, voir point 10) : `{masterName} choisit le mot`, `margin-top:16px` ;
 - `.lead` (`max-width:28ch`, `margin-top:8px`) : `{masterName} est le Maître du jeu. Pose ton téléphone, écran vers la table.` ;
-- `secretBlock` en variante claire, `margin-top:36px` :
-  - au repos : fond `--well`, hauteur min 72 px, padding `14px 18px`, œil 36 px à bordure `2px solid var(--ink)` et point 12 px `--ink`, libellé `.label` `Ton rôle`, indication 15 px 600 `Maintiens pour le revoir` ;
-  - appui : fond `--yellow`, rôle en Oswald 26 px capitales (`ROLE_LABELS`), dessous l'indice du rôle (`ROLE_HINTS`) en 14 px ;
-  - même interaction qu'au point 1.
-- supprimer les `dots()` de cet écran (remplacés par le bas d'écran d'attente, point 7) et `roleRecall()` s'il n'est plus utilisé ailleurs.
+- supprimer `roleRecall()` et ses styles `.role-recall` ;
+- supprimer les `dots()` de cet écran, remplacés par le bas d'écran d'attente (point 7).
 
 Bas d'écran : attente (point 7), texte `Le mot arrive dans un instant`.
 
@@ -317,24 +291,20 @@ Test : `grep -n 'style="' public/js/render.js` ne doit plus renvoyer que `.tally
 
 ---
 
-## Question ouverte
-
-**Point 1 : maintenir le doigt, ou taper pour afficher 3 s ?** La recommandation (et les maquettes) : maintenir. C'est plus discret, l'écran ne reste pas jaune sur la table. Si les tests à table montrent que le geste n'est pas compris, passer au tap : 3 s d'affichage, barre de temps comme sur les cartes, identique pour tous.
-
 ## Fichiers du bundle
 
-- `maquettes.dc.html` : les 13 constats et les maquettes 5a à 5d (ouvrir dans un navigateur).
+- `maquettes.dc.html` : les 13 constats et les maquettes 5a, 5c et 5d (ouvrir dans un navigateur).
 - `support.js` : runtime nécessaire pour ouvrir la maquette.
 - `fonts/`, `img/` : copies des polices et images du dépôt, pour la maquette seulement.
 
 ## Fichiers du dépôt concernés
 
 - `src/engine/game.js` : point 3 (`canAct`)
-- `src/engine/view.js` : points 4 (`roles` et `centerCard` en fin de manche) et 5 (`traitorOptional`)
+- `src/engine/view.js` : points 1 (mot retiré au Traître après le rituel), 4 (`roles` et `centerCard` en fin de manche) et 5 (`traitorOptional`)
 - `src/server/table.js` : point 3 (présence du Maître)
 - `public/js/render.js` : tous les points
 - `public/js/dom.js` : points 4 (`outcomeStory`), 5 (`ROLE_HINTS`) et 8 (`initials`)
-- `public/js/client.js` : points 1 et 2 (appui maintenu), 6 (sélection sans envoi)
-- `public/css/style.css` : points 1, 2, 4, 7, 8, 10, 12, 13
+- `public/js/client.js` : point 6 (sélection sans envoi)
+- `public/css/style.css` : points 2, 4, 7, 8, 10, 12, 13
 - `test/engine/*`, `test/client/render.test.js` : tests listés dans chaque point
-- `docs/adr/0001-regles-du-jeu.md` : ajouter D7 (même écran d'enquête pour tous, prolongement de D6) et D8 (`wordFound` et `closeDiscussion` réservés au Maître, l'hôte seulement si le Maître est hors ligne)
+- `docs/adr/0001-regles-du-jeu.md` : corriger D6 (seul le Maître garde le mot pendant l'enquête) et D8 (`wordFound` et `closeDiscussion` réservés au Maître, l'hôte seulement si le Maître est hors ligne)

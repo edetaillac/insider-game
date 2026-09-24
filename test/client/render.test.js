@@ -196,32 +196,29 @@ test('pastille Son : icône haut-parleur, barrée quand le son est coupé', () =
 
 /* Repasse UX et gameplay (handoff 2026-09-24-repasse) */
 
-const withoutSecret = (html) => html.replace(/<span class="secret-reveal">[\s\S]*?<\/span><\/span><\/button>/g, '<span class="secret-reveal"></span></span></button>');
-
-test('point 1 : à l\'enquête, Citoyen et Traître ont le même écran au repos', () => {
+test('point 1 : à l\'enquête, Citoyen et Traître ont exactement le même écran', () => {
     const base = { phase: 'playing', master: 'a', ids: ['a', 'b', 'c', 'd'] };
-    const traitor = out(envelope({ ...base, me: 'b', role: 'insider', word: 'Château' }));
+    // D6 révisé : la vue ne transmet plus le mot au Traître après le rituel
+    const traitor = out(envelope({ ...base, me: 'b', role: 'insider' }));
     const citizen = out(envelope({ ...base, me: 'c', role: 'common' }));
-    assert.equal(withoutSecret(traitor.content), withoutSecret(citizen.content));
+    assert.equal(traitor.content, citizen.content);
     assert.equal(traitor.dock, citizen.dock);
-    assert.match(traitor.content, /class="secret"[^>]*data-hold/);
-    assert.match(traitor.content, /aria-label="Le mot, maintenir pour voir"/);
-    assert.match(citizen.content, /Tu ne connais pas le mot/);
-    assert.doesNotMatch(traitor.content + citizen.content, /Visible seulement|Personne ne doit le deviner/);
+    assert.doesNotMatch(citizen.content, /secret|Maintiens|class="dark"|Personne ne doit le deviner/);
+    assert.match(citizen.content, /class="mt-20"><div class="well well-lg"><p class="label">Règle du tour/);
 });
 
-test('point 1 : le Maître garde le mot ouvert, sans « Maintiens »', () => {
+test('point 1 : le Maître garde le mot, visible seulement par lui', () => {
     const r = out(envelope({ phase: 'playing', master: 'b', me: 'b', role: 'master', word: 'Château', actions: ['wordFound'] }));
     assert.match(r.content, /Le mot à faire deviner/);
-    assert.doesNotMatch(r.content, /Maintiens|data-hold/);
+    assert.match(r.content, /Visible seulement par toi\./);
+    assert.doesNotMatch(r.content, /et le Traître/);
 });
 
-test('point 2 : attente du mot sans rôle en clair, bloc à maintenir, bas d\'écran d\'attente', () => {
+test('point 2 : attente du mot sans aucun rappel du rôle, bas d\'écran d\'attente', () => {
     const r = out(envelope({ phase: 'roles', master: 'a', me: 'b', role: 'insider' }));
     assert.match(r.content, /Alice choisit le mot/);
     assert.match(r.content, /Alice est le Maître du jeu\. Pose ton téléphone, écran vers la table\./);
-    assert.doesNotMatch(withoutSecret(r.content), /Traître/);
-    assert.match(r.content, /class="secret secret-light"/);
+    assert.doesNotMatch(r.content, /Traître|Ton rôle|secret/);
     assert.match(r.dock, /class="dock-wait" role="status"/);
     assert.match(r.dock, /Le mot arrive dans un instant/);
     assert.doesNotMatch(r.dock, /<button|dock-note/);
@@ -263,8 +260,9 @@ test('point 5 : la variante est annoncée au salon', () => {
 });
 
 test('point 5 : la carte du Citoyen et du Maître dit qu\'il peut n\'y avoir aucun Traître', () => {
-    const r = render(envelope({ phase: 'roles', me: 'b', role: 'common', master: 'a', traitorOptional: true }), { ...LOCAL }, UI);
-    assert.match(r.content, /s&#39;il y en a un/);
+    const env = envelope({ phase: 'roles', me: 'b', role: 'common', master: 'a', traitorOptional: true });
+    env.view.me.hasSeen = false;
+    assert.match(out(env).content, /s&#39;il y en a un/);
 });
 
 test('point 6 : vote 1, le tap sélectionne sans envoyer, puis Voter', () => {

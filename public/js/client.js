@@ -503,62 +503,6 @@ function onSubmit(event) {
 
 screen.addEventListener('submit', onSubmit);
 
-/*
- * Bloc secret (ADR D7) : l'appui maintenu révèle, le relâchement masque. Pas de durée minimale,
- * ni son ni vibration. L'état vit dans le DOM et se perd au re-rendu : le rendu par défaut est masqué.
- */
-function hold(block, pressed) {
-    block.setAttribute('aria-pressed', String(pressed));
-}
-
-screen.addEventListener('pointerdown', (event) => {
-    const block = /** @type {HTMLElement} */ (event.target).closest('[data-hold]');
-    if (!(block instanceof HTMLElement)) {
-        return;
-    }
-    hold(block, true);
-    const release = () => {
-        hold(block, false);
-        for (const type of ['pointerup', 'pointercancel', 'pointerleave', 'blur']) {
-            block.removeEventListener(type, release);
-        }
-    };
-    for (const type of ['pointerup', 'pointercancel', 'pointerleave', 'blur']) {
-        block.addEventListener(type, release);
-    }
-});
-
-screen.addEventListener('keydown', (event) => {
-    const block = /** @type {HTMLElement} */ (event.target).closest?.('[data-hold]');
-    if (block instanceof HTMLElement && (event.key === ' ' || event.key === 'Enter')) {
-        event.preventDefault();
-        if (!event.repeat) {
-            hold(block, true);
-        }
-    }
-});
-
-screen.addEventListener('keyup', (event) => {
-    const block = /** @type {HTMLElement} */ (event.target).closest?.('[data-hold]');
-    if (block instanceof HTMLElement && (event.key === ' ' || event.key === 'Enter')) {
-        hold(block, false);
-    }
-});
-
-screen.addEventListener('focusout', (event) => {
-    const block = /** @type {HTMLElement} */ (event.target).closest?.('[data-hold]');
-    if (block instanceof HTMLElement) {
-        hold(block, false);
-    }
-});
-
-/* Pas de menu contextuel ni de loupe sur un appui long */
-screen.addEventListener('contextmenu', (event) => {
-    if (/** @type {HTMLElement} */ (event.target).closest('[data-hold]')) {
-        event.preventDefault();
-    }
-});
-
 /* Le CTA du socle peut soumettre un formulaire du contenu : il porte data-submit="<form id>". */
 dock.addEventListener('click', (event) => {
     const target = /** @type {HTMLElement} */ (event.target).closest('[data-submit]');

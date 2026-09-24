@@ -63,14 +63,6 @@ export function waitDock(text) {
     return `<div class="dock-wait" role="status"><span class="wait-dots" aria-hidden="true"><i></i><i></i><i></i></span><span>${e(text)}</span></div>`;
 }
 
-/**
- * Bloc secret (points 1 et 2, ADR D7) : même silhouette pour tous au repos, révélé par appui maintenu.
- * Le contenu révélé vit dans `.secret-reveal`, seule partie qui diffère d'un rôle à l'autre.
- */
-export function secretBlock({ label, hint, reveal, revealCls, sub = '', light = false }) {
-    return `<button type="button" class="secret${light ? ' secret-light' : ''}" data-hold aria-pressed="false" aria-label="${e(label)}, maintenir pour voir"><span class="secret-rest"><span class="secret-eye" aria-hidden="true"></span><span class="secret-text"><span class="secret-label">${e(label)}</span><span class="secret-hint">${e(hint)}</span></span></span><span class="secret-reveal"><span class="secret-label">${e(label)}</span><span class="secret-value ${e(revealCls)}">${e(reveal)}</span>${sub ? `<span class="secret-sub">${e(sub)}</span>` : ''}</span></button>`;
-}
-
 /** Progression collective (handoff "Composant : progression collective"). */
 export function progress(view, done, label) {
     const items = view.players.map((p) => `<span class="prog-item${done(p) ? ' on' : ''}">${avatar(ini(view, p.id), `avatar${done(p) ? ' on' : ''}`)}<span class="prog-name">${e(p.name)}</span></span>`).join('');
@@ -267,13 +259,12 @@ function roles(envelope, local) {
             dock: `<button type="button" class="btn btn-primary btn-disabled" aria-disabled="true" data-reason="Écris un mot d'abord." data-submit="word-form">Valider le mot</button>`
         };
     }
-    /* 5c : le Maître est présenté, le rôle du joueur ne s'affiche plus en clair (ADR D7) */
+    /* 5c : le Maître est présenté. On voit sa carte une fois, le rôle n'est plus rappelé ensuite. */
     const masterName = view.master?.name ?? 'Le Maître';
     return {
         content: `<div class="center wait-master">${view.master ? avatar(ini(view, view.master.id), 'avatar avatar-64 ink') : ''}
         <h1 class="h2 mt-16">${e(masterName)} choisit le mot</h1>
-        <p class="lead narrow mt-8">${e(`${masterName} est le Maître du jeu. Pose ton téléphone, écran vers la table.`)}</p></div>
-        <div class="mt-36">${secretBlock({ light: true, label: 'Ton rôle', hint: 'Maintiens pour le revoir', reveal: ROLE_LABELS[view.me.role], revealCls: 'role', sub: hint })}</div>`,
+        <p class="lead narrow mt-8">${e(`${masterName} est le Maître du jeu. Pose ton téléphone, écran vers la table.`)}</p></div>`,
         dock: waitDock('Le mot arrive dans un instant'),
         waiting: true
     };
@@ -325,7 +316,7 @@ function finderScreen(view) {
     };
 }
 
-/* §7 L'enquête : même écran pour tous au repos (ADR D7), seul le Maître déclare (ADR D8) */
+/* §7 L'enquête : Citoyens et Traître ont le même écran, sans le mot (ADR D6 révisé). Seul le Maître déclare (ADR D8). */
 function playing(envelope, local) {
     const { view } = envelope;
     if (local.finderPicking && can(view, 'wordFound')) {
@@ -333,10 +324,10 @@ function playing(envelope, local) {
     }
     const isMaster = view.me.role === 'master';
     const masterName = view.master?.name ?? 'Le Maître';
-    // Le rôle du Maître est public : son mot reste affiché. Pour tous les autres, le même bloc à maintenir.
-    const secret = isMaster
-        ? `<div class="dark"><p class="dark-label">Le mot à faire deviner</p><p class="dark-word">${e(view.word ?? '')}</p></div>`
-        : secretBlock({ label: 'Le mot', hint: 'Maintiens pour voir', reveal: view.word ?? 'Tu ne connais pas le mot', revealCls: view.word !== null ? 'word' : 'neutral' });
+    // Le rôle du Maître est public : lui seul garde le mot à l'écran
+    const wordBlock = isMaster
+        ? `<div class="mt-20"><div class="dark"><p class="dark-label">Le mot à faire deviner</p><p class="dark-word">${e(view.word ?? '')}</p><p class="dark-note">Visible seulement par toi.</p></div></div>`
+        : '';
     let dock;
     if (!can(view, 'wordFound')) {
         dock = waitDock(`${masterName} déclarera le mot trouvé`);
@@ -348,8 +339,8 @@ function playing(envelope, local) {
     return {
         content: `<div class="timer-block center" data-urgent-block>${timerBlock(view)}<p class="eyebrow below">Temps restant</p></div>
         <div class="timer-track"><div class="timer-fill"></div></div>
-        <div class="mt-20">${secret}</div>
-        <div class="mt-14">${RULE_WELL}</div>`,
+        ${wordBlock}
+        <div class="${isMaster ? 'mt-14' : 'mt-20'}">${RULE_WELL}</div>`,
         dock,
         waiting: !can(view, 'wordFound')
     };

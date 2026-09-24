@@ -48,7 +48,8 @@ export function view(game, playerId) {
         candidateList = phase.tied.map((id) => ({ id, name: candidateName(id) }));
     }
 
-    const wordVisible = game.word !== null && (ended || myRole === 'master' || myRole === 'insider');
+    // ADR D6 révisé : le Traître lit le mot une seule fois, au rituel. Pendant l'enquête et les votes, seul le Maître le garde.
+    const wordVisible = game.word !== null && (ended || myRole === 'master' || (myRole === 'insider' && phase.name === 'word'));
 
     /** @type {View['result']} */
     let result = null;

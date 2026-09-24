@@ -17,7 +17,8 @@ test('une partie complète à 4 clients, du join à la fin, sans fuite de secret
         for (const p of players) {
             const role = p.latest.view.me.role;
             const seesWord = p.latest.view.word !== null;
-            assert.equal(seesWord, role === 'master' || role === 'insider', `${p.name} (${role}) word visibility`);
+            // ADR D6 révisé : en vote 1, seul le Maître garde le mot, le Traître ne l'a plus
+            assert.equal(seesWord, role === 'master', `${p.name} (${role}) word visibility`);
             assert.equal(p.latest.view.master.id, master.latest.view.me.id);
             assert.equal(p.latest.view.finder.id, finder.latest.view.me.id);
         }

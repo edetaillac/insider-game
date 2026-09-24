@@ -45,6 +45,8 @@ Une manche sur téléphone se déroule ainsi :
 5. Quand le mot est trouvé, le Maître désigne le trouveur. Discussion, puis premier vote : le trouveur est-il le Traître ? Majorité stricte, la partie s'arrête si elle est atteinte
 6. Sinon second vote : qui est le Traître ? Le plus pointé révèle son rôle, le trouveur départage une égalité. Avec la variante, on peut pointer "Pas de Traître"
 
+Si l'hôte se déconnecte, n'importe quel joueur peut reprendre la main, à n'importe quel moment de la partie. Seul le téléphone de l'hôte joue les sons : départ du chrono, plus que 30 secondes, temps écoulé, fin de manche. L'hôte peut couper le son depuis la barre de phase.
+
 Règles détaillées et décisions de gameplay : `docs/adr/0001-regles-du-jeu.md`.
 
 ## Développement

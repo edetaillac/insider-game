@@ -250,3 +250,42 @@ test('seenRole et seenWord passent la validation client', () => {
     assert.deepEqual(t.game.phase.seen, { [a.playerId]: true });
     assert.equal(t.dispatch(a.playerId, { type: 'seenWord' }).error, 'WRONG_PHASE');
 });
+
+test('claimHost : refusé tant que l\'hôte est en ligne, accordé dès qu\'il est hors ligne', () => {
+    const { t, events } = table();
+    const [a, b, c] = joinAll(t, ['Alice', 'Bob', 'Carol']);
+    t.connect(a.playerId, 'sa');
+    t.connect(b.playerId, 'sb');
+    assert.equal(t.dispatch(b.playerId, { type: 'claimHost' }).error, 'FORBIDDEN');
+    t.disconnect(a.playerId, 'sa');
+    events.length = 0;
+    const r = t.dispatch(b.playerId, { type: 'claimHost' });
+    assert.equal(r.ok, true);
+    assert.deepEqual(events.map((e) => e.type), ['state']);
+    assert.equal(t.game.players.find((p) => p.isHost)?.id, b.playerId);
+    assert.equal(t.dispatch(c.playerId, { type: 'claimHost' }).error, 'FORBIDDEN', 'Bob est en ligne, Carol ne peut pas reprendre');
+});
+
+test('claimHost : l\'hôte ne se réclame pas lui-même, l\'ancien hôte revient en joueur', () => {
+    const { t } = table();
+    const [a, b] = joinAll(t, ['Alice', 'Bob']);
+    t.connect(b.playerId, 'sb');
+    assert.equal(t.dispatch(b.playerId, { type: 'claimHost' }).ok, true);
+    assert.equal(t.dispatch(b.playerId, { type: 'claimHost' }).error, 'FORBIDDEN');
+    t.connect(a.playerId, 'sa');
+    assert.equal(t.game.players.find((p) => p.id === a.playerId)?.isHost, false);
+    assert.equal(t.dispatch(a.playerId, { type: 'claimHost' }).error, 'FORBIDDEN');
+});
+
+test('claimHost débloque une manche en cours : le nouvel hôte lance le chrono', () => {
+    const { t } = table();
+    const [a, b] = joinAll(t, ['Alice', 'Bob', 'Carol', 'Dan']);
+    t.dispatch(a.playerId, { type: 'startRound' });
+    const master = t.game.players.find((p) => t.game.roles?.[p.id] === 'master');
+    t.dispatch(master.id, { type: 'setWord', word: 'Lune' });
+    const claimer = [a, b].find((x) => x.playerId !== master.id && x.playerId !== a.playerId) ?? b;
+    t.connect(claimer.playerId, 's');
+    assert.equal(t.dispatch(claimer.playerId, { type: 'claimHost' }).ok, true);
+    assert.equal(t.dispatch(claimer.playerId, { type: 'startTimer' }).ok, true);
+    assert.equal(t.game.phase.name, 'playing');
+});

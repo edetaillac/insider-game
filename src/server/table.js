@@ -34,6 +34,7 @@ const CLIENT_COMMANDS = Object.freeze({
     tiebreak: Object.freeze({ candidate: 'string' }),
     reset: Object.freeze({}),
     kick: Object.freeze({ id: 'string' }),
+    claimHost: Object.freeze({}),
     seenRole: Object.freeze({}),
     seenWord: Object.freeze({})
 });
@@ -238,6 +239,23 @@ export function createTable({ settings = {}, words, now = Date.now, random = Mat
     }
 
     /**
+     * Reprise de la main : un joueur prend le rôle d'hôte quand l'hôte actuel est hors ligne.
+     * Explicite plutôt qu'automatique, un écran verrouillé suffit à couper le socket sur mobile.
+     * @param {PlayerId} actor
+     * @returns {Result}
+     */
+    function claimHost(actor) {
+        const host = game.players.find((p) => p.isHost);
+        if (host?.id === actor) {
+            return fail('FORBIDDEN', 'already host');
+        }
+        if (host && (sockets.get(host.id)?.size ?? 0) > 0) {
+            return fail('FORBIDDEN', 'the host is online');
+        }
+        return commit(apply(game, { type: 'setHost', actor: SERVER, id: actor }, deps));
+    }
+
+    /**
      * Commande d'un joueur (validée) ou du serveur (brute).
      * @param {PlayerId | typeof SERVER} actor
      * @param {unknown} payload
@@ -255,6 +273,9 @@ export function createTable({ settings = {}, words, now = Date.now, random = Mat
         applyTimeoutIfDue();
         if (checked.command.type === 'kick') {
             return kick(actor, /** @type {string} */ (checked.command.id));
+        }
+        if (checked.command.type === 'claimHost') {
+            return claimHost(actor);
         }
         return commit(apply(game, /** @type {any} */ ({ ...checked.command, actor }), deps));
     }

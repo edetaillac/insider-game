@@ -40,6 +40,7 @@
  * @typedef {(
  *   { type: 'addPlayer', actor: 'server', id: PlayerId, name: string, isHost?: boolean }
  * | { type: 'removePlayer', actor: 'server', id: PlayerId }
+ * | { type: 'setHost', actor: 'server', id: PlayerId }
  * | { type: 'timeout', actor: 'server' }
  * | { type: 'startRound', actor: PlayerId }
  * | { type: 'setWord', actor: PlayerId, word: string }

@@ -356,6 +356,17 @@ function phaseBar(view) {
     return PHASE_BAR[view.phase] ?? { label: view.phase, rank: '' };
 }
 
+/** Hôte hors ligne : n'importe quel autre joueur peut reprendre la main, dans toutes les phases. */
+function hostAway(envelope) {
+    const { view, online } = envelope;
+    const host = view.players.find((p) => p.isHost);
+    if (view.me.isHost || (host && online.includes(host.id))) {
+        return '';
+    }
+    const who = host ? `${e(host.name)}, l'hôte, n'est plus connecté.` : 'La table n\'a plus d\'hôte.';
+    return `<div class="well host-away"><p>${who} Sans hôte, la partie ne peut pas avancer.</p>${cmdButton('claimHost', 'Reprendre la main', {}, 'btn btn-secondary mt-14')}</div>`;
+}
+
 /**
  * @param {{ view: any, online: string[], serverTime: number, minPlayers: number, shareUrl: string|null }} envelope
  * @param {{ flipped: boolean, everFlipped: boolean, v1: boolean|null, v2: string|null, finderPicking: boolean, kickConfirm: string|null }} local
@@ -365,7 +376,7 @@ export function render(envelope, local) {
     const screen = (SCREENS[view.phase] ?? (() => ({ content: '', dock: '' })))(envelope, local);
     return {
         phase: screen.phase ?? phaseBar(view),
-        content: screen.content,
+        content: hostAway(envelope) + screen.content,
         dock: screen.dock ?? '',
         counter: String(view.players.length)
     };

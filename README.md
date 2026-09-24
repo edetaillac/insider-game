@@ -19,6 +19,8 @@ Ou avec Docker :
 docker compose up -d
 ```
 
+Déploiement sur le serveur : `make deploy`. Le serveur doit avoir un clone du repo. La cible passe par l'environnement ou la ligne de commande (`SERVER_USER=... SERVER_HOST=... APP_INSIDER_PATH=... make deploy`, `BRANCH` vaut `master` par défaut). `make help` liste les commandes. Le serveur porte un `docker-compose.prod.yml` non versionné (Traefik, domaine, `PUBLIC_URL`), empilé sur `docker-compose.yml`.
+
 L'application répond sur le port 8080 par défaut. Les joueurs ouvrent l'adresse de la machine qui héberge le serveur sur leur téléphone (même réseau ou tunnel), tapent leur prénom et rejoignent. Le premier arrivé est l'hôte : il lance la partie, peut retirer un joueur et relancer une manche.
 
 Variables d'environnement :

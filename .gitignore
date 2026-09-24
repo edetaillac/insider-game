@@ -1,4 +1,4 @@
 node_modules
 .DS_Store
 docker-compose.override.yml
-.env
+docker-compose.prod.yml

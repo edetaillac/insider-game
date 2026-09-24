@@ -234,7 +234,6 @@ button {
 .mt-14 { margin-top: 14px; }
 .mt-16 { margin-top: 16px; }
 .mt-20 { margin-top: 20px; }
-.mt-36 { margin-top: 36px; }
 
 /* Encadrés */
 .well {
@@ -736,7 +735,7 @@ button {
     color: var(--yellow);
 }
 
-.dark-note { margin: 0; font-size: 13px; color: var(--muted); }
+.dark-note { margin: 4px 0 0; font-size: 13px; color: var(--muted); }
 .dark .gold, .found-banner .gold { color: var(--yellow); font-weight: 600; }
 
 .found-banner {
@@ -1161,50 +1160,6 @@ button {
 .dock-wait .wait-dots i:nth-child(2) { animation-delay: 0.2s; }
 .dock-wait .wait-dots i:nth-child(3) { animation-delay: 0.4s; }
 
-/* Points 1 et 2 · bloc secret, même silhouette pour tous au repos (ADR D7) */
-.secret {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    width: 100%;
-    min-height: 84px;
-    padding: 16px 18px;
-    border: 0;
-    border-radius: 16px;
-    background: var(--ink);
-    color: var(--cream);
-    text-align: left;
-    touch-action: none;
-    user-select: none;
-    -webkit-user-select: none;
-    -webkit-touch-callout: none;
-}
-
-.secret-rest,
-.secret-reveal { display: flex; align-items: center; gap: 14px; min-width: 0; }
-.secret-reveal { flex-direction: column; align-items: flex-start; gap: 2px; }
-.secret-text { display: flex; flex-direction: column; gap: 2px; }
-.secret[aria-pressed="true"] .secret-rest,
-.secret:not([aria-pressed="true"]) .secret-reveal { display: none; }
-.secret[aria-pressed="true"] { background: var(--yellow); color: var(--ink); transform: scale(0.98); }
-
-.secret-eye { position: relative; flex: none; width: 40px; height: 40px; border: 2.5px solid var(--yellow); border-radius: 50%; }
-.secret-eye::after { content: ''; position: absolute; inset: 0; margin: auto; width: 14px; height: 14px; border-radius: 50%; background: var(--yellow); }
-.secret-label { font-family: var(--display); font-weight: 600; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
-.secret[aria-pressed="true"] .secret-label { color: var(--ink); }
-.secret-hint { font-family: var(--display); font-weight: 600; font-size: 20px; text-transform: uppercase; }
-.secret-value { font-family: var(--display); font-weight: 600; font-size: 34px; line-height: 1; text-transform: uppercase; overflow-wrap: anywhere; }
-.secret-value.neutral { font-size: 22px; }
-
-.secret-light { min-height: 72px; padding: 14px 18px; background: var(--well); color: var(--ink); }
-.secret-light .secret-eye { width: 36px; height: 36px; border: 2px solid var(--ink); }
-.secret-light .secret-eye::after { width: 12px; height: 12px; background: var(--ink); }
-.secret-light .secret-label { font-family: var(--text); font-weight: 700; letter-spacing: 0.1em; color: var(--ink); }
-.secret-light .secret-hint { font-family: var(--text); font-size: 15px; text-transform: none; }
-.secret-light .secret-value.role { font-size: 26px; }
-.secret-sub { margin-top: 4px; font-size: 14px; line-height: 1.4; }
-.secret:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
-
 .wait-master { padding-top: 36px; }
 .avatar-64 { width: 64px; height: 64px; font-size: 26px; }
 
@@ -1227,5 +1182,4 @@ button {
     .dock-wait .wait-dots i { animation: none; }
     .dock-wait .wait-dots i:nth-child(2) { opacity: 0.6; }
     .dock-wait .wait-dots i:nth-child(3) { opacity: 0.3; }
-    .secret[aria-pressed="true"] { transform: none; }
 }

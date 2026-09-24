@@ -289,3 +289,18 @@ test('claimHost débloque une manche en cours : le nouvel hôte lance le chrono'
     assert.equal(t.dispatch(claimer.playerId, { type: 'startTimer' }).ok, true);
     assert.equal(t.game.phase.name, 'playing');
 });
+
+test('snapshot : claimHost figure dans les actions seulement quand la reprise est possible', () => {
+    const { t } = table();
+    const [a, b] = joinAll(t, ['Alice', 'Bob']);
+    t.connect(a.playerId, 'sa');
+    t.connect(b.playerId, 'sb');
+    assert.ok(!t.snapshot(b.playerId).view.actions.includes('claimHost'), 'hôte en ligne');
+    t.disconnect(a.playerId, 'sa');
+    assert.ok(t.snapshot(b.playerId).view.actions.includes('claimHost'), 'hôte hors ligne');
+    t.dispatch(b.playerId, { type: 'claimHost' });
+    assert.ok(!t.snapshot(b.playerId).view.actions.includes('claimHost'), 'je suis hôte');
+    t.connect(a.playerId, 'sa2');
+    assert.ok(!t.snapshot(a.playerId).view.actions.includes('claimHost'), 'l\'ancien hôte revenu ne reprend pas');
+    assert.deepEqual(t.snapshot(a.playerId).view.hostChange?.to, b.playerId);
+});

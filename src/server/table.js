@@ -245,14 +245,19 @@ export function createTable({ settings = {}, words, now = Date.now, random = Mat
      * @returns {Result}
      */
     function claimHost(actor) {
-        const host = game.players.find((p) => p.isHost);
-        if (host?.id === actor) {
-            return fail('FORBIDDEN', 'already host');
-        }
-        if (host && (sockets.get(host.id)?.size ?? 0) > 0) {
-            return fail('FORBIDDEN', 'the host is online');
+        if (!canClaimHost(actor)) {
+            return fail('FORBIDDEN', 'the host is online or you are the host');
         }
         return commit(apply(game, { type: 'setHost', actor: SERVER, id: actor }, deps));
+    }
+
+    /**
+     * @param {PlayerId} playerId
+     * @returns {boolean}
+     */
+    function canClaimHost(playerId) {
+        const host = game.players.find((p) => p.isHost);
+        return host?.id !== playerId && !(host && (sockets.get(host.id)?.size ?? 0) > 0);
     }
 
     /**
@@ -285,7 +290,11 @@ export function createTable({ settings = {}, words, now = Date.now, random = Mat
      * @returns {Snapshot}
      */
     function snapshot(playerId) {
-        return { view: view(game, playerId), online: online(), serverTime: now(), minPlayers: game.settings.minPlayers, shareUrl };
+        const projected = view(game, playerId);
+        // La reprise dépend de la présence, que seule la table connaît : elle complète les actions du moteur
+        /** @type {View['actions']} */
+        const actions = canClaimHost(playerId) ? [...projected.actions, 'claimHost'] : projected.actions;
+        return { view: { ...projected, actions }, online: online(), serverTime: now(), minPlayers: game.settings.minPlayers, shareUrl };
     }
 
     /** @param {(event: TableEvent) => void} listener */

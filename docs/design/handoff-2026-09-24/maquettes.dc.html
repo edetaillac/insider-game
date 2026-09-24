@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<style>
+@font-face{font-family:'IBM Plex Sans';font-weight:400 700;src:url('fonts/ibm-plex-sans-latin.woff2') format('woff2')}
+@font-face{font-family:'Oswald';font-weight:500 600;src:url('fonts/oswald-latin.woff2') format('woff2')}
+body{margin:0;background:#E9E4DF;font-family:'IBM Plex Sans',sans-serif;color:#14100F;-webkit-font-smoothing:antialiased}
+a{color:#14100F}a:hover{color:#DE3C31}
+</style>
+</helmet>
+
+<section style="padding:56px 56px 24px">
+<p style="margin:0;font-family:Oswald;font-weight:600;font-size:13px;letter-spacing:.16em;text-transform:uppercase">Tour 4 · Son</p>
+<h1 style="margin:6px 0 0;font-family:Oswald;font-weight:600;font-size:40px;text-transform:uppercase;line-height:1">Le son de la table</h1>
+<div style="display:flex;flex-direction:column;gap:6px;margin-top:16px;max-width:72ch;font-size:14px;line-height:1.5">
+<p style="margin:0">Aucun réglage. Le téléphone de l'hôte joue les sons, les autres restent muets. Quatre sons : départ du chrono, 30 s restantes, temps écoulé, fin de manche. Seul l'hôte voit un bouton pour couper le son. Si l'hôte change, le son suit.</p>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:40px;margin-top:32px;align-items:flex-start">
+
+<!-- 4c -->
+<div id="4c" style="display:flex;flex-direction:column;gap:12px;width:375px">
+<div style="display:flex;align-items:center;gap:10px"><span style="font-family:Oswald;font-weight:600;font-size:13px;background:#14100F;color:#FFC107;padding:3px 9px;border-radius:6px">4c</span><span style="font-weight:600;font-size:14px">Enquête, téléphone de l'hôte</span></div>
+<div style="position:relative;width:375px;height:780px;border-radius:28px;overflow:hidden;background:#DE3C31;box-shadow:0 20px 50px rgba(0,0,0,.18)">
+  <div style="display:flex;align-items:center;justify-content:center;gap:10px;padding:14px 16px"><img src="img/frise.jpg" alt="" style="display:block;height:26px"><img src="img/title.jpg" alt="Insider" style="display:block;height:16px"></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;min-height:44px;padding:0 12px 0 16px;background:#14100F">
+    <span style="display:flex;align-items:baseline;gap:8px"><span style="font-family:Oswald;font-weight:500;font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:#FFC107">Enquête</span><span style="font-size:12px;color:#9A8F86">3/6</span></span>
+    <span style="display:flex;align-items:center;gap:10px"><span style="display:flex;align-items:center;gap:6px;min-height:28px;padding:0 10px;border:1.5px solid #FFC107;border-radius:999px;color:#FFC107;font-family:Oswald;font-weight:600;font-size:11px;letter-spacing:.12em;text-transform:uppercase"><span style="width:7px;height:7px;border-radius:50%;background:#FFC107"></span>Son</span><span style="font-size:12px;font-weight:600;color:#FFF7EF">4 en ligne</span></span>
+  </div>
+  <div style="padding:20px">
+    <div style="padding:12px 16px 14px;border-radius:18px;background:#14100F;text-align:center"><p style="margin:0;font-family:Oswald;font-weight:600;font-size:88px;line-height:.9;color:#FFC107">0:28</p><p style="margin:8px 0 0;font-family:Oswald;font-weight:600;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#FFC107">Temps restant</p></div>
+    <div style="height:6px;margin-top:14px;border-radius:3px;background:rgba(0,0,0,.16);overflow:hidden"><div style="width:9%;height:100%;background:#14100F"></div></div>
+    <div style="margin-top:20px;padding:16px 18px;border-radius:16px;background:rgba(255,255,255,.14);font-size:15px;line-height:1.5"><p style="margin:0 0 8px;font-weight:700;font-size:12px;letter-spacing:.1em;text-transform:uppercase">Règle du tour</p><p style="margin:0">Questions fermées uniquement. Le Maître ne répond que <strong>oui</strong>, <strong>non</strong> ou <strong>je ne sais pas</strong>. Si le temps s'écoule, tout le monde perd.</p></div>
+  </div>
+  <div style="position:absolute;left:0;right:0;bottom:0;display:flex;flex-direction:column;gap:10px;padding:28px 20px 26px;background:linear-gradient(to top,#DE3C31 72%,rgba(222,60,49,0))">
+    <p style="margin:0;text-align:center;font-size:13px;font-weight:500">Le Maître ou l'hôte déclare le mot trouvé.</p>
+    <button style="display:flex;align-items:center;justify-content:center;width:100%;min-height:60px;border:0;border-radius:16px;background:#14100F;color:#FFF7EF;font-family:Oswald;font-weight:600;font-size:19px;letter-spacing:.06em;text-transform:uppercase;box-shadow:0 6px 18px rgba(0,0,0,.2)">Le mot a été trouvé</button>
+  </div>
+</div>
+<p style="margin:0;font-size:13px;line-height:1.5">Le seul contrôle : la pastille « Son » dans la barre, chez l'hôte uniquement. Un tap coupe (pastille éteinte, point creux). À 30 s, le son d'alerte part avec le passage au bloc sombre.</p>
+</div>
+
+</div>
+</section>
+
+<section style="padding:48px 56px 24px;border-top:1px solid rgba(20,16,15,.15)">
+<p style="margin:0;font-family:Oswald;font-weight:600;font-size:13px;letter-spacing:.16em;text-transform:uppercase">Tour 3 · Passe design</p>
+<h1 style="margin:6px 0 0;font-family:Oswald;font-weight:600;font-size:40px;text-transform:uppercase;line-height:1">Coquille et présence</h1>
+<div style="display:flex;flex-direction:column;gap:6px;margin-top:16px;max-width:72ch;font-size:14px;line-height:1.5">
+<p style="margin:0"><strong>Le chiffre en haut à droite disparaît.</strong> La présence passe dans la barre de phase : pastilles des joueurs et « 3 sur 4 en ligne ». On voit que ce sont des gens, et combien manquent. Un tap ouvre la liste.</p>
+<p style="margin:0"><strong>Une seule barre d'état.</strong> Phase et étape à gauche (« Enquête · 3/6 »), présence à droite. L'en-tête ne garde que le logo, plus compact.</p>
+<p style="margin:0"><strong>Au salon, plus de double « Salon ».</strong> Le titre dit ce qui compte : le nombre de joueurs à table. L'adresse se copie en un tap.</p>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:40px;margin-top:32px;align-items:flex-start">
+
+<!-- 3a -->
+<div id="3a" style="display:flex;flex-direction:column;gap:12px;width:375px">
+<div style="display:flex;align-items:center;gap:10px"><span style="font-family:Oswald;font-weight:600;font-size:13px;background:#14100F;color:#FFC107;padding:3px 9px;border-radius:6px">3a</span><span style="font-weight:600;font-size:14px">Salon, hôte déconnecté</span></div>
+<div style="position:relative;width:375px;height:780px;border-radius:28px;overflow:hidden;background:#DE3C31;box-shadow:0 20px 50px rgba(0,0,0,.18)">
+  <div style="display:flex;align-items:center;justify-content:center;gap:10px;padding:14px 16px"><img src="img/frise.jpg" alt="" style="display:block;height:26px"><img src="img/title.jpg" alt="Insider" style="display:block;height:16px"></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;min-height:44px;padding:0 12px 0 16px;background:#14100F">
+    <span style="font-family:Oswald;font-weight:500;font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:#FFC107">Salon</span>
+    <span style="display:flex;align-items:center;gap:8px;padding:4px 6px;border-radius:8px">
+      <span style="display:flex"><span style="width:22px;height:22px;border-radius:50%;background:#FFC107;color:#14100F;border:2px solid #14100F;display:flex;align-items:center;justify-content:center;font-family:Oswald;font-weight:600;font-size:11px">M</span><span style="width:22px;height:22px;margin-left:-7px;border-radius:50%;background:#FFC107;color:#14100F;border:2px solid #14100F;display:flex;align-items:center;justify-content:center;font-family:Oswald;font-weight:600;font-size:11px">L</span><span style="width:22px;height:22px;margin-left:-7px;border-radius:50%;background:#FFC107;color:#14100F;border:2px solid #14100F;display:flex;align-items:center;justify-content:center;font-family:Oswald;font-weight:600;font-size:11px">K</span><span style="width:22px;height:22px;margin-left:-7px;border-radius:50%;background:#14100F;color:#9A8F86;box-shadow:inset 0 0 0 1.5px #9A8F86;border:2px solid #14100F;display:flex;align-items:center;justify-content:center;font-family:Oswald;font-weight:600;font-size:11px">T</span></span>
+      <span style="font-size:12px;font-weight:600;color:#FFF7EF">3 sur 4 en ligne</span>
+    </span>
+  </div>
+  <div style="padding:20px">
+    <div style="display:flex;gap:14px;padding:16px;border-radius:16px;background:#14100F;color:#FFF7EF">
+      <span style="position:relative;flex:none;width:44px;height:44px;border-radius:50%;background:rgba(255,247,239,.12);display:flex;align-items:center;justify-content:center;font-family:Oswald;font-weight:600;font-size:18px;color:#9A8F86">T<span style="position:absolute;right:-2px;bottom:-2px;width:14px;height:14px;border-radius:50%;background:#FFC107;border:3px solid #14100F"></span></span>
+      <div style="display:flex;flex-direction:column;gap:4px;min-width:0">
+        <p style="margin:0;font-family:Oswald;font-weight:600;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#FFC107">L'hôte est parti</p>
+        <p style="margin:0;font-family:Oswald;font-weight:600;font-size:22px;line-height:1.05;text-transform:uppercase">Test s'est déconnecté</p>
+        <p style="margin:2px 0 0;font-size:13px;line-height:1.45;color:#B8AEA5">Sans hôte, personne ne peut lancer la partie. N'importe quel joueur peut prendre le relais.</p>
+      </div>
+    </div>
+    <h1 style="margin:22px 0 0;font-family:Oswald;font-weight:600;font-size:32px;line-height:1.05;text-transform:uppercase">4 joueurs à table</h1>
+    <p style="margin:4px 0 0;font-size:15px">Assez pour lancer, 4 minimum.</p>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:14px">
+      <div style="display:flex;align-items:center;gap:12px;min-height:56px;padding:0 12px 0 10px;border-radius:14px;background:rgba(255,255,255,.14)"><span style="flex:none;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-family:Oswald;font-weight:600;font-size:15px">T</span><span style="flex:1;font-weight:600;font-size:17px">Test</span><span style="font-weight:500;font-style:italic;font-size:12px">Hors ligne</span><span style="padding:3px 7px;border:1.5px dashed #14100F;border-radius:6px;font-family:Oswald;font-weight:600;font-size:11px;letter-spacing:.14em;text-transform:uppercase">Hôte</span></div>
+      <div style="display:flex;align-items:center;gap:12px;min-height:56px;padding:0 12px 0 10px;border-radius:14px;background:rgba(255,255,255,.14)"><span style="flex:none;width:36px;height:36px;border-radius:50%;background:#14100F;color:#FFC107;display:flex;align-items:center;justify-content:center;font-family:Oswald;font-weight:600;font-size:15px">M</span><span style="flex:1;font-weight:600;font-size:17px">Manu</span><span style="padding:2px 8px;border-radius:999px;background:#14100F;color:#FFF7EF;font-weight:600;font-size:11px">Toi</span></div>
+      <div style="display:flex;align-items:center;gap:12px;min-height:56px;padding:0 12px 0 10px;border-radius:14px;background:rgba(255,255,255,.14)"><span style="flex:none;width:36px;height:36px;border-radius:50%;background:#14100F;color:#FFC107;display:flex;align-items:center;justify-content:center;font-family:Oswald;font-weight:600;font-size:15px">L</span><span style="flex:1;font-weight:600;font-size:17px">Léa</span></div>
+      <div style="display:flex;align-items:center;gap:12px;min-height:56px;padding:0 12px 0 10px;border-radius:14px;background:rgba(255,255,255,.14)"><span style="flex:none;width:36px;height:36px;border-radius:50%;background:#14100F;color:#FFC107;display:flex;align-items:center;justify-content:center;font-family:Oswald;font-weight:600;font-size:15px">K</span><span style="flex:1;font-weight:600;font-size:17px">Karim</span></div>
+    </div>
+  </div>
+  <div style="position:absolute;left:0;right:0;bottom:0;display:flex;flex-direction:column;gap:10px;padding:28px 20px 26px;background:linear-gradient(to top,#DE3C31 72%,rgba(222,60,49,0))">
+    <p style="margin:0;text-align:center;font-size:13px;font-weight:500">Tu deviendras hôte à la place de Test.</p>
+    <button style="display:flex;align-items:center;justify-content:center;width:100%;min-height:60px;border:0;border-radius:16px;background:#FFC107;color:#14100F;font-family:Oswald;font-weight:600;font-size:19px;letter-spacing:.06em;text-transform:uppercase;box-shadow:0 6px 18px rgba(0,0,0,.2)">Reprendre la main</button>
+  </div>
+</div>
+<p style="margin:0;font-size:13px;line-height:1.5">Les lignes n'affichent plus « En ligne » : seul l'écart se signale (« Hors ligne », avatar éteint). « Toi » devient une pastille.</p>
+</div>
+
+<!-- 3b -->
+<div id="3b" style="display:flex;flex-direction:column;gap:12px;width:375px">
+<div style="display:flex;align-items:center;gap:10px"><span style="font-family:Oswald;font-weight:600;font-size:13px;background:#14100F;color:#FFC107;padding:3px 9px;border-radius:6px">3b</span><span style="font-weight:600;font-size:14px">Liste de présence (tap sur la barre)</span></div>
+<div style="position:relative;width:375px;height:780px;border-radius:28px;overflow:hidden;background:#DE3C31;box-shadow:0 20px 50px rgba(0,0,0,.18)">
+  <div style="display:flex;align-items:center;justify-content:center;gap:10px;padding:14px 16px"><img src="img/frise.jpg" alt="" style="display:block;height:26px"><img src="img/title.jpg" alt="Insider" style="display:block;height:16px"></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;min-height:44px;padding:0 12px 0 16px;background:#14100F">
+    <span style="display:flex;align-items:baseline;gap:8px"><span style="font-family:Oswald;font-weight:500;font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:#FFC107">Enquête</span><span style="font-size:12px;color:#9A8F86">3/6</span></span>
+    <span style="font-size:12px;font-weight:600;color:#FFF7EF">3 sur 4 en ligne</span>
+  </div>
+  <div style="padding:20px;opacity:.5">
+    <p style="margin:0;text-align:center;font-family:Oswald;font-weight:600;font-size:88px;line-height:.9">3:42</p>
+  </div>
+  <div style="position:absolute;inset:0;background:rgba(20,16,15,.35)"></div>
+  <div style="position:absolute;left:0;right:0;bottom:0;display:flex;flex-direction:column;gap:10px;padding:14px 20px 26px;border-radius:24px 24px 0 0;background:#FFF7EF">
+    <span style="align-self:center;width:40px;height:4px;border-radius:2px;background:rgba(20,16,15,.2)"></span>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:8px"><p style="margin:0;font-family:Oswald;font-weight:600;font-size:26px;line-height:1;text-transform:uppercase">À table</p><span style="font-size:13px;font-weight:600">3 sur 4 en ligne</span></div>
+    <div style="display:flex;flex-direction:column;margin-top:4px">
+      <div style="display:flex;align-items:center;gap:12px;min-height:56px;border-bottom:1px solid rgba(20,16,15,.12)"><span style="flex:none;width:36px;height:36px;border-radius:50%;background:rgba(20,16,15,.08);color:#9A8F86;display:flex;align-items:center;justify-content:center;font-family:Oswald;font-weight:600;font-size:15px">T</span><div style="flex:1;display:flex;flex-direction:column"><span style="font-weight:600;font-size:17px;line-height:1.2">Test</span><span style="font-style:italic;font-size:12px;color:#6E645C">Hors ligne depuis 2 min</span></div><span style="padding:3px 7px;border:1.5px dashed #14100F;border-radius:6px;font-family:Oswald;font-weight:600;font-size:11px;letter-spacing:.14em;text-transform:uppercase">Hôte</span></div>
+      <div style="display:flex;align-items:center;gap:12px;min-height:56px;border-bottom:1px solid rgba(20,16,15,.12)"><span style="flex:none;width:36px;height:36px;border-radius:50%;background:#14100F;color:#FFC107;display:flex;align-items:center;justify-content:center;font-family:Oswald;font-weight:600;font-size:15px">M</span><span style="flex:1;font-weight:600;font-size:17px">Manu</span><span style="padding:2px 8px;border-radius:999px;background:#14100F;color:#FFF7EF;font-weight:600;font-size:11px">Toi</span></div>
+      <div style="display:flex;align-items:center;gap:12px;min-height:56px;border-bottom:1px solid rgba(20,16,15,.12)"><span style="flex:none;width:36px;height:36px;border-radius:50%;background:#14100F;color:#FFC107;display:flex;align-items:center;justify-content:center;font-family:Oswald;font-weight:600;font-size:15px">L</span><span style="flex:1;font-weight:600;font-size:17px">Léa</span><span style="font-size:12px;font-weight:600;color:#6E645C">Maître du jeu</span></div>
+      <div style="display:flex;align-items:center;gap:12px;min-height:56px"><span style="flex:none;width:36px;height:36px;border-radius:50%;background:#14100F;color:#FFC107;display:flex;align-items:center;justify-content:center;font-family:Oswald;font-weight:600;font-size:15px">K</span><span style="flex:1;font-weight:600;font-size:17px">Karim</span></div>
+    </div>
+    <button style="display:flex;align-items:center;justify-content:center;width:100%;min-height:50px;margin-top:6px;border:0;border-radius:16px;background:transparent;color:#14100F;font-family:Oswald;font-weight:600;font-size:19px;letter-spacing:.06em;text-transform:uppercase">Fermer</button>
+  </div>
+</div>
+<p style="margin:0;font-size:13px;line-height:1.5">En jeu, la liste n'a pas sa place à l'écran : la barre en donne le résumé, la feuille le détail. Seuls les rôles publics y figurent.</p>
+</div>
+
+<!-- 3c -->
+<div id="3c" style="display:flex;flex-direction:column;gap:12px;width:375px">
+<div style="display:flex;align-items:center;gap:10px"><span style="font-family:Oswald;font-weight:600;font-size:13px;background:#14100F;color:#FFC107;padding:3px 9px;border-radius:6px">3c</span><span style="font-weight:600;font-size:14px">Salon, nouvel hôte</span></div>
+<div style="position:relative;width:375px;height:780px;border-radius:28px;overflow:hidden;background:#DE3C31;box-shadow:0 20px 50px rgba(0,0,0,.18)">
+  <div style="display:flex;align-items:center;justify-content:center;gap:10px;padding:14px 16px"><img src="img/frise.jpg" alt="" style="display:block;height:26px"><img src="img/title.jpg" alt="Insider" style="display:block;height:16px"></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;min-height:44px;padding:0 12px 0 16px;background:#14100F">
+    <span style="font-family:Oswald;font-weight:500;font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:#FFC107">Salon</span>
+    <span style="display:flex;align-items:center;gap:8px;padding:4px 6px">
+      <span style="display:flex"><span style="width:22px;height:22px;border-radius:50%;background:#FFC107;color:#14100F;border:2px solid #14100F;display:flex;align-items:center;justify-content:center;font-family:Oswald;font-weight:600;font-size:11px">M</span><span style="width:22px;height:22px;margin-left:-7px;border-radius:50%;background:#FFC107;color:#14100F;border:2px solid #14100F;display:flex;align-items:center;justify-content:center;font-family:Oswald;font-weight:600;font-size:11px">L</span><span style="width:22px;height:22px;margin-left:-7px;border-radius:50%;background:#FFC107;color:#14100F;border:2px solid #14100F;display:flex;align-items:center;justify-content:center;font-family:Oswald;font-weight:600;font-size:11px">K</span><span style="width:22px;height:22px;margin-left:-7px;border-radius:50%;background:#14100F;color:#9A8F86;box-shadow:inset 0 0 0 1.5px #9A8F86;border:2px solid #14100F;display:flex;align-items:center;justify-content:center;font-family:Oswald;font-weight:600;font-size:11px">T</span></span>
+      <span style="font-size:12px;font-weight:600;color:#FFF7EF">3 sur 4 en ligne</span>
+    </span>
+  </div>
+  <div style="padding:20px">
+    <div style="display:flex;gap:14px;align-items:center;padding:16px;border-radius:16px;background:#FFC107">
+      <span style="flex:none;width:44px;height:44px;border-radius:50%;background:#14100F;color:#FFC107;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+      <div style="display:flex;flex-direction:column;gap:3px"><p style="margin:0;font-family:Oswald;font-weight:600;font-size:22px;line-height:1.05;text-transform:uppercase">Tu es l'hôte</p><p style="margin:0;font-size:13px;line-height:1.45">La table attend ton signal pour lancer.</p></div>
+    </div>
+    <h1 style="margin:22px 0 0;font-family:Oswald;font-weight:600;font-size:32px;line-height:1.05;text-transform:uppercase">4 joueurs à table</h1>
+    <p style="margin:4px 0 0;font-size:15px">Assez pour lancer, 4 minimum.</p>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:14px">
+      <div style="display:flex;align-items:center;gap:12px;min-height:56px;padding:0 12px 0 10px;border-radius:14px;background:rgba(255,255,255,.14)"><span style="flex:none;width:36px;height:36px;border-radius:50%;background:#14100F;color:#FFC107;display:flex;align-items:center;justify-content:center;font-family:Oswald;font-weight:600;font-size:15px">M</span><span style="flex:1;font-weight:600;font-size:17px">Manu</span><span style="padding:2px 8px;border-radius:999px;background:#14100F;color:#FFF7EF;font-weight:600;font-size:11px">Toi</span><span style="padding:3px 7px;border:1.5px solid #14100F;border-radius:6px;font-family:Oswald;font-weight:600;font-size:11px;letter-spacing:.14em;text-transform:uppercase">Hôte</span></div>
+      <div style="display:flex;align-items:center;gap:12px;min-height:56px;padding:0 4px 0 10px;border-radius:14px;background:rgba(255,255,255,.14)"><span style="flex:none;width:36px;height:36px;border-radius:50%;background:#14100F;color:#FFC107;display:flex;align-items:center;justify-content:center;font-family:Oswald;font-weight:600;font-size:15px">L</span><span style="flex:1;font-weight:600;font-size:17px">Léa</span><span style="width:44px;height:44px;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"></path></svg></span></div>
+      <div style="display:flex;align-items:center;gap:12px;min-height:56px;padding:0 4px 0 10px;border-radius:14px;background:rgba(255,255,255,.14)"><span style="flex:none;width:36px;height:36px;border-radius:50%;background:#14100F;color:#FFC107;display:flex;align-items:center;justify-content:center;font-family:Oswald;font-weight:600;font-size:15px">K</span><span style="flex:1;font-weight:600;font-size:17px">Karim</span><span style="width:44px;height:44px;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"></path></svg></span></div>
+      <div style="display:flex;align-items:center;gap:12px;min-height:56px;padding:0 4px 0 10px;border-radius:14px;background:rgba(255,255,255,.14)"><span style="flex:none;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-family:Oswald;font-weight:600;font-size:15px">T</span><span style="flex:1;font-weight:600;font-size:17px">Test</span><span style="font-weight:500;font-style:italic;font-size:12px">Hors ligne</span><span style="width:44px;height:44px;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"></path></svg></span></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;margin-top:14px;padding:12px 12px 12px 16px;border-radius:14px;background:rgba(255,255,255,.14)">
+      <div style="flex:1;min-width:0"><p style="margin:0;font-size:12px;line-height:1.4">Pour rejoindre, jusqu'au lancement</p><span style="display:block;font-weight:700;font-size:15px">insider.m85.fr</span></div>
+      <button style="flex:none;min-height:44px;padding:0 14px;border:2px solid #14100F;border-radius:10px;background:transparent;color:#14100F;font-weight:700;font-size:13px">Copier</button>
+    </div>
+  </div>
+  <div style="position:absolute;left:0;right:0;bottom:0;display:flex;flex-direction:column;gap:10px;padding:28px 20px 26px;background:linear-gradient(to top,#DE3C31 72%,rgba(222,60,49,0))">
+    <p style="margin:0;text-align:center;font-size:13px;font-weight:500">Tu es hôte : les autres attendent ton signal.</p>
+    <button style="display:flex;align-items:center;justify-content:center;width:100%;min-height:60px;border:0;border-radius:16px;background:#14100F;color:#FFF7EF;font-family:Oswald;font-weight:600;font-size:19px;letter-spacing:.06em;text-transform:uppercase;box-shadow:0 6px 18px rgba(0,0,0,.2)">Lancer la partie</button>
+  </div>
+</div>
+<p style="margin:0;font-size:13px;line-height:1.5">L'adresse perd le « https:// » et gagne un bouton Copier. L'encadré passe sur une ligne.</p>
+</div>
+
+</div>
+</section>
+
+<section style="padding:48px 56px 24px;border-top:1px solid rgba(20,16,15,.15)">
+<p style="margin:0;font-family:Oswald;font-weight:600;font-size:13px;letter-spacing:.16em;text-transform:uppercase">Tour 2 · Proposition</p>
+<h1 style="margin:6px 0 0;font-family:Oswald;font-weight:600;font-size:40px;text-transform:uppercase;line-height:1">Reprise de l'hôte</h1>
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,300px));gap:24px;margin-top:24px">
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <div style="display:flex;align-items:center;gap:10px"><span style="width:14px;height:14px;border-radius:4px;background:#14100F"></span><span style="font-family:Oswald;font-weight:600;font-size:14px;letter-spacing:.12em;text-transform:uppercase">Alerte</span></div>
+    <p style="margin:0;font-size:14px;line-height:1.5;text-wrap:pretty">Bloc noir, surtitre jaune. Un problème bloque la table. Toujours en tête de contenu, toujours lié à une action dans le socle.</p>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <div style="display:flex;align-items:center;gap:10px"><span style="width:14px;height:14px;border-radius:4px;background:#FFC107;box-shadow:inset 0 0 0 1.5px #14100F"></span><span style="font-family:Oswald;font-weight:600;font-size:14px;letter-spacing:.12em;text-transform:uppercase">Confirmation</span></div>
+    <p style="margin:0;font-size:14px;line-height:1.5;text-wrap:pretty">Bloc jaune. Ce qui vient de changer pour toi. Affiché une fois, disparaît au changement d'écran.</p>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <div style="display:flex;align-items:center;gap:10px"><span style="width:14px;height:14px;border-radius:4px;background:#F08C84"></span><span style="font-family:Oswald;font-weight:600;font-size:14px;letter-spacing:.12em;text-transform:uppercase">Info</span></div>
+    <p style="margin:0;font-size:14px;line-height:1.5;text-wrap:pretty">Encadré clair, sans action. Ce qui a changé à la table pour les autres.</p>
+  </div>
+</div>
+<p style="margin:16px 0 0;font-size:14px;max-width:70ch;line-height:1.5">Le bouton d'action vit uniquement dans le socle, jamais dans le message. La note au-dessus dit qui agit et pourquoi. Le jaune est réservé à l'action exceptionnelle.</p>
+
+<div style="display:flex;flex-wrap:wrap;gap:40px;margin-top:36px;align-items:flex-start">
+
+<!-- 2a -->
+<div id="2a" style="display:flex;flex-direction:column;gap:12px;width:375px">
+<div style="display:flex;align-items:center;gap:10px"><span style="font-family:Oswald;font-weight:600;font-size:13px;background:#14100F;color:#FFC107;padding:3px 9px;border-radius:6px">2a</span><span style="font-weight:600;font-size:14px">Hôte déconnecté, vue joueur</span></div>
+<div style="position:relative;width:375px;height:780px;border-radius:28px;overflow:hidden;background:#DE3C31;box-shadow:0 20px 50px rgba(0,0,0,.18)">
+  <div style="position:relative;display:flex;flex-direction:column;align-items:center;gap:9px;padding:16px"><img src="img/frise.jpg" alt="" style="display:block;height:34px"><img src="img/title.jpg" alt="Insider" style="display:block;height:20px"><div style="position:absolute;top:50%;right:16px;transform:translateY(-50%);font-family:Oswald;font-weight:600;font-size:18px">4</div></div>
+  <div style="display:flex;justify-content:space-between;padding:9px 16px;background:#14100F"><span style="font-family:Oswald;font-weight:500;font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:#FFC107">Salon</span></div>
+  <div style="padding:20px">
+    <div style="display:flex;gap:14px;padding:16px;border-radius:16px;background:#14100F;color:#FFF7EF">
+      <span style="position:relative;flex:none;width:44px;height:44px;border-radius:50%;background:rgba(255,247,239,.12);display:flex;align-items:center;justify-content:center;font-family:Oswald;font-weight:600;font-size:18px;color:#9A8F86">T<span style="position:absolute;right:-2px;bottom:-2px;width:14px;height:14px;border-radius:50%;background:#FFC107;border:3px solid #14100F"></span></span>
+      <div style="display:flex;flex-direction:column;gap:4px;min-width:0">
+        <p style="margin:0;font-family:Oswald;font-weight:600;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#FFC107">L'hôte est parti</p>
+        <p style="margin:0;font-family:Oswald;font-weight:600;font-size:22px;line-height:1.05;text-transform:uppercase">Test s'est déconnecté</p>
+        <p style="margin:2px 0 0;font-size:13px;line-height:1.45;color:#B8AEA5">Sans hôte, personne ne peut lancer la partie. N'importe quel joueur peut prendre le relais.</p>
+      </div>
+    </div>
+    <h1 style="margin:20px 0 0;font-family:Oswald;font-weight:600;font-size:32px;line-height:1.05;text-transform:uppercase">Salon</h1>
+    <p style="margin:4px 0 0;font-size:15px">4 joueurs à table · 4 minimum pour lancer</p>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:14px">
+      <div style="display:flex;align-items:center;gap:12px;min-height:60px;padding:0 12px 0 10px;border-radius:14px;background:rgba(255,255,255,.14)"><span style="flex:none;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-family:Oswald;font-weight:600;font-size:17px">T</span><div style="flex:1;display:flex;flex-direction:column"><span style="font-weight:600;font-size:18px;line-height:1.2">Test</span><span style="font-weight:500;font-style:italic;font-size:12px">Hors ligne</span></div><span style="padding:3px 7px;border:1.5px dashed #14100F;border-radius:6px;font-family:Oswald;font-weight:600;font-size:11px;letter-spacing:.14em;text-transform:uppercase">Hôte</span></div>
+      <div style="display:flex;align-items:center;gap:12px;min-height:60px;padding:0 12px 0 10px;border-radius:14px;background:rgba(255,255,255,.14)"><span style="flex:none;width:40px;height:40px;border-radius:50%;background:#14100F;color:#FFC107;display:flex;align-items:center;justify-content:center;font-family:Oswald;font-weight:600;font-size:17px">M</span><div style="flex:1;display:flex;flex-direction:column"><span style="font-weight:600;font-size:18px;line-height:1.2">Manu</span><span style="font-weight:600;font-size:12px">Toi</span></div></div>
+      <div style="display:flex;align-items:center;gap:12px;min-height:60px;padding:0 12px 0 10px;border-radius:14px;background:rgba(255,255,255,.14)"><span style="flex:none;width:40px;height:40px;border-radius:50%;background:#14100F;color:#FFC107;display:flex;align-items:center;justify-content:center;font-family:Oswald;font-weight:600;font-size:17px">L</span><div style="flex:1;display:flex;flex-direction:column"><span style="font-weight:600;font-size:18px;line-height:1.2">Léa</span><span style="font-weight:600;font-size:12px">En ligne</span></div></div>
+      <div style="display:flex;align-items:center;gap:12px;min-height:60px;padding:0 12px 0 10px;border-radius:14px;background:rgba(255,255,255,.14)"><span style="flex:none;width:40px;height:40px;border-radius:50%;background:#14100F;color:#FFC107;display:flex;align-items:center;justify-content:center;font-family:Oswald;font-weight:600;font-size:17px">K</span><div style="flex:1;display:flex;flex-direction:column"><span style="font-weight:600;font-size:18px;line-height:1.2">Karim</span><span style="font-weight:600;font-size:12px">En ligne</span></div></div>
+    </div>
+  </div>
+  <div style="position:absolute;left:0;right:0;bottom:0;display:flex;flex-direction:column;gap:10px;padding:28px 20px 26px;background:linear-gradient(to top,#DE3C31 72%,rgba(222,60,49,0))">
+    <p style="margin:0;text-align:center;font-size:13px;font-weight:500">Tu deviendras hôte à la place de Test.</p>
+    <button style="display:flex;align-items:center;justify-content:center;width:100%;min-height:60px;border:0;border-radius:16px;background:#FFC107;color:#14100F;font-family:Oswald;font-weight:600;font-size:19px;letter-spacing:.06em;text-transform:uppercase;box-shadow:0 6px 18px rgba(0,0,0,.2)">Reprendre la main</button>
+  </div>
+</div>
+<p style="margin:0;font-size:13px;line-height:1.5">L'alerte explique, le socle agit. Le badge Hôte passe en pointillé tant qu'il est vacant. Le bouton inactif « En attente de l'hôte » disparaît.</p>
+</div>
+
+<!-- 2b -->
+<div id="2b" style="display:flex;flex-direction:column;gap:12px;width:375px">
+<div style="display:flex;align-items:center;gap:10px"><span style="font-family:Oswald;font-weight:600;font-size:13px;background:#14100F;color:#FFC107;padding:3px 9px;border-radius:6px">2b</span><span style="font-weight:600;font-size:14px">Confirmation avant reprise</span></div>
+<div style="position:relative;width:375px;height:780px;border-radius:28px;overflow:hidden;background:#DE3C31;box-shadow:0 20px 50px rgba(0,0,0,.18)">
+  <div style="position:relative;display:flex;flex-direction:column;align-items:center;gap:9px;padding:16px"><img src="img/frise.jpg" alt="" style="display:block;height:34px"><img src="img/title.jpg" alt="Insider" style="display:block;height:20px"><div style="position:absolute;top:50%;right:16px;transform:translateY(-50%);font-family:Oswald;font-weight:600;font-size:18px">4</div></div>
+  <div style="display:flex;justify-content:space-between;padding:9px 16px;background:#14100F"><span style="font-family:Oswald;font-weight:500;font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:#FFC107">Salon</span></div>
+  <div style="padding:20px;opacity:.45">
+    <div style="display:flex;gap:14px;padding:16px;border-radius:16px;background:#14100F;color:#FFF7EF">
+      <span style="flex:none;width:44px;height:44px;border-radius:50%;background:rgba(255,247,239,.12);display:flex;align-items:center;justify-content:center;font-family:Oswald;font-weight:600;font-size:18px;color:#9A8F86">T</span>
+      <div style="display:flex;flex-direction:column;gap:4px"><p style="margin:0;font-family:Oswald;font-weight:600;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#FFC107">L'hôte est parti</p><p style="margin:0;font-family:Oswald;font-weight:600;font-size:22px;line-height:1.05;text-transform:uppercase">Test s'est déconnecté</p></div>
+    </div>
+    <h1 style="margin:20px 0 0;font-family:Oswald;font-weight:600;font-size:32px;line-height:1.05;text-transform:uppercase">Salon</h1>
+    <p style="margin:4px 0 0;font-size:15px">4 joueurs à table · 4 minimum pour lancer</p>
+  </div>
+  <div style="position:absolute;inset:0;background:rgba(20,16,15,.35)"></div>
+  <div style="position:absolute;left:0;right:0;bottom:0;display:flex;flex-direction:column;gap:10px;padding:24px 20px 26px;border-radius:24px 24px 0 0;background:#FFF7EF">
+    <span style="align-self:center;width:40px;height:4px;border-radius:2px;background:rgba(20,16,15,.2)"></span>
+    <p style="margin:8px 0 0;font-family:Oswald;font-weight:600;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#DE3C31">Reprendre la main</p>
+    <p style="margin:0;font-family:Oswald;font-weight:600;font-size:28px;line-height:1.05;text-transform:uppercase">Tu deviens l'hôte</p>
+    <div style="display:flex;flex-direction:column;gap:8px;margin:6px 0 8px">
+      <div style="display:flex;gap:10px;font-size:15px;line-height:1.4"><span style="flex:none;width:6px;height:6px;margin-top:8px;border-radius:50%;background:#14100F"></span><span>Tu lances la partie et les manches suivantes.</span></div>
+      <div style="display:flex;gap:10px;font-size:15px;line-height:1.4"><span style="flex:none;width:6px;height:6px;margin-top:8px;border-radius:50%;background:#14100F"></span><span>Tu peux retirer un joueur de la table.</span></div>
+      <div style="display:flex;gap:10px;font-size:15px;line-height:1.4"><span style="flex:none;width:6px;height:6px;margin-top:8px;border-radius:50%;background:#14100F"></span><span>Test reste à table et redevient simple joueur à son retour.</span></div>
+    </div>
+    <button style="display:flex;align-items:center;justify-content:center;width:100%;min-height:60px;border:0;border-radius:16px;background:#14100F;color:#FFF7EF;font-family:Oswald;font-weight:600;font-size:19px;letter-spacing:.06em;text-transform:uppercase">Oui, je prends la main</button>
+    <button style="display:flex;align-items:center;justify-content:center;width:100%;min-height:50px;border:0;border-radius:16px;background:transparent;color:#14100F;font-family:Oswald;font-weight:600;font-size:19px;letter-spacing:.06em;text-transform:uppercase">Annuler</button>
+  </div>
+</div>
+<p style="margin:0;font-size:13px;line-height:1.5">Feuille crème montante : la reprise est irréversible pour l'ancien hôte, on dit ce qu'elle implique avant de valider.</p>
+</div>
+
+<!-- 2c -->
+<div id="2c" style="display:flex;flex-direction:column;gap:12px;width:375px">
+<div style="display:flex;align-items:center;gap:10px"><span style="font-family:Oswald;font-weight:600;font-size:13px;background:#14100F;color:#FFC107;padding:3px 9px;border-radius:6px">2c</span><span style="font-weight:600;font-size:14px">Nouvel hôte</span></div>
+<div style="position:relative;width:375px;height:780px;border-radius:28px;overflow:hidden;background:#DE3C31;box-shadow:0 20px 50px rgba(0,0,0,.18)">
+  <div style="position:relative;display:flex;flex-direction:column;align-items:center;gap:9px;padding:16px"><img src="img/frise.jpg" alt="" style="display:block;height:34px"><img src="img/title.jpg" alt="Insider" style="display:block;height:20px"><div style="position:absolute;top:50%;right:16px;transform:translateY(-50%);font-family:Oswald;font-weight:600;font-size:18px">4</div></div>
+  <div style="display:flex;justify-content:space-between;padding:9px 16px;background:#14100F"><span style="font-family:Oswald;font-weight:500;font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:#FFC107">Salon</span></div>
+  <div style="padding:20px">
+    <div style="display:flex;gap:14px;align-items:center;padding:16px;border-radius:16px;background:#FFC107;color:#14100F">
+      <span style="flex:none;width:44px;height:44px;border-radius:50%;background:#14100F;color:#FFC107;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+      <div style="display:flex;flex-direction:column;gap:3px"><p style="margin:0;font-family:Oswald;font-weight:600;font-size:22px;line-height:1.05;text-transform:uppercase">Tu es l'hôte</p><p style="margin:0;font-size:13px;line-height:1.45">La table attend ton signal pour lancer.</p></div>
+    </div>
+    <h1 style="margin:20px 0 0;font-family:Oswald;font-weight:600;font-size:32px;line-height:1.05;text-transform:uppercase">Salon</h1>
+    <p style="margin:4px 0 0;font-size:15px">4 joueurs à table · 4 minimum pour lancer</p>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:14px">
+      <div style="display:flex;align-items:center;gap:12px;min-height:60px;padding:0 12px 0 10px;border-radius:14px;background:rgba(255,255,255,.14)"><span style="flex:none;width:40px;height:40px;border-radius:50%;background:#14100F;color:#FFC107;display:flex;align-items:center;justify-content:center;font-family:Oswald;font-weight:600;font-size:17px">M</span><div style="flex:1;display:flex;flex-direction:column"><span style="font-weight:600;font-size:18px;line-height:1.2">Manu</span><span style="font-weight:600;font-size:12px">Toi</span></div><span style="padding:3px 7px;border:1.5px solid #14100F;border-radius:6px;font-family:Oswald;font-weight:600;font-size:11px;letter-spacing:.14em;text-transform:uppercase">Hôte</span></div>
+      <div style="display:flex;align-items:center;gap:12px;min-height:60px;padding:0 4px 0 10px;border-radius:14px;background:rgba(255,255,255,.14)"><span style="flex:none;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-family:Oswald;font-weight:600;font-size:17px">T</span><div style="flex:1;display:flex;flex-direction:column"><span style="font-weight:600;font-size:18px;line-height:1.2">Test</span><span style="font-weight:500;font-style:italic;font-size:12px">Hors ligne</span></div><span style="width:44px;height:44px;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"></path></svg></span></div>
+      <div style="display:flex;align-items:center;gap:12px;min-height:60px;padding:0 4px 0 10px;border-radius:14px;background:rgba(255,255,255,.14)"><span style="flex:none;width:40px;height:40px;border-radius:50%;background:#14100F;color:#FFC107;display:flex;align-items:center;justify-content:center;font-family:Oswald;font-weight:600;font-size:17px">L</span><div style="flex:1;display:flex;flex-direction:column"><span style="font-weight:600;font-size:18px;line-height:1.2">Léa</span><span style="font-weight:600;font-size:12px">En ligne</span></div><span style="width:44px;height:44px;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"></path></svg></span></div>
+      <div style="display:flex;align-items:center;gap:12px;min-height:60px;padding:0 4px 0 10px;border-radius:14px;background:rgba(255,255,255,.14)"><span style="flex:none;width:40px;height:40px;border-radius:50%;background:#14100F;color:#FFC107;display:flex;align-items:center;justify-content:center;font-family:Oswald;font-weight:600;font-size:17px">K</span><div style="flex:1;display:flex;flex-direction:column"><span style="font-weight:600;font-size:18px;line-height:1.2">Karim</span><span style="font-weight:600;font-size:12px">En ligne</span></div><span style="width:44px;height:44px;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"></path></svg></span></div>
+    </div>
+  </div>
+  <div style="position:absolute;left:0;right:0;bottom:0;display:flex;flex-direction:column;gap:10px;padding:28px 20px 26px;background:linear-gradient(to top,#DE3C31 72%,rgba(222,60,49,0))">
+    <p style="margin:0;text-align:center;font-size:13px;font-weight:500">Tu es hôte : les autres attendent ton signal.</p>
+    <button style="display:flex;align-items:center;justify-content:center;width:100%;min-height:60px;border:0;border-radius:16px;background:#14100F;color:#FFF7EF;font-family:Oswald;font-weight:600;font-size:19px;letter-spacing:.06em;text-transform:uppercase;box-shadow:0 6px 18px rgba(0,0,0,.2)">Lancer la partie</button>
+  </div>
+</div>
+<p style="margin:0;font-size:13px;line-height:1.5">Confirmation jaune, puis le socle standard de l'hôte (handoff §2). Test passe en fin de liste, retirable.</p>
+</div>
+
+<!-- 2d -->
+<div id="2d" style="display:flex;flex-direction:column;gap:12px;width:375px">
+<div style="display:flex;align-items:center;gap:10px"><span style="font-family:Oswald;font-weight:600;font-size:13px;background:#14100F;color:#FFC107;padding:3px 9px;border-radius:6px">2d</span><span style="font-weight:600;font-size:14px">Les autres joueurs</span></div>
+<div style="position:relative;width:375px;height:780px;border-radius:28px;overflow:hidden;background:#DE3C31;box-shadow:0 20px 50px rgba(0,0,0,.18)">
+  <div style="position:relative;display:flex;flex-direction:column;align-items:center;gap:9px;padding:16px"><img src="img/frise.jpg" alt="" style="display:block;height:34px"><img src="img/title.jpg" alt="Insider" style="display:block;height:20px"><div style="position:absolute;top:50%;right:16px;transform:translateY(-50%);font-family:Oswald;font-weight:600;font-size:18px">4</div></div>
+  <div style="display:flex;justify-content:space-between;padding:9px 16px;background:#14100F"><span style="font-family:Oswald;font-weight:500;font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:#FFC107">Salon</span></div>
+  <div style="padding:20px">
+    <div style="display:flex;gap:12px;align-items:center;padding:14px 16px;border-radius:14px;background:rgba(255,255,255,.14)">
+      <span style="flex:none;width:36px;height:36px;border-radius:50%;background:#14100F;color:#FFC107;display:flex;align-items:center;justify-content:center;font-family:Oswald;font-weight:600;font-size:15px">M</span>
+      <p style="margin:0;font-size:14px;line-height:1.45"><strong>Manu a repris la main.</strong> Test s'est déconnecté, il reste à table.</p>
+    </div>
+    <h1 style="margin:20px 0 0;font-family:Oswald;font-weight:600;font-size:32px;line-height:1.05;text-transform:uppercase">Salon</h1>
+    <p style="margin:4px 0 0;font-size:15px">4 joueurs à table · 4 minimum pour lancer</p>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:14px">
+      <div style="display:flex;align-items:center;gap:12px;min-height:60px;padding:0 12px 0 10px;border-radius:14px;background:rgba(255,255,255,.14)"><span style="flex:none;width:40px;height:40px;border-radius:50%;background:#14100F;color:#FFC107;display:flex;align-items:center;justify-content:center;font-family:Oswald;font-weight:600;font-size:17px">M</span><div style="flex:1;display:flex;flex-direction:column"><span style="font-weight:600;font-size:18px;line-height:1.2">Manu</span><span style="font-weight:600;font-size:12px">En ligne</span></div><span style="padding:3px 7px;border:1.5px solid #14100F;border-radius:6px;font-family:Oswald;font-weight:600;font-size:11px;letter-spacing:.14em;text-transform:uppercase">Hôte</span></div>
+      <div style="display:flex;align-items:center;gap:12px;min-height:60px;padding:0 12px 0 10px;border-radius:14px;background:rgba(255,255,255,.14)"><span style="flex:none;width:40px;height:40px;border-radius:50%;background:#14100F;color:#FFC107;display:flex;align-items:center;justify-content:center;font-family:Oswald;font-weight:600;font-size:17px">L</span><div style="flex:1;display:flex;flex-direction:column"><span style="font-weight:600;font-size:18px;line-height:1.2">Léa</span><span style="font-weight:600;font-size:12px">Toi</span></div></div>
+      <div style="display:flex;align-items:center;gap:12px;min-height:60px;padding:0 12px 0 10px;border-radius:14px;background:rgba(255,255,255,.14)"><span style="flex:none;width:40px;height:40px;border-radius:50%;background:#14100F;color:#FFC107;display:flex;align-items:center;justify-content:center;font-family:Oswald;font-weight:600;font-size:17px">K</span><div style="flex:1;display:flex;flex-direction:column"><span style="font-weight:600;font-size:18px;line-height:1.2">Karim</span><span style="font-weight:600;font-size:12px">En ligne</span></div></div>
+      <div style="display:flex;align-items:center;gap:12px;min-height:60px;padding:0 12px 0 10px;border-radius:14px;background:rgba(255,255,255,.14)"><span style="flex:none;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-family:Oswald;font-weight:600;font-size:17px">T</span><div style="flex:1;display:flex;flex-direction:column"><span style="font-weight:600;font-size:18px;line-height:1.2">Test</span><span style="font-weight:500;font-style:italic;font-size:12px">Hors ligne</span></div></div>
+    </div>
+  </div>
+  <div style="position:absolute;left:0;right:0;bottom:0;display:flex;flex-direction:column;gap:10px;padding:28px 20px 26px;background:linear-gradient(to top,#DE3C31 72%,rgba(222,60,49,0))">
+    <p style="margin:0;text-align:center;font-size:13px;font-weight:500">Manu lance la partie quand tout le monde est là.</p>
+    <button style="display:flex;align-items:center;justify-content:center;width:100%;min-height:60px;border:0;border-radius:16px;background:rgba(0,0,0,.2);color:rgba(20,16,15,.55);font-family:Oswald;font-weight:600;font-size:19px;letter-spacing:.06em;text-transform:uppercase">En attente de Manu</button>
+  </div>
+</div>
+<p style="margin:0;font-size:13px;line-height:1.5">Info simple, sans action. Le bouton d'attente nomme la personne attendue plutôt que « l'hôte ».</p>
+</div>
+
+<!-- 2e -->
+<div id="2e" style="display:flex;flex-direction:column;gap:12px;width:375px">
+<div style="display:flex;align-items:center;gap:10px"><span style="font-family:Oswald;font-weight:600;font-size:13px;background:#14100F;color:#FFC107;padding:3px 9px;border-radius:6px">2e</span><span style="font-weight:600;font-size:14px">Retour de l'ancien hôte</span></div>
+<div style="position:relative;width:375px;height:780px;border-radius:28px;overflow:hidden;background:#DE3C31;box-shadow:0 20px 50px rgba(0,0,0,.18)">
+  <div style="position:relative;display:flex;flex-direction:column;align-items:center;gap:9px;padding:16px"><img src="img/frise.jpg" alt="" style="display:block;height:34px"><img src="img/title.jpg" alt="Insider" style="display:block;height:20px"><div style="position:absolute;top:50%;right:16px;transform:translateY(-50%);font-family:Oswald;font-weight:600;font-size:18px">4</div></div>
+  <div style="display:flex;justify-content:space-between;padding:9px 16px;background:#14100F"><span style="font-family:Oswald;font-weight:500;font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:#FFC107">Salon</span></div>
+  <div style="padding:20px">
+    <div style="display:flex;gap:12px;align-items:center;padding:14px 16px;border-radius:14px;background:rgba(255,255,255,.14)">
+      <span style="flex:none;width:36px;height:36px;border-radius:50%;background:#14100F;color:#FFC107;display:flex;align-items:center;justify-content:center;font-family:Oswald;font-weight:600;font-size:15px">M</span>
+      <p style="margin:0;font-size:14px;line-height:1.45"><strong>Manu est hôte depuis ton départ.</strong> Tu restes à table comme joueur.</p>
+    </div>
+    <h1 style="margin:20px 0 0;font-family:Oswald;font-weight:600;font-size:32px;line-height:1.05;text-transform:uppercase">Salon</h1>
+    <p style="margin:4px 0 0;font-size:15px">4 joueurs à table · 4 minimum pour lancer</p>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:14px">
+      <div style="display:flex;align-items:center;gap:12px;min-height:60px;padding:0 12px 0 10px;border-radius:14px;background:rgba(255,255,255,.14)"><span style="flex:none;width:40px;height:40px;border-radius:50%;background:#14100F;color:#FFC107;display:flex;align-items:center;justify-content:center;font-family:Oswald;font-weight:600;font-size:17px">M</span><div style="flex:1;display:flex;flex-direction:column"><span style="font-weight:600;font-size:18px;line-height:1.2">Manu</span><span style="font-weight:600;font-size:12px">En ligne</span></div><span style="padding:3px 7px;border:1.5px solid #14100F;border-radius:6px;font-family:Oswald;font-weight:600;font-size:11px;letter-spacing:.14em;text-transform:uppercase">Hôte</span></div>
+      <div style="display:flex;align-items:center;gap:12px;min-height:60px;padding:0 12px 0 10px;border-radius:14px;background:rgba(255,255,255,.14)"><span style="flex:none;width:40px;height:40px;border-radius:50%;background:#14100F;color:#FFC107;display:flex;align-items:center;justify-content:center;font-family:Oswald;font-weight:600;font-size:17px">T</span><div style="flex:1;display:flex;flex-direction:column"><span style="font-weight:600;font-size:18px;line-height:1.2">Test</span><span style="font-weight:600;font-size:12px">Toi</span></div></div>
+      <div style="display:flex;align-items:center;gap:12px;min-height:60px;padding:0 12px 0 10px;border-radius:14px;background:rgba(255,255,255,.14)"><span style="flex:none;width:40px;height:40px;border-radius:50%;background:#14100F;color:#FFC107;display:flex;align-items:center;justify-content:center;font-family:Oswald;font-weight:600;font-size:17px">L</span><div style="flex:1;display:flex;flex-direction:column"><span style="font-weight:600;font-size:18px;line-height:1.2">Léa</span><span style="font-weight:600;font-size:12px">En ligne</span></div></div>
+      <div style="display:flex;align-items:center;gap:12px;min-height:60px;padding:0 12px 0 10px;border-radius:14px;background:rgba(255,255,255,.14)"><span style="flex:none;width:40px;height:40px;border-radius:50%;background:#14100F;color:#FFC107;display:flex;align-items:center;justify-content:center;font-family:Oswald;font-weight:600;font-size:17px">K</span><div style="flex:1;display:flex;flex-direction:column"><span style="font-weight:600;font-size:18px;line-height:1.2">Karim</span><span style="font-weight:600;font-size:12px">En ligne</span></div></div>
+    </div>
+  </div>
+  <div style="position:absolute;left:0;right:0;bottom:0;display:flex;flex-direction:column;gap:10px;padding:28px 20px 26px;background:linear-gradient(to top,#DE3C31 72%,rgba(222,60,49,0))">
+    <p style="margin:0;text-align:center;font-size:13px;font-weight:500">Manu lance la partie quand tout le monde est là.</p>
+    <button style="display:flex;align-items:center;justify-content:center;width:100%;min-height:60px;border:0;border-radius:16px;background:rgba(0,0,0,.2);color:rgba(20,16,15,.55);font-family:Oswald;font-weight:600;font-size:19px;letter-spacing:.06em;text-transform:uppercase">En attente de Manu</button>
+  </div>
+</div>
+<p style="margin:0;font-size:13px;line-height:1.5">Même encadré info. Pas de reprise inverse proposée : un seul changement d'hôte à la fois évite le ping-pong.</p>
+</div>
+
+<!-- 2f -->
+<div id="2f" style="display:flex;flex-direction:column;gap:12px;width:375px">
+<div style="display:flex;align-items:center;gap:10px"><span style="font-family:Oswald;font-weight:600;font-size:13px;background:#14100F;color:#FFC107;padding:3px 9px;border-radius:6px">2f</span><span style="font-weight:600;font-size:14px">En cours de partie (résultat)</span></div>
+<div style="position:relative;width:375px;height:780px;border-radius:28px;overflow:hidden;background:#DE3C31;box-shadow:0 20px 50px rgba(0,0,0,.18)">
+  <div style="position:relative;display:flex;flex-direction:column;align-items:center;gap:9px;padding:16px"><img src="img/frise.jpg" alt="" style="display:block;height:34px"><img src="img/title.jpg" alt="Insider" style="display:block;height:20px"><div style="position:absolute;top:50%;right:16px;transform:translateY(-50%);font-family:Oswald;font-weight:600;font-size:18px">4</div></div>
+  <div style="display:flex;justify-content:space-between;padding:9px 16px;background:#14100F"><span style="font-family:Oswald;font-weight:500;font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:#FFC107">Résultat</span></div>
+  <div style="padding:20px">
+    <div style="display:flex;gap:12px;align-items:center;padding:12px 14px;border-radius:14px;background:#14100F;color:#FFF7EF">
+      <span style="position:relative;flex:none;width:36px;height:36px;border-radius:50%;background:rgba(255,247,239,.12);display:flex;align-items:center;justify-content:center;font-family:Oswald;font-weight:600;font-size:15px;color:#9A8F86">T<span style="position:absolute;right:-2px;bottom:-2px;width:12px;height:12px;border-radius:50%;background:#FFC107;border:2.5px solid #14100F"></span></span>
+      <div style="display:flex;flex-direction:column;gap:2px"><p style="margin:0;font-family:Oswald;font-weight:600;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#FFC107">L'hôte est parti</p><p style="margin:0;font-size:14px;line-height:1.35">Test s'est déconnecté. Sans hôte, pas de nouvelle manche.</p></div>
+    </div>
+    <p style="margin:22px 0 6px;font-family:Oswald;font-weight:600;font-size:12px;letter-spacing:.16em;text-transform:uppercase">Fin de la manche</p>
+    <h1 style="margin:0;font-family:Oswald;font-weight:600;font-size:42px;line-height:1;text-transform:uppercase">Les Citoyens gagnent</h1>
+    <div style="display:flex;align-items:center;gap:14px;margin-top:20px;padding:16px;border-radius:18px;background:#14100F;color:#FFF7EF"><span style="flex:none;width:52px;height:52px;border-radius:50%;background:#FFC107;color:#14100F;display:flex;align-items:center;justify-content:center;font-family:Oswald;font-weight:600;font-size:22px">K</span><div><p style="margin:0;font-family:Oswald;font-weight:600;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#9A8F86">Le Traître était</p><p style="margin:2px 0 0;font-family:Oswald;font-weight:600;font-size:28px;line-height:1;text-transform:uppercase">Karim</p></div></div>
+    <div style="display:flex;align-items:baseline;gap:10px;margin-top:14px;padding:14px 16px;border-radius:14px;background:rgba(255,255,255,.14)"><p style="margin:0;font-weight:700;font-size:12px;letter-spacing:.1em;text-transform:uppercase">Le mot</p><span style="font-family:Oswald;font-weight:600;font-size:26px;text-transform:uppercase">Château</span></div>
+  </div>
+  <div style="position:absolute;left:0;right:0;bottom:0;display:flex;flex-direction:column;gap:10px;padding:28px 20px 26px;background:linear-gradient(to top,#DE3C31 72%,rgba(222,60,49,0))">
+    <p style="margin:0;text-align:center;font-size:13px;font-weight:500">Tu deviendras hôte à la place de Test.</p>
+    <button style="display:flex;align-items:center;justify-content:center;width:100%;min-height:60px;border:0;border-radius:16px;background:#FFC107;color:#14100F;font-family:Oswald;font-weight:600;font-size:19px;letter-spacing:.06em;text-transform:uppercase;box-shadow:0 6px 18px rgba(0,0,0,.2)">Reprendre la main</button>
+  </div>
+</div>
+<p style="margin:0;font-size:13px;line-height:1.5">Variante compacte de l'alerte pour les écrans chargés : une ligne de surtitre, une phrase. Même socle qu'en <a href="#2a">2a</a>.</p>
+</div>
+
+</div>
+</section>
+
+<section style="padding:48px 56px 80px;border-top:1px solid rgba(20,16,15,.15);margin-top:40px">
+<p style="margin:0;font-family:Oswald;font-weight:600;font-size:13px;letter-spacing:.16em;text-transform:uppercase">Tour 1 · Existant</p>
+<div id="1a" style="display:flex;flex-direction:column;gap:12px;width:375px;margin-top:20px">
+<div style="display:flex;align-items:center;gap:10px"><span style="font-family:Oswald;font-weight:600;font-size:13px;background:#14100F;color:#FFC107;padding:3px 9px;border-radius:6px">1a</span><span style="font-weight:600;font-size:14px">Actuel (insider.m85.fr)</span></div>
+<div style="position:relative;width:375px;height:780px;border-radius:28px;overflow:hidden;background:#DE3C31;box-shadow:0 20px 50px rgba(0,0,0,.18)">
+  <div style="position:relative;display:flex;flex-direction:column;align-items:center;gap:9px;padding:16px"><img src="img/frise.jpg" alt="" style="display:block;height:34px"><img src="img/title.jpg" alt="Insider" style="display:block;height:20px"><div style="position:absolute;top:50%;right:16px;transform:translateY(-50%);font-family:Oswald;font-weight:600;font-size:18px">2</div></div>
+  <div style="display:flex;justify-content:space-between;padding:9px 16px;background:#14100F"><span style="font-family:Oswald;font-weight:500;font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:#FFC107">Salon</span></div>
+  <div style="padding:20px">
+    <div style="padding:14px 16px;border-radius:14px;background:rgba(255,255,255,.14);font-size:13px;line-height:1.5"><p style="margin:0">Test, l'hôte, n'est plus connecté. Sans hôte, la partie ne peut pas avancer.</p><button style="display:flex;align-items:center;justify-content:center;width:100%;min-height:50px;margin-top:8px;border:0;background:transparent;color:#14100F;font-family:Oswald;font-weight:600;font-size:19px;letter-spacing:.06em;text-transform:uppercase">Reprendre la main</button></div>
+    <h1 style="margin:20px 0 0;font-family:Oswald;font-weight:600;font-size:32px;line-height:1.05;text-transform:uppercase">Salon</h1>
+    <p style="margin:4px 0 0;font-size:15px">2 joueurs à table · 4 minimum pour lancer</p>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:14px">
+      <div style="display:flex;align-items:center;gap:12px;min-height:60px;padding:0 12px 0 10px;border-radius:14px;background:rgba(255,255,255,.14)"><span style="flex:none;width:40px;height:40px;border-radius:50%;background:#14100F;color:#FFC107;display:flex;align-items:center;justify-content:center;font-family:Oswald;font-weight:600;font-size:17px">T</span><div style="flex:1;display:flex;flex-direction:column"><span style="font-weight:600;font-size:18px;line-height:1.2">Test</span><span style="font-weight:500;font-style:italic;font-size:12px">Hors ligne</span></div><span style="padding:3px 7px;border:1.5px solid #14100F;border-radius:6px;font-family:Oswald;font-weight:600;font-size:11px;letter-spacing:.14em;text-transform:uppercase">Hôte</span></div>
+      <div style="display:flex;align-items:center;gap:12px;min-height:60px;padding:0 12px 0 10px;border-radius:14px;background:rgba(255,255,255,.14)"><span style="flex:none;width:40px;height:40px;border-radius:50%;background:#14100F;color:#FFC107;display:flex;align-items:center;justify-content:center;font-family:Oswald;font-weight:600;font-size:17px">M</span><div style="flex:1;display:flex;flex-direction:column"><span style="font-weight:600;font-size:18px;line-height:1.2">Manu</span><span style="font-weight:600;font-size:12px">Toi</span></div></div>
+    </div>
+    <div style="margin-top:14px;padding:14px 16px;border-radius:14px;background:rgba(255,255,255,.14);font-size:13px;line-height:1.5"><p style="margin:0">Partage cette adresse pour qu'un joueur rejoigne. On peut encore entrer jusqu'au lancement.</p><span style="display:block;margin-top:6px;font-weight:700;font-size:15px">https://insider.m85.fr</span></div>
+  </div>
+  <div style="position:absolute;left:0;right:0;bottom:0;display:flex;flex-direction:column;gap:10px;padding:12px 20px 26px;background:linear-gradient(to top,#DE3C31 62%,rgba(222,60,49,0))">
+    <p style="margin:0;text-align:center;font-size:13px;font-weight:500">Test lance la partie quand tout le monde est là.</p>
+    <button style="display:flex;align-items:center;justify-content:center;width:100%;min-height:60px;border:0;border-radius:16px;background:rgba(0,0,0,.2);color:rgba(20,16,15,.55);font-family:Oswald;font-weight:600;font-size:19px;letter-spacing:.06em;text-transform:uppercase">En attente de l'hôte</button>
+  </div>
+</div>
+<p style="margin:0;font-size:13px;line-height:1.5">Le message et le CTA se fondent dans les encadrés d'info. Le socle promet un hôte absent.</p>
+</div>
+</section>
+</x-dc>
+</body>
+</html>

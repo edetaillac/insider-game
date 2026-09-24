@@ -50,7 +50,8 @@ export function createGame(settings = {}) {
         roles: null,
         centerCard: null,
         word: null,
-        phase: { name: 'lobby' }
+        phase: { name: 'lobby' },
+        hostChange: null
     };
 }
 
@@ -173,7 +174,12 @@ export function apply(game, command, deps) {
     if (!canAct(game, command.type, command.actor)) {
         return fail('FORBIDDEN', `${command.actor} cannot ${command.type}`);
     }
-    return HANDLERS[command.type](game, /** @type {any} */ (command), deps);
+    const result = HANDLERS[command.type](game, /** @type {any} */ (command), deps);
+    // Le dernier changement d'hôte ne vit que jusqu'au changement de phase suivant
+    if (result.ok && result.game.hostChange !== null && result.game.phase.name !== game.phase.name) {
+        return { ok: true, game: { ...result.game, hostChange: null } };
+    }
+    return result;
 }
 
 // Helpers de résultat
@@ -239,13 +245,18 @@ function removePlayer(game, command) {
  * Transfert du rôle d'hôte. La condition (hôte absent) relève de la présence, donc de la table.
  * @param {Game} game
  * @param {Extract<Command, {type: 'setHost'}>} command
+ * @param {Deps} deps
  * @returns {Result}
  */
-function setHost(game, command) {
+function setHost(game, command, deps) {
     if (!game.players.some((p) => p.id === command.id)) {
         return fail('UNKNOWN_PLAYER', `no player ${command.id}`);
     }
-    return next(game, { players: game.players.map((p) => ({ ...p, isHost: p.id === command.id })) });
+    const from = game.players.find((p) => p.isHost)?.id ?? null;
+    return next(game, {
+        players: game.players.map((p) => ({ ...p, isHost: p.id === command.id })),
+        hostChange: { from, to: command.id, at: deps.now() }
+    });
 }
 
 /**

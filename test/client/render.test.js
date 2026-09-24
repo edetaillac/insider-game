@@ -9,22 +9,25 @@ const NAMES = { a: 'Alice', b: 'Bob', c: 'Carol', d: 'Dan', e: 'Eve', f: 'Fred' 
 
 /**
  * Enveloppe minimale. Alice (a) est hôte par défaut.
- * @param {{ me?: string, online?: string[], phase?: string, host?: string, ids?: string[], actions?: string[], hostChange?: any, master?: string|null, result?: any, minPlayers?: number }} [o]
+ * @param {{ me?: string, online?: string[], phase?: string, host?: string, ids?: string[], actions?: string[], hostChange?: any, master?: string|null, result?: any, minPlayers?: number, role?: string|null, word?: string|null, finder?: string|null, candidates?: any, tallies?: any, traitorOptional?: boolean, names?: Record<string, string>, ballot?: any, hasVoted?: boolean }} [o]
  */
 function envelope(o = {}) {
     const ids = o.ids ?? ['a', 'b', 'c'];
     const host = o.host ?? 'a';
-    const players = ids.map((id) => ({ id, name: NAMES[id], isHost: id === host, hasVoted: false, hasSeen: true }));
+    const names = { ...NAMES, ...(o.names ?? {}) };
+    const players = ids.map((id) => ({ id, name: names[id], isHost: id === host, hasVoted: false, hasSeen: true }));
     const me = players.find((p) => p.id === (o.me ?? 'b'));
-    const master = o.master ? { id: o.master, name: NAMES[o.master] } : null;
+    const master = o.master ? { id: o.master, name: names[o.master] } : null;
+    const finder = o.finder ? { id: o.finder, name: names[o.finder] } : null;
     return {
         view: {
-            version: 1, phase: o.phase ?? 'lobby', me: { ...me, role: null, ballot: null }, players, word: null, master, finder: null,
-            timer: null, candidates: null, tallies: null, result: o.result ?? null, hostChange: o.hostChange ?? null, actions: o.actions ?? []
+            version: 1, phase: o.phase ?? 'lobby', me: { ...me, role: o.role ?? null, ballot: o.ballot ?? null, hasVoted: o.hasVoted ?? false }, players, word: o.word ?? null, master, finder,
+            timer: null, candidates: o.candidates ?? null, tallies: o.tallies ?? null, result: o.result ?? null, hostChange: o.hostChange ?? null, actions: o.actions ?? []
         },
         online: o.online ?? ids,
         serverTime: 0,
         minPlayers: o.minPlayers ?? 2,
+        traitorOptional: o.traitorOptional ?? false,
         shareUrl: 'https://insider.m85.fr'
     };
 }
@@ -68,12 +71,11 @@ test('2c nouvel hôte : confirmation jaune, moi en premier, ancien hôte hors li
     assert.match(r.dock, /data-cmd="startRound"/);
 });
 
-test('2d autres joueurs : info sur le nouvel hôte, bouton d\'attente nominatif', () => {
+test('2d autres joueurs : info sur le nouvel hôte, attente qui le nomme', () => {
     const r = out(envelope({ me: 'c', host: 'b', online: ['b', 'c'], hostChange: { from: 'a', to: 'b', at: 1 } }));
     assert.match(r.content, /class="msg-info"/);
     assert.match(r.content, /Bob a repris la main\.<\/strong> Alice s&#39;est déconnecté, il reste à table\./);
-    assert.match(r.dock, /En attente de Bob/);
-    assert.match(r.dock, /Bob lance la partie quand tout le monde est là/);
+    assert.match(r.dock, /dock-wait[\s\S]*Bob lance la partie quand tout le monde est là/);
 });
 
 test('2e retour de l\'ancien hôte : info dédiée, aucune reprise proposée', () => {
@@ -107,10 +109,10 @@ test('hôte en ligne : ni alerte ni reprise', () => {
     assert.doesNotMatch(r.content + r.dock, /msg-alert|claim/);
 });
 
-test('résultat : le bouton d\'attente nomme l\'hôte', () => {
+test('résultat : l\'attente nomme l\'hôte', () => {
     const result = { outcome: 'commonsWin', reason: 'vote2', insiderId: 'c', centerCard: null, tallies: null, pointed: 'c' };
     const r = out(envelope({ phase: 'ended', result }));
-    assert.match(r.dock, /En attente de Alice/);
+    assert.match(r.dock, /Alice relance quand vous êtes prêts/);
 });
 
 /* Lot 3 · coquille et présence */
@@ -190,4 +192,132 @@ test('salon, hôte : la note annonce le son avec une icône, et suit la coupure'
 test('pastille Son : icône haut-parleur, barrée quand le son est coupé', () => {
     assert.match(out(envelope({ me: 'a' })).bar, /sound-toggle"[^>]*>.*data-icon="speaker"/);
     assert.match(out(envelope({ me: 'a' }), { ...UI, muted: true }).bar, /data-icon="speaker-off"/);
+});
+
+/* Repasse UX et gameplay (handoff 2026-09-24-repasse) */
+
+const withoutSecret = (html) => html.replace(/<span class="secret-reveal">[\s\S]*?<\/span><\/span><\/button>/g, '<span class="secret-reveal"></span></span></button>');
+
+test('point 1 : à l\'enquête, Citoyen et Traître ont le même écran au repos', () => {
+    const base = { phase: 'playing', master: 'a', ids: ['a', 'b', 'c', 'd'] };
+    const traitor = out(envelope({ ...base, me: 'b', role: 'insider', word: 'Château' }));
+    const citizen = out(envelope({ ...base, me: 'c', role: 'common' }));
+    assert.equal(withoutSecret(traitor.content), withoutSecret(citizen.content));
+    assert.equal(traitor.dock, citizen.dock);
+    assert.match(traitor.content, /class="secret"[^>]*data-hold/);
+    assert.match(traitor.content, /aria-label="Le mot, maintenir pour voir"/);
+    assert.match(citizen.content, /Tu ne connais pas le mot/);
+    assert.doesNotMatch(traitor.content + citizen.content, /Visible seulement|Personne ne doit le deviner/);
+});
+
+test('point 1 : le Maître garde le mot ouvert, sans « Maintiens »', () => {
+    const r = out(envelope({ phase: 'playing', master: 'b', me: 'b', role: 'master', word: 'Château', actions: ['wordFound'] }));
+    assert.match(r.content, /Le mot à faire deviner/);
+    assert.doesNotMatch(r.content, /Maintiens|data-hold/);
+});
+
+test('point 2 : attente du mot sans rôle en clair, bloc à maintenir, bas d\'écran d\'attente', () => {
+    const r = out(envelope({ phase: 'roles', master: 'a', me: 'b', role: 'insider' }));
+    assert.match(r.content, /Alice choisit le mot/);
+    assert.match(r.content, /Alice est le Maître du jeu\. Pose ton téléphone, écran vers la table\./);
+    assert.doesNotMatch(withoutSecret(r.content), /Traître/);
+    assert.match(r.content, /class="secret secret-light"/);
+    assert.match(r.dock, /class="dock-wait" role="status"/);
+    assert.match(r.dock, /Le mot arrive dans un instant/);
+    assert.doesNotMatch(r.dock, /<button|dock-note/);
+});
+
+test('point 3 : seul le Maître déclare ; l\'hôte le fait à sa place s\'il est absent', () => {
+    const player = out(envelope({ phase: 'playing', master: 'c', me: 'b', role: 'common' }));
+    assert.match(player.dock, /Carol déclarera le mot trouvé/);
+    const master = out(envelope({ phase: 'playing', master: 'c', me: 'c', role: 'master', word: 'X', actions: ['wordFound'] }));
+    assert.match(master.dock, /class="btn btn-primary" data-ui="pick-finder"/);
+    const standIn = out(envelope({ phase: 'playing', master: 'c', me: 'a', role: 'common', online: ['a', 'b'], actions: ['wordFound'] }));
+    assert.match(standIn.dock, /Carol est hors ligne, tu peux déclarer à sa place\./);
+    assert.match(standIn.dock, /data-ui="pick-finder"/);
+    const disc = out(envelope({ phase: 'discussion', master: 'c', me: 'b', role: 'common', finder: 'b' }));
+    assert.match(disc.dock, /Carol passe au vote quand vous êtes prêts/);
+});
+
+test('point 4 : le résultat raconte la manche, rôles regroupés, carte du centre', () => {
+    const ids = ['a', 'b', 'c', 'd', 'e'];
+    const result = { outcome: 'commonsWin', reason: 'vote1', insiderId: 'b', centerCard: 'common', tallies: { b: 4 }, pointed: 'b', roles: { a: 'master', b: 'insider', c: 'common', d: 'common', e: 'common' } };
+    const r = out(envelope({ phase: 'ended', ids, me: 'c', finder: 'b', result, tallies: { b: 4 }, word: 'Château', traitorOptional: true }));
+    assert.doesNotMatch(r.content, /Fin de la manche|word-line/);
+    assert.match(r.content, /Au vote 1, 4 joueurs sur 5 ont accusé Bob\. C&#39;était bien le Traître\./);
+    assert.match(r.content, /class="reveal"[\s\S]*Le Traître était[\s\S]*Le mot[\s\S]*Château/);
+    assert.match(r.content, /Les rôles/);
+    assert.match(r.content, /Alice<\/span><span[^>]*>Maître du jeu/);
+    assert.match(r.content, /Traître · a trouvé/);
+    assert.match(r.content, /Carol, Dan, Eve<\/span><span[^>]*>Citoyens/);
+    assert.match(r.content, /Carte du centre/);
+    assert.doesNotMatch(r.content, /Les votes/, 'pas de barres au vote 1');
+    const v2 = out(envelope({ phase: 'ended', ids, me: 'c', finder: 'c', result: { ...result, reason: 'vote2', tallies: { b: 3, c: 1, d: 1, e: 0 } }, tallies: { b: 3, c: 1, d: 1, e: 0 } }));
+    assert.match(v2.content, /Les votes/);
+    assert.match(v2.content, /Citoyen · a trouvé/);
+});
+
+test('point 5 : la variante est annoncée au salon', () => {
+    assert.match(out(envelope({ traitorOptional: true })).content, /Variante : il peut n&#39;y avoir aucun Traître\./);
+    assert.doesNotMatch(out(envelope({ traitorOptional: false })).content, /Variante/);
+});
+
+test('point 5 : la carte du Citoyen et du Maître dit qu\'il peut n\'y avoir aucun Traître', () => {
+    const r = render(envelope({ phase: 'roles', me: 'b', role: 'common', master: 'a', traitorOptional: true }), { ...LOCAL }, UI);
+    assert.match(r.content, /s&#39;il y en a un/);
+});
+
+test('point 6 : vote 1, le tap sélectionne sans envoyer, puis Voter', () => {
+    const none = out(envelope({ phase: 'vote1', finder: 'c', actions: ['vote1'] }));
+    assert.match(none.content, /Carol, Traître \?/);
+    assert.match(none.content, /Oui, Traître/);
+    assert.match(none.content, /data-ui="select-v1"/);
+    assert.match(none.dock, /dock-wait[\s\S]*Choisis une réponse/);
+    const picked = render(envelope({ phase: 'vote1', finder: 'c', actions: ['vote1'] }), { ...LOCAL, v1: true }, UI);
+    assert.match(picked.dock, /data-ui="confirm-v1">Voter</);
+    const sent = render(envelope({ phase: 'vote1', finder: 'c', actions: ['vote1'], ballot: true, hasVoted: true }), { ...LOCAL, v1: true }, UI);
+    assert.match(sent.dock, /Vote enregistré/);
+    const changed = render(envelope({ phase: 'vote1', finder: 'c', actions: ['vote1'], ballot: true, hasVoted: true }), { ...LOCAL, v1: false }, UI);
+    assert.match(changed.dock, />Voter</);
+    assert.match(none.content, /Ton vote reste modifiable jusqu&#39;au dernier votant\./);
+});
+
+test('point 6 : vote 2, Voter remplace Confirmer mon vote', () => {
+    const candidates = [{ id: 'b', name: 'Bob' }, { id: 'c', name: 'Carol' }];
+    const none = out(envelope({ phase: 'vote2', finder: 'c', candidates, actions: ['vote2'] }));
+    assert.match(none.dock, /dock-wait[\s\S]*Choisis un joueur/);
+    const picked = render(envelope({ phase: 'vote2', finder: 'c', candidates, actions: ['vote2'] }), { ...LOCAL, v2: 'b' }, UI);
+    assert.match(picked.dock, />Voter</);
+    assert.doesNotMatch(picked.dock, /Confirmer mon vote/);
+});
+
+test('point 7 : attente au départage, au salon et au résultat, plus de bouton mort', () => {
+    const tb = out(envelope({ phase: 'tiebreak', finder: 'c', candidates: [{ id: 'a', name: 'Alice' }, { id: 'b', name: 'Bob' }], tallies: { a: 1, b: 1 } }));
+    assert.match(tb.dock, /Carol départage entre les ex aequo/);
+    const lobby = out(envelope());
+    assert.match(lobby.dock, /class="dock-wait"[\s\S]*Alice lance la partie quand tout le monde est là/);
+    assert.doesNotMatch(lobby.dock, /aria-disabled|dock-note/);
+    const result = { outcome: 'commonsWin', reason: 'vote2', insiderId: 'c', centerCard: null, tallies: null, pointed: 'c', roles: { a: 'master', b: 'common', c: 'insider' } };
+    assert.match(out(envelope({ phase: 'ended', result })).dock, /Alice relance quand vous êtes prêts/);
+});
+
+test('point 8 : initiales distinctes et prénom sous les pastilles de progression', () => {
+    const r = out(envelope({ phase: 'word', ids: ['a', 'b', 'c'], names: { a: 'Manu', b: 'Marie', c: 'Léa' }, master: 'c', me: 'b', role: 'common' }));
+    assert.match(r.content, />Mn</);
+    assert.match(r.content, />Mr</);
+    assert.match(r.content, /class="prog-name">Marie</);
+});
+
+test('points 9 et 10 : pas de surtitre en double, un seul titre .h2 hors résultat', () => {
+    const v1 = out(envelope({ phase: 'vote1', finder: 'c', actions: ['vote1'] }));
+    assert.doesNotMatch(v1.content, /Vote 1 sur 2|class="h1"|class="h3"/);
+    assert.match(v1.content, /<h1 class="h2">/);
+});
+
+test('point 13 : plus de style inline dans render.js, sauf la largeur des barres', async () => {
+    const { readFile } = await import('node:fs/promises');
+    const src = await readFile(new URL('../../public/js/render.js', import.meta.url), 'utf8');
+    const inline = src.split('\n').filter((l) => l.includes('style="'));
+    assert.equal(inline.length, 1);
+    assert.match(inline[0], /tally-fill/);
 });

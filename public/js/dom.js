@@ -9,6 +9,17 @@ export const ROLE_HINTS = Object.freeze({
     common: 'Trouve le mot, puis démasque le Traître.'
 });
 
+/** Avec la variante, le Maître et les Citoyens savent qu'il peut n'y avoir aucun Traître (le Traître, lui, sait qu'il existe). */
+const VARIANT_HINTS = Object.freeze({
+    master: 'Tu choisis le mot et tu réponds aux questions. Il peut n\'y avoir aucun Traître.',
+    common: 'Trouve le mot, puis démasque le Traître, s\'il y en a un.'
+});
+
+/** @param {'master'|'insider'|'common'} role @param {boolean} traitorOptional */
+export function roleHint(role, traitorOptional) {
+    return (traitorOptional && VARIANT_HINTS[role]) || ROLE_HINTS[role];
+}
+
 /** Libellé et rang de la barre de phase (handoff, "Barre de phase"). */
 export const PHASE_BAR = Object.freeze({
     lobby: { label: 'Salon', rank: '' },
@@ -60,6 +71,71 @@ export function formatCountdown(ms) {
 export function initial(name) {
     const trimmed = String(name ?? '').trim();
     return trimmed ? trimmed[0].toLocaleUpperCase('fr') : '?';
+}
+
+const VOWELS = new Set('aeiouyàâäéèêëîïôöùûüÿœæ');
+
+/**
+ * Initiales distinctes (handoff repasse, point 8) : une lettre, sinon la première consonne qui suit,
+ * sinon la deuxième lettre. Deux caractères au plus.
+ * @param {Array<{ id: string, name: string }>} players
+ * @returns {Map<string, string>}
+ */
+export function initials(players) {
+    const first = new Map(players.map((p) => [p.id, initial(p.name)]));
+    const result = new Map(first);
+    const groups = new Map();
+    for (const p of players) {
+        groups.set(first.get(p.id), [...(groups.get(first.get(p.id)) ?? []), p]);
+    }
+    for (const [letter, group] of groups) {
+        if (group.length < 2) {
+            continue;
+        }
+        const rest = (p) => [...String(p.name).trim().slice(1).toLocaleLowerCase('fr')];
+        const consonant = (p) => letter + (rest(p).find((c) => /\p{L}/u.test(c) && !VOWELS.has(c)) ?? rest(p)[0] ?? '');
+        const second = (p) => letter + (rest(p)[0] ?? '');
+        const tries = group.map(consonant);
+        group.forEach((p, i) => {
+            const clash = tries.filter((t) => t === tries[i]).length > 1;
+            result.set(p.id, clash ? second(p) : tries[i]);
+        });
+    }
+    return result;
+}
+
+/**
+ * Phrase qui dit ce qui a décidé la manche (handoff repasse, point 4).
+ * @param {{ players: Array<{ id: string, name: string }>, result: any }} view
+ * @param {string|null} finderId
+ */
+export function outcomeStory(view, finderId) {
+    const r = view.result;
+    const name = (id) => view.players.find((p) => p.id === id)?.name ?? '?';
+    const roleOf = (id) => r.roles?.[id];
+    if (r.reason === 'timeout') {
+        return 'Personne n\'a trouvé le mot avant la fin du chrono.';
+    }
+    if (r.reason === 'vote1') {
+        const accused = r.pointed ?? finderId;
+        const yes = r.tallies?.[accused] ?? 0;
+        const who = `${yes} ${yes > 1 ? 'joueurs' : 'joueur'} sur ${view.players.length} ${yes > 1 ? 'ont' : 'a'} accusé ${name(accused)}`;
+        return roleOf(accused) === 'insider' ? `Au vote 1, ${who}. C'était bien le Traître.` : `Au vote 1, ${who}, qui était Citoyen.`;
+    }
+    const pointed = r.pointed;
+    let tail;
+    if (pointed === 'center') {
+        tail = r.centerCard === 'insider'
+            ? 'La majorité a vu juste : il n\'y avait pas de Traître.'
+            : 'La majorité a pointé « Personne », mais il y avait un Traître.';
+    } else if (roleOf(pointed) === 'insider') {
+        tail = r.reason === 'tiebreak' ? `${name(pointed)} a été désigné. C'était bien le Traître.` : `Au vote 2, ${name(pointed)} a été le plus pointé. C'était bien le Traître.`;
+    } else if (r.centerCard === 'insider') {
+        tail = 'Il n\'y avait pas de Traître, et un Citoyen a été accusé.';
+    } else {
+        tail = r.reason === 'tiebreak' ? `${name(pointed)} a été désigné, mais c'était un Citoyen.` : `Au vote 2, ${name(pointed)} a été le plus pointé, mais c'était un Citoyen.`;
+    }
+    return r.reason === 'tiebreak' ? `Égalité au vote 2, ${name(finderId)} a départagé. ${tail}` : tail;
 }
 
 /** Issue de la manche, en deux lignes maximum (handoff §12). */

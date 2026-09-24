@@ -1,8 +1,8 @@
 // public/js/render.js
 // Un écran par phase, dérivé de la vue serveur et d'un état local d'interface.
-// render() est pure : (envelope, local) -> { phase, content, dock, counter }.
+// render() est pure : (envelope, local, ui) -> { phase, bar, content, dock, sheet }.
 
-import { escapeHtml as e, PHASE_BAR, initial, svg, ROLE_LABELS, ROLE_HINTS, outcomeTitle } from './dom.js';
+import { escapeHtml as e, PHASE_BAR, svg, ROLE_LABELS, outcomeTitle, outcomeStory, initials, roleHint } from './dom.js';
 
 /* Briques partagées */
 
@@ -45,23 +45,37 @@ export function note(text) {
     return text ? `<p class="dock-note">${e(text)}</p>` : '';
 }
 
-export function avatar(name, cls = 'avatar') {
-    return `<span class="${cls}" aria-hidden="true">${e(initial(name))}</span>`;
+/** Pastille d'initiales. `label` est déjà calculé par `ini()` : à deux caractères, la police baisse d'un cran. */
+export function avatar(label, cls = 'avatar') {
+    return `<span class="${cls}${[...label].length > 1 ? ' duo' : ''}" aria-hidden="true">${e(label)}</span>`;
+}
+
+/** Initiales distinctes d'un joueur à cette table (handoff repasse, point 8). */
+export function ini(view, id) {
+    return initials(view.players).get(id) ?? '?';
+}
+
+/**
+ * Bas d'écran d'attente (point 7) : une phrase qui nomme la personne attendue, jamais un bouton mort.
+ * On garde un bouton grisé seulement quand ce joueur pourra agir.
+ */
+export function waitDock(text) {
+    return `<div class="dock-wait" role="status"><span class="wait-dots" aria-hidden="true"><i></i><i></i><i></i></span><span>${e(text)}</span></div>`;
+}
+
+/**
+ * Bloc secret (points 1 et 2, ADR D7) : même silhouette pour tous au repos, révélé par appui maintenu.
+ * Le contenu révélé vit dans `.secret-reveal`, seule partie qui diffère d'un rôle à l'autre.
+ */
+export function secretBlock({ label, hint, reveal, revealCls, sub = '', light = false }) {
+    return `<button type="button" class="secret${light ? ' secret-light' : ''}" data-hold aria-pressed="false" aria-label="${e(label)}, maintenir pour voir"><span class="secret-rest"><span class="secret-eye" aria-hidden="true"></span><span class="secret-text"><span class="secret-label">${e(label)}</span><span class="secret-hint">${e(hint)}</span></span></span><span class="secret-reveal"><span class="secret-label">${e(label)}</span><span class="secret-value ${e(revealCls)}">${e(reveal)}</span>${sub ? `<span class="secret-sub">${e(sub)}</span>` : ''}</span></button>`;
 }
 
 /** Progression collective (handoff "Composant : progression collective"). */
 export function progress(view, done, label) {
-    const items = view.players.map((p) => avatar(p.name, `avatar${done(p) ? ' on' : ''}`)).join('');
+    const items = view.players.map((p) => `<span class="prog-item${done(p) ? ' on' : ''}">${avatar(ini(view, p.id), `avatar${done(p) ? ' on' : ''}`)}<span class="prog-name">${e(p.name)}</span></span>`).join('');
     const count = view.players.filter(done).length;
     return `<div class="well progress"><p class="label">${e(label(count, view.players.length))}</p><div class="avatars">${items}</div></div>`;
-}
-
-/** Rappel du rôle, encadré (handoff §5). */
-export function roleRecall(view, roleLabels, roleHints) {
-    if (!view.me.role) {
-        return '';
-    }
-    return `<div class="well well-lg role-recall"><p class="label">Ton rôle</p><p class="name">${e(roleLabels[view.me.role])}</p><p class="p" style="margin:0">${e(roleHints[view.me.role])}</p></div>`;
 }
 
 /**
@@ -75,16 +89,12 @@ export function card(local, front, back) {
     </button>`;
 }
 
-export function dots() {
-    return '<div class="dots" aria-hidden="true"><i></i><i></i><i></i></div>';
-}
-
 /* Messages (handoff 2026-09-24, lot 1). L'action vit dans le socle, jamais dans le message. */
 
 /** Alerte : un problème bloque la table. `announce` pose role="alert" à son apparition seulement. */
-export function msgAlert({ eyebrow, title = '', body, awayName, compact = false, announce = false }) {
+export function msgAlert({ eyebrow, title = '', body, awayInitial, compact = false, announce = false }) {
     const heading = !compact && title ? `<p class="msg-title">${e(title)}</p>` : '';
-    return `<div class="msg-alert${compact ? ' compact' : ''}"${announce ? ' role="alert"' : ''}><span class="avatar-away" aria-hidden="true">${e(initial(awayName))}</span><div class="msg-text"><p class="msg-eyebrow">${e(eyebrow)}</p>${heading}<p class="msg-body">${e(body)}</p></div></div>`;
+    return `<div class="msg-alert${compact ? ' compact' : ''}"${announce ? ' role="alert"' : ''}><span class="avatar-away${[...awayInitial].length > 1 ? ' duo' : ''}" aria-hidden="true">${e(awayInitial)}</span><div class="msg-text"><p class="msg-eyebrow">${e(eyebrow)}</p>${heading}<p class="msg-body">${e(body)}</p></div></div>`;
 }
 
 /** Confirmation : ce qui vient de changer pour moi. */
@@ -93,8 +103,8 @@ export function msgOk({ title, body }) {
 }
 
 /** Info : ce qui a changé à la table pour les autres. `html` est déjà échappé. */
-export function msgInfo({ html, avatarName }) {
-    return `<div class="msg-info" role="status">${avatar(avatarName, 'avatar ink')}<p>${html}</p></div>`;
+export function msgInfo({ html, avatarInitial }) {
+    return `<div class="msg-info" role="status">${avatar(avatarInitial, 'avatar ink')}<p>${html}</p></div>`;
 }
 
 function hostOf(view) {
@@ -141,11 +151,13 @@ function awayBody(envelope, name) {
 function topMessage(envelope, local) {
     const { view } = envelope;
     if (can(view, 'claimHost')) {
-        const name = hostOf(view)?.name ?? '?';
+        const host = hostOf(view);
+        const name = host?.name ?? '?';
+        const awayInitial = host ? ini(view, host.id) : '?';
         const announce = !local.announced;
         return view.phase === 'lobby'
-            ? msgAlert({ eyebrow: 'L\'hôte est parti', title: `${name} s'est déconnecté`, body: 'Sans hôte, personne ne peut lancer la partie. N\'importe quel joueur peut prendre le relais.', awayName: name, announce })
-            : msgAlert({ eyebrow: 'L\'hôte est parti', body: awayBody(envelope, name), awayName: name, compact: true, announce });
+            ? msgAlert({ eyebrow: 'L\'hôte est parti', title: `${name} s'est déconnecté`, body: 'Sans hôte, personne ne peut lancer la partie. N\'importe quel joueur peut prendre le relais.', awayInitial, announce })
+            : msgAlert({ eyebrow: 'L\'hôte est parti', body: awayBody(envelope, name), awayInitial, compact: true, announce });
     }
     const change = view.hostChange;
     if (!change) {
@@ -157,10 +169,10 @@ function topMessage(envelope, local) {
         return msgOk({ title: 'Tu es l\'hôte', body });
     }
     if (change.from === view.me.id) {
-        return msgInfo({ avatarName: to, html: `<strong>${e(`${to} est hôte depuis ton départ.`)}</strong> ${e('Tu restes à table comme joueur.')}` });
+        return msgInfo({ avatarInitial: ini(view, change.to), html: `<strong>${e(`${to} est hôte depuis ton départ.`)}</strong> ${e('Tu restes à table comme joueur.')}` });
     }
     const from = change.from ? ` ${e(`${playerName(view, change.from)} s'est déconnecté, il reste à table.`)}` : '';
-    return msgInfo({ avatarName: to, html: `<strong>${e(`${to} a repris la main.`)}</strong>${from}` });
+    return msgInfo({ avatarInitial: ini(view, change.to), html: `<strong>${e(`${to} a repris la main.`)}</strong>${from}` });
 }
 
 /** Note de l'hôte au salon : le son de la partie sort de son téléphone (lot 5). */
@@ -188,7 +200,7 @@ function hostChip(envelope, p) {
     return p.isHost ? `<span class="chip-host${isOnline(envelope, p.id) ? '' : ' vacant'}">Hôte</span>` : '';
 }
 
-/* Écrans (remplacés par les Tasks 4 à 6). Chaque fonction renvoie { content, dock, phase? }. */
+/* Écrans. Chaque fonction renvoie { content, dock, waiting? } ; `waiting` marque un bas d'écran d'attente. */
 
 /* §2 Salon (handoff 2026-09-24, lot 4) */
 function lobby(envelope, local, ui) {
@@ -203,7 +215,7 @@ function lobby(envelope, local, ui) {
                 ? `<span class="confirm-inline">Retirer ? ${cmdButton('kick', 'Oui', { id: p.id }, 'mini mini-yes')}${uiButton('kick-cancel', 'Non', '', 'mini mini-no')}</span>`
                 : `<button type="button" class="icon-btn" data-ui="kick-ask" data-arg="${e(p.id)}" aria-label="Retirer ${e(p.name)}">${svg('cross')}</button>`;
         }
-        return `<li class="row">${avatar(p.name, `avatar ${off ? 'off' : 'ink'}`)}<div class="row-main"><span class="row-name">${e(p.name)}</span></div>${off ? '<span class="row-status off">Hors ligne</span>' : ''}${isMe ? '<span class="pill-me">Toi</span>' : ''}${hostChip(envelope, p)}${trailing}</li>`;
+        return `<li class="row">${avatar(ini(view, p.id), `avatar ${off ? 'off' : 'ink'}`)}<div class="row-main"><span class="row-name">${e(p.name)}</span></div>${off ? '<span class="row-status off">Hors ligne</span>' : ''}${isMe ? '<span class="pill-me">Toi</span>' : ''}${hostChip(envelope, p)}${trailing}</li>`;
     }).join('');
     const url = envelope.shareUrl ?? (typeof location !== 'undefined' ? location.origin : '');
     const shown = url.replace(/^https?:\/\//, '').replace(/\/$/, '');
@@ -218,11 +230,12 @@ function lobby(envelope, local, ui) {
     } else if (can(view, 'claimHost')) {
         dock = claimDock(view);
     } else {
-        dock = `${note(`${name} lance la partie quand tout le monde est là.`)}${disabledButton(`En attente de ${name}`)}`;
+        dock = waitDock(`${name} lance la partie quand tout le monde est là`);
     }
     return {
         content: `<h1 class="h2">${n} ${n > 1 ? 'joueurs' : 'joueur'} à table</h1>
-        <p class="p" style="margin-top:4px">${enough ? `Assez pour lancer, ${minPlayers} minimum.` : `Encore ${minPlayers - n} pour lancer, ${minPlayers} minimum.`}</p>
+        <p class="p sub">${enough ? `Assez pour lancer, ${minPlayers} minimum.` : `Encore ${minPlayers - n} pour lancer, ${minPlayers} minimum.`}</p>
+        ${envelope.traitorOptional ? `<p class="p sub">${e('Variante : il peut n\'y avoir aucun Traître.')}</p>` : ''}
         <ul class="rows mt-14">${rows}</ul>
         <div class="well share mt-14"><div class="share-text"><p class="share-label">Pour rejoindre, jusqu'au lancement</p><span class="share-url">${e(shown)}</span></div><button type="button" class="btn-copy" data-ui="copy-url" data-arg="${e(url)}">Copier</button></div>`,
         dock
@@ -232,10 +245,11 @@ function lobby(envelope, local, ui) {
 /* §3 puis §4 ou §5 : rôles */
 function roles(envelope, local) {
     const { view } = envelope;
+    const hint = roleHint(view.me.role, Boolean(envelope.traitorOptional));
     if (!view.me.hasSeen) {
         return {
-            content: `<div class="center"><p class="p" style="margin:0 auto 14px">Personne d'autre ne voit ta carte.</p></div>
-            ${card(local, 'Ton rôle', { over: 'Tu es', secret: ROLE_LABELS[view.me.role], secretCls: 'role', text: ROLE_HINTS[view.me.role] })}
+            content: `<p class="p intro">Personne d'autre ne voit ta carte.</p>
+            ${card(local, 'Ton rôle', { over: 'Tu es', secret: ROLE_LABELS[view.me.role], secretCls: 'role', text: hint })}
             <div class="mt-20">${progress(view, (p) => p.hasSeen, (n, total) => `${n} sur ${total} ont vu leur carte`)}</div>`,
             dock: seenDock(local, 'seenRole', 'J\'ai vu ma carte')
         };
@@ -253,12 +267,14 @@ function roles(envelope, local) {
             dock: `<button type="button" class="btn btn-primary btn-disabled" aria-disabled="true" data-reason="Écris un mot d'abord." data-submit="word-form">Valider le mot</button>`
         };
     }
+    /* 5c : le Maître est présenté, le rôle du joueur ne s'affiche plus en clair (ADR D7) */
     const masterName = view.master?.name ?? 'Le Maître';
     return {
-        content: `<div class="center">${dots()}<h1 class="h3">${e(masterName)} choisit le mot</h1>
-        <p class="lead" style="max-width:28ch">Rien à faire pour l'instant. Pose ton téléphone.</p></div>
-        <div class="mt-20">${roleRecall(view, ROLE_LABELS, ROLE_HINTS)}</div>`,
-        dock: disabledButton('Continuer'),
+        content: `<div class="center wait-master">${view.master ? avatar(ini(view, view.master.id), 'avatar avatar-64 ink') : ''}
+        <h1 class="h2 mt-16">${e(masterName)} choisit le mot</h1>
+        <p class="lead narrow mt-8">${e(`${masterName} est le Maître du jeu. Pose ton téléphone, écran vers la table.`)}</p></div>
+        <div class="mt-36">${secretBlock({ light: true, label: 'Ton rôle', hint: 'Maintiens pour le revoir', reveal: ROLE_LABELS[view.me.role], revealCls: 'role', sub: hint })}</div>`,
+        dock: waitDock('Le mot arrive dans un instant'),
         waiting: true
     };
 }
@@ -276,11 +292,11 @@ function word(envelope, local) {
     } else if (can(view, 'startTimer')) {
         dock = `${note('Lance le chrono quand tout le monde a regardé.')}${cmdButton('startTimer', 'Lancer le chrono')}`;
     } else {
-        dock = `${note('L\'hôte lance le chrono quand tout le monde a regardé.')}${disabledButton('Lancer le chrono')}`;
+        dock = waitDock(`${view.master?.name ?? 'Le Maître'} lance le chrono quand tout le monde a regardé`);
     }
     const waiting = view.me.hasSeen && !can(view, 'startTimer');
     return {
-        content: `<div class="center"><p class="p narrow" style="margin:0 auto 14px">Tout le monde retourne la même carte, en même temps. Rien ne trahit qui lit vraiment.</p></div>
+        content: `<p class="p intro">Tout le monde retourne la même carte, en même temps. Rien ne trahit qui lit vraiment.</p>
         ${card(local, 'Le mot', back)}
         <div class="mt-20">${progress(view, (p) => p.hasSeen, (n, total) => `${n} sur ${total} ont regardé`)}</div>`,
         dock,
@@ -301,7 +317,7 @@ const RULE_WELL = '<div class="well well-lg"><p class="label">Règle du tour</p>
 function finderScreen(view) {
     const rows = view.players
         .filter((p) => p.id !== view.master?.id)
-        .map((p) => `<button type="button" class="pick" data-cmd="wordFound" data-args='${e(JSON.stringify({ finderId: p.id }))}'>${avatar(p.name, 'avatar avatar-40 gold')}<span>${e(p.name)}</span>${svg('arrow')}</button>`)
+        .map((p) => `<button type="button" class="pick" data-cmd="wordFound" data-args='${e(JSON.stringify({ finderId: p.id }))}'>${avatar(ini(view, p.id), 'avatar avatar-40 gold')}<span>${e(p.name)}</span>${svg('arrow')}</button>`)
         .join('');
     return {
         content: `${timerBlock(view, { small: true })}<h1 class="h2 mt-14">Qui a trouvé ?</h1><p class="p">Le chrono continue pendant ton choix.</p><div class="rows mt-14">${rows}</div>`,
@@ -309,25 +325,31 @@ function finderScreen(view) {
     };
 }
 
-/* §7 L'enquête */
+/* §7 L'enquête : même écran pour tous au repos (ADR D7), seul le Maître déclare (ADR D8) */
 function playing(envelope, local) {
     const { view } = envelope;
     if (local.finderPicking && can(view, 'wordFound')) {
         return finderScreen(view);
     }
     const isMaster = view.me.role === 'master';
-    let wordBlock = '';
-    if (view.word !== null) {
-        const wordNote = isMaster ? 'Visible seulement par toi et le Traître.' : 'Tu connais le mot. Personne ne doit le deviner sur ton visage.';
-        wordBlock = `<div class="dark"><p class="dark-label">${isMaster ? 'Le mot à faire deviner' : 'Le mot'}</p><p class="dark-word">${e(view.word)}</p><p class="dark-note">${e(wordNote)}</p></div>`;
+    const masterName = view.master?.name ?? 'Le Maître';
+    // Le rôle du Maître est public : son mot reste affiché. Pour tous les autres, le même bloc à maintenir.
+    const secret = isMaster
+        ? `<div class="dark"><p class="dark-label">Le mot à faire deviner</p><p class="dark-word">${e(view.word ?? '')}</p></div>`
+        : secretBlock({ label: 'Le mot', hint: 'Maintiens pour voir', reveal: view.word ?? 'Tu ne connais pas le mot', revealCls: view.word !== null ? 'word' : 'neutral' });
+    let dock;
+    if (!can(view, 'wordFound')) {
+        dock = waitDock(`${masterName} déclarera le mot trouvé`);
+    } else if (isMaster) {
+        dock = uiButton('pick-finder', 'Le mot a été trouvé');
+    } else {
+        dock = `${note(`${masterName} est hors ligne, tu peux déclarer à sa place.`)}${uiButton('pick-finder', 'Le mot a été trouvé')}`;
     }
-    const dock = can(view, 'wordFound')
-        ? uiButton('pick-finder', 'Le mot a été trouvé', '', isMaster ? 'btn btn-accent' : 'btn btn-primary')
-        : `${note('Le Maître ou l\'hôte déclare le mot trouvé.')}${disabledButton('Le mot a été trouvé')}`;
     return {
-        content: `<div class="timer-block center" data-urgent-block>${timerBlock(view)}<p class="eyebrow" style="margin:8px 0 0">Temps restant</p></div>
+        content: `<div class="timer-block center" data-urgent-block>${timerBlock(view)}<p class="eyebrow below">Temps restant</p></div>
         <div class="timer-track"><div class="timer-fill"></div></div>
-        <div class="stack mt-20">${wordBlock}${RULE_WELL}</div>`,
+        <div class="mt-20">${secret}</div>
+        <div class="mt-14">${RULE_WELL}</div>`,
         dock,
         waiting: !can(view, 'wordFound')
     };
@@ -339,33 +361,43 @@ function discussion(envelope) {
     const finder = view.finder?.name ?? '?';
     const isMaster = view.me.role === 'master';
     const wordSub = isMaster && view.word !== null ? `Le mot était <span class="gold">${e(view.word)}</span>` : 'Le mot a été trouvé';
-    const dock = can(view, 'closeDiscussion')
-        ? cmdButton('closeDiscussion', 'Passer au vote')
-        : `${note('Le Maître passe au vote quand vous êtes prêts.')}${disabledButton('Passer au vote')}`;
+    const masterName = view.master?.name ?? 'Le Maître';
+    let dock;
+    if (!can(view, 'closeDiscussion')) {
+        dock = waitDock(`${masterName} passe au vote quand vous êtes prêts`);
+    } else if (isMaster) {
+        dock = cmdButton('closeDiscussion', 'Passer au vote');
+    } else {
+        dock = `${note(`${masterName} est hors ligne, tu peux passer au vote à sa place.`)}${cmdButton('closeDiscussion', 'Passer au vote')}`;
+    }
     return {
-        content: `<div class="found-banner">${avatar(finder, 'avatar avatar-44 gold')}<div><p class="title">${e(finder)} a trouvé</p><p class="sub">${wordSub}</p></div></div>
-        <div class="well well-lg mt-14"><p class="label">Discussion, temps indicatif</p>${timerBlock(view, { small: true, urgentAble: false })}<p class="p" style="margin-top:10px">Reprenez le fil des questions. Qui savait déjà ? Qui a orienté ? Le Maître passe au vote quand vous êtes prêts.</p></div>`,
+        content: `<div class="found-banner">${avatar(view.finder ? ini(view, view.finder.id) : '?', 'avatar avatar-44 gold')}<div><p class="title">${e(finder)} a trouvé</p><p class="sub">${wordSub}</p></div></div>
+        <div class="well well-lg mt-14"><p class="label">Discussion, temps indicatif</p>${timerBlock(view, { small: true, urgentAble: false })}<p class="p mt-10">Reprenez le fil des questions. Qui savait déjà ? Qui a orienté ? Le Maître passe au vote quand vous êtes prêts.</p></div>`,
         dock,
         waiting: !can(view, 'closeDiscussion')
     };
 }
 
-/* §10 Premier vote */
+/* §10 Premier vote : le tap sélectionne, « Voter » envoie (point 6) */
 function vote1(envelope, local) {
     const { view } = envelope;
     const finder = view.finder?.name ?? '?';
     const selected = local.v1 !== null ? local.v1 : (typeof view.me.ballot === 'boolean' ? view.me.ballot : null);
     const opt = (value, label, cls) => uiButton('select-v1', label, String(value), `opt ${cls}${selected === value ? ' selected' : ''}`, `<span>${e(label)}</span>${svg('check', 20)}`);
-    const dock = view.me.hasVoted
-        ? registeredButton()
-        : disabledButton('Choisis une réponse', 'Touche Oui ou Non pour voter.');
+    let dock;
+    if (selected === null) {
+        dock = waitDock('Choisis une réponse');
+    } else if (view.me.hasVoted && selected === view.me.ballot) {
+        dock = registeredButton();
+    } else {
+        dock = uiButton('confirm-v1', 'Voter');
+    }
     return {
-        content: `<p class="eyebrow">Vote 1 sur 2</p>
-        <h1 class="h1">${e(finder)} est-il<br>le Traître ?</h1>
+        content: `<h1 class="h2">${e(`${finder}, Traître ?`)}</h1>
         <p class="p narrow">Majorité stricte. Si elle est atteinte, la manche s'arrête immédiatement.</p>
-        <div class="vote1">${opt(true, 'Oui, c\'est lui', 'opt-yes')}${opt(false, 'Non', 'opt-no')}</div>
+        <div class="vote1">${opt(true, 'Oui, Traître', 'opt-yes')}${opt(false, 'Non', 'opt-no')}</div>
         <div class="mt-20">${progress(view, (p) => p.hasVoted, (n, total) => `${n} sur ${total} ont voté`)}</div>
-        <p class="p" style="font-size:13px">Ton vote reste modifiable tant que tout le monde n'a pas voté.</p>`,
+        <p class="p small">${e('Ton vote reste modifiable jusqu\'au dernier votant.')}</p>`,
         dock
     };
 }
@@ -377,7 +409,7 @@ function candidateRow(view, c, selected, score, interactive = true) {
     const cls = `cand${isCenter ? ' cand-center' : ''}${selected ? ' selected' : ''}`;
     const inner = isCenter
         ? `<span>${e(label)}</span>${score !== null ? `<span class="score">${score}</span>` : ''}${svg('check', 20)}`
-        : `${avatar(c.name, 'avatar avatar-40')}<span>${e(c.name)}</span>${score !== null ? `<span class="score">${score}</span>` : ''}${svg('check', 20)}`;
+        : `${avatar(ini(view, c.id), 'avatar avatar-40')}<span>${e(c.name)}</span>${score !== null ? `<span class="score">${score}</span>` : ''}${svg('check', 20)}`;
     return interactive ? uiButton('select-v2', label, c.id, cls, inner) : `<div class="${cls}">${inner}</div>`;
 }
 
@@ -389,15 +421,14 @@ function vote2(envelope, local) {
     const confirmed = view.me.hasVoted && chosen === view.me.ballot;
     let dock;
     if (chosen === null) {
-        dock = disabledButton('Choisis un joueur', 'Touche un joueur de la liste pour voter.');
+        dock = waitDock('Choisis un joueur');
     } else if (confirmed) {
         dock = registeredButton();
     } else {
-        dock = uiButton('confirm-vote', 'Confirmer mon vote');
+        dock = uiButton('confirm-vote', 'Voter');
     }
     return {
-        content: `<p class="eyebrow">Vote 2 sur 2</p>
-        <h1 class="h1">Qui est le Traître ?</h1>
+        content: `<h1 class="h2">Qui est le Traître ?</h1>
         <p class="p">Le plus pointé révèle son rôle.</p>
         <div class="rows mt-14">${rows}</div>
         <div class="mt-20">${progress(view, (p) => p.hasVoted, (n, total) => `${n} sur ${total} ont voté`)}</div>`,
@@ -412,12 +443,14 @@ function tiebreak(envelope, local) {
     const finder = view.finder?.name ?? 'Le trouveur';
     const chosen = local.v2;
     const rows = (view.candidates ?? []).map((c) => candidateRow(view, c, decides && chosen === c.id, view.tallies?.[c.id] ?? 0, decides)).join('');
-    const dock = decides
-        ? (chosen === null ? disabledButton('Choisis un joueur', 'Touche un des ex aequo pour départager.') : uiButton('confirm-vote', 'Départager'))
-        : `${note(`${finder} départage.`)}${disabledButton('En attente')}`;
+    let dock;
+    if (!decides) {
+        dock = waitDock(`${finder} départage entre les ex aequo`);
+    } else {
+        dock = chosen === null ? waitDock('Choisis un joueur') : uiButton('confirm-vote', 'Départager');
+    }
     return {
-        content: `<p class="eyebrow">Vote 2 sur 2</p>
-        <h1 class="h1">Égalité</h1>
+        content: `<h1 class="h2">Égalité</h1>
         <p class="p">${decides ? 'À toi de départager : le plus pointé révèle son rôle.' : `${e(finder)} départage entre les ex aequo.`}</p>
         <div class="rows mt-14">${rows}</div>`,
         dock,
@@ -425,14 +458,15 @@ function tiebreak(envelope, local) {
     };
 }
 
-/* §12 Résultat */
+/* §12 Résultat : ce qui a décidé la manche, le Traître et le mot, tous les rôles (point 4) */
 function ended(envelope) {
     const { view } = envelope;
     const r = view.result;
-    const reveal = r?.insiderId
-        ? `<div class="reveal">${avatar(playerName(view, r.insiderId), 'avatar avatar-52 gold')}<div><p class="dark-label">Le Traître était</p><p class="reveal-name">${e(playerName(view, r.insiderId))}</p></div></div>`
-        : `<div class="reveal"><div><p class="dark-label">Le Traître</p><p class="reveal-name">Il n'y avait pas de Traître</p></div></div>`;
-    const tallies = view.tallies ? Object.entries(view.tallies) : [];
+    const who = r?.insiderId
+        ? `<div class="reveal-who">${avatar(ini(view, r.insiderId), 'avatar avatar-52 gold')}<div><p class="dark-label">Le Traître était</p><p class="reveal-name">${e(playerName(view, r.insiderId))}</p></div></div>`
+        : '<div class="reveal-who"><div><p class="dark-label">Le Traître</p><p class="reveal-name">Il n\'y avait pas de Traître</p></div></div>';
+    const reveal = `<div class="reveal">${who}<div class="reveal-word"><p class="dark-label">Le mot</p><p class="reveal-word-value">${e(view.word ?? '?')}</p></div></div>`;
+    const tallies = view.tallies && (r?.reason === 'vote2' || r?.reason === 'tiebreak') ? Object.entries(view.tallies) : [];
     const max = tallies.reduce((m, [, n]) => Math.max(m, n), 0);
     const pointed = r?.pointed ?? null;
     /* Après un départage, seul le candidat désigné par le trouveur est marqué, sinon le ou les plus pointés */
@@ -444,16 +478,42 @@ function ended(envelope) {
         can(view, 'startRound') ? cmdButton('startRound', 'Rejouer une manche') : '',
         can(view, 'reset') ? cmdButton('reset', 'Retour au salon', {}, 'btn btn-secondary') : ''
     ].filter(Boolean).join('');
-    const name = hostName(view);
     return {
-        content: `<p class="eyebrow">Fin de la manche</p>
-        <h1 class="h-xl">${e(r ? outcomeTitle(r) : 'Fin de partie')}</h1>
-        <div class="mt-20">${reveal}</div>
-        <div class="well word-line mt-14"><p class="label">Le mot</p><span class="word-value">${e(view.word ?? '?')}</span></div>
+        content: `<h1 class="h-xl">${e(r ? outcomeTitle(r) : 'Fin de partie')}</h1>
+        ${r ? `<p class="p story">${e(outcomeStory(view, view.finder?.id ?? null))}</p>` : ''}
+        <div class="mt-16">${reveal}</div>
+        ${r ? rolesList(view, r) : ''}
         ${bars}`,
-        dock: dock || `${note(`${name} relance quand vous êtes prêts.`)}${disabledButton(`En attente de ${name}`)}`,
+        dock: dock || waitDock(`${hostName(view)} relance quand vous êtes prêts`),
         waiting: dock === ''
     };
+}
+
+/** Tous les rôles, les Citoyens sans histoire regroupés sur une ligne, la carte du centre en variante. */
+function rolesList(view, r) {
+    const roles = r.roles ?? {};
+    const finderId = view.finder?.id ?? null;
+    const line = (left, right) => `<div class="roles-row"><span class="roles-name">${left}</span><span class="roles-role">${right}</span></div>`;
+    const rows = [];
+    const masterId = view.players.find((p) => roles[p.id] === 'master')?.id;
+    if (masterId) {
+        rows.push(line(e(playerName(view, masterId)), 'Maître du jeu'));
+    }
+    const insiderId = view.players.find((p) => roles[p.id] === 'insider')?.id;
+    if (insiderId) {
+        rows.push(line(e(playerName(view, insiderId)), `<strong>${insiderId === finderId ? 'Traître · a trouvé' : 'Traître'}</strong>`));
+    }
+    if (finderId && roles[finderId] === 'common') {
+        rows.push(line(e(playerName(view, finderId)), 'Citoyen · a trouvé'));
+    }
+    const commons = view.players.filter((p) => roles[p.id] === 'common' && p.id !== finderId);
+    if (commons.length) {
+        rows.push(line(e(commons.map((p) => p.name).join(', ')), commons.length > 1 ? 'Citoyens' : 'Citoyen'));
+    }
+    if (r.centerCard) {
+        rows.push(line('<em>Carte du centre</em>', e(ROLE_LABELS[r.centerCard])));
+    }
+    return `<p class="label roles-title">Les rôles</p><div class="roles-list">${rows.join('')}</div>`;
 }
 
 const SCREENS = {
@@ -486,7 +546,7 @@ function presence(envelope) {
         const ordered = [...view.players].sort((a, b) => (isOnline(envelope, a.id) ? 0 : 1) - (isOnline(envelope, b.id) ? 0 : 1));
         const shown = ordered.length > 5 ? ordered.slice(0, 4) : ordered;
         const more = ordered.length > 5 ? `<span class="presence-more">+${ordered.length - 4}</span>` : '';
-        dots = `<span class="presence-dots" aria-hidden="true">${shown.map((p) => `<span class="presence-dot${isOnline(envelope, p.id) ? '' : ' off'}">${e(initial(p.name))}</span>`).join('')}${more}</span>`;
+        dots = `<span class="presence-dots" aria-hidden="true">${shown.map((p) => avatar(ini(view, p.id), `presence-dot${isOnline(envelope, p.id) ? '' : ' off'}`)).join('')}${more}</span>`;
     }
     return `<button type="button" class="presence" data-ui="presence" aria-label="${on} ${on > 1 ? 'joueurs' : 'joueur'} en ligne sur ${total}, voir la table">${dots}<span class="presence-text">${e(presenceText(envelope))}</span></button>`;
 }
@@ -529,7 +589,7 @@ function presenceSheet(envelope) {
             hostChip(envelope, p),
             p.id === view.me.id ? '<span class="pill-me">Toi</span>' : ''
         ].join('');
-        return `<li class="sheet-row">${avatar(p.name, `avatar ${off ? 'off' : 'ink'}`)}<div class="row-main"><span class="sheet-name">${e(p.name)}</span>${off ? '<span class="sheet-off">Hors ligne</span>' : ''}</div>${tags}</li>`;
+        return `<li class="sheet-row">${avatar(ini(view, p.id), `avatar ${off ? 'off' : 'ink'}`)}<div class="row-main"><span class="sheet-name">${e(p.name)}</span>${off ? '<span class="sheet-off">Hors ligne</span>' : ''}</div>${tags}</li>`;
     }).join('');
     return sheet('À table', `<div class="sheet-head"><h2 class="sheet-title">À table</h2><span class="sheet-count">${e(presenceText(envelope))}</span></div>
         <ul class="sheet-rows">${rows}</ul>
@@ -569,8 +629,7 @@ export function render(envelope, local, ui = { claimSheet: false, presenceSheet:
 export function renderJoin(error = '', name = '') {
     return {
         phase: null,
-        counter: '',
-        content: `<h1 class="h1" style="font-size:38px;margin:24px 0 8px">Qui es-tu ?</h1>
+        content: `<h1 class="h2 join-title">Qui es-tu ?</h1>
         <p class="lead">Ton prénom s'affiche pour les autres joueurs pendant toute la manche.</p>
         <form id="join-form" data-form="join" autocomplete="off">
             <label class="field-label" for="join-name">Prénom</label>

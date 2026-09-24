@@ -51,7 +51,8 @@ export function createGame(settings = {}) {
         centerCard: null,
         word: null,
         phase: { name: 'lobby' },
-        hostChange: null
+        hostChange: null,
+        masterAway: false
     };
 }
 
@@ -64,6 +65,7 @@ const PHASES_BY_COMMAND = {
     addPlayer: ['lobby', 'ended'],
     removePlayer: ['lobby', 'ended'],
     setHost: [...ALL_PHASES],
+    setMasterAway: [...ALL_PHASES],
     startRound: ['lobby', 'ended'],
     setWord: ['roles'],
     drawWord: ['roles'],
@@ -84,7 +86,7 @@ for (const key of /** @type {CommandType[]} */ (Object.keys(PHASES_BY_COMMAND)))
 Object.freeze(PHASES_BY_COMMAND);
 
 /** @type {Set<CommandType>} */
-const SERVER_ONLY = new Set(['addPlayer', 'removePlayer', 'setHost', 'timeout']);
+const SERVER_ONLY = new Set(['addPlayer', 'removePlayer', 'setHost', 'setMasterAway', 'timeout']);
 
 /** @param {Game} game */
 export function effectiveMaxPlayers(game) {
@@ -115,6 +117,7 @@ export function canAct(game, type, actor) {
         case 'addPlayer':
         case 'removePlayer':
         case 'setHost':
+        case 'setMasterAway':
         case 'timeout':
             return actor === SERVER;
         case 'startRound':
@@ -124,9 +127,11 @@ export function canAct(game, type, actor) {
         case 'drawWord':
             return isMaster;
         case 'startTimer':
+            return isMaster || isHost;
         case 'wordFound':
         case 'closeDiscussion':
-            return isMaster || isHost;
+            // ADR D8 : le Maître dit « oui » et clôt la discussion (livret A-5, B-1). L'hôte seulement s'il est absent.
+            return isMaster || (isHost && game.masterAway);
         case 'vote1':
         case 'vote2':
         case 'seenRole':
@@ -257,6 +262,19 @@ function setHost(game, command, deps) {
         players: game.players.map((p) => ({ ...p, isHost: p.id === command.id })),
         hostChange: { from, to: command.id, at: deps.now() }
     });
+}
+
+/**
+ * Présence du Maître, tenue par la table : le moteur ne connaît pas les sockets.
+ * @param {Game} game
+ * @param {Extract<Command, {type: 'setMasterAway'}>} command
+ * @returns {Result}
+ */
+function setMasterAway(game, command) {
+    if (typeof command.away !== 'boolean') {
+        return fail('INVALID_ARGUMENT', 'away must be a boolean');
+    }
+    return next(game, { masterAway: command.away });
 }
 
 /**
@@ -554,6 +572,7 @@ const HANDLERS = {
     addPlayer,
     removePlayer,
     setHost,
+    setMasterAway,
     reset,
     startRound,
     setWord,

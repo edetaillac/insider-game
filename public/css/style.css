@@ -171,7 +171,7 @@ button {
 }
 
 /* Typographie */
-.h-xl, .h1, .h2, .h3 {
+.h-xl, .h2 {
     margin: 0;
     font-family: var(--display);
     font-weight: 600;
@@ -180,9 +180,9 @@ button {
 }
 
 .h-xl { font-size: 42px; line-height: 1; }
-.h1 { font-size: 34px; line-height: 1.05; }
+/* Une seule taille de titre d'écran (.h2), le résultat seul garde .h-xl */
 .h2 { font-size: 32px; line-height: 1.05; }
-.h3 { font-size: 28px; line-height: 1.05; }
+.h2.join-title { margin: 24px 0 8px; }
 
 .eyebrow {
     margin: 0 0 6px;
@@ -219,12 +219,22 @@ button {
 }
 
 .p.narrow { max-width: 32ch; }
+.p.small { font-size: 13px; }
+.p.sub { margin-top: 4px; }
+.p.story { margin-top: 8px; }
+.p.intro { margin: 0 auto 14px; text-align: center; max-width: 32ch; }
+.lead.narrow { max-width: 28ch; }
+.eyebrow.below { margin: 8px 0 0; }
 .center { text-align: center; }
 .center .lead, .center .p { margin-left: auto; margin-right: auto; }
 .stack > * + * { margin-top: 18px; }
 .stack-sm > * + * { margin-top: 8px; }
+.mt-8 { margin-top: 8px; }
+.mt-10 { margin-top: 10px; }
 .mt-14 { margin-top: 14px; }
+.mt-16 { margin-top: 16px; }
 .mt-20 { margin-top: 20px; }
+.mt-36 { margin-top: 36px; }
 
 /* Encadrés */
 .well {
@@ -413,6 +423,7 @@ button {
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
 }
 
+/* Jaune = action exceptionnelle qui débloque la table (« Reprendre la main »). Rien d'autre. */
 .btn-accent {
     background: var(--yellow);
     color: var(--ink);
@@ -439,6 +450,7 @@ button {
 
 .btn-secondary {
     min-height: 50px;
+    font-size: 17px;
     background: transparent;
     color: var(--ink);
     box-shadow: none;
@@ -645,20 +657,6 @@ button {
 
 .card[data-flipped] .timebar { animation: shrink 5s linear both; }
 
-/* Rappel du rôle (attente) */
-.role-recall {
-    max-width: 300px;
-    text-align: left;
-}
-
-.role-recall .name {
-    margin: 2px 0 6px;
-    font-family: var(--display);
-    font-weight: 600;
-    font-size: 26px;
-    text-transform: uppercase;
-    line-height: 1;
-}
 
 /* Chrono */
 .timer {
@@ -762,24 +760,6 @@ button {
 
 .found-banner .sub { margin: 4px 0 0; font-size: 13px; color: var(--muted); }
 
-/* Attente animée */
-.dots {
-    display: flex;
-    justify-content: center;
-    gap: 6px;
-    margin-bottom: 14px;
-}
-
-.dots i {
-    width: 11px;
-    height: 11px;
-    border-radius: 50%;
-    background: var(--ink);
-    animation: breathe 1.4s ease-in-out infinite;
-}
-
-.dots i:nth-child(2) { animation-delay: 0.2s; }
-.dots i:nth-child(3) { animation-delay: 0.4s; }
 
 /* Choix du trouveur */
 .pick {
@@ -872,6 +852,7 @@ button {
 .reveal {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 14px;
     padding: 16px;
     border-radius: 18px;
@@ -888,20 +869,37 @@ button {
     text-transform: uppercase;
 }
 
-.word-line {
-    display: flex;
-    align-items: baseline;
-    gap: 10px;
-}
+.reveal-who { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.reveal-word { flex: none; max-width: 45%; text-align: right; }
+.reveal-word .dark-label { margin: 0; }
 
-.word-line .label { margin: 0; }
-
-.word-value {
+.reveal-word-value {
+    margin: 2px 0 0;
     font-family: var(--display);
     font-weight: 600;
-    font-size: 26px;
+    font-size: 20px;
+    line-height: 1.1;
     text-transform: uppercase;
+    color: var(--yellow);
 }
+
+.roles-title { margin: 20px 0 8px; }
+.roles-list { padding: 4px 14px; border-radius: 14px; background: var(--well); }
+
+.roles-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    min-height: 40px;
+    font-size: 15px;
+    border-bottom: 1px solid rgba(20, 16, 15, 0.15);
+}
+
+.roles-row:last-child { border-bottom: 0; }
+.roles-name { font-weight: 600; min-width: 0; }
+.roles-role { flex: none; text-align: right; }
+.roles-role strong { font-weight: 700; }
 
 .tally { margin-top: 10px; }
 .tally + .tally { margin-top: 12px; }
@@ -948,7 +946,7 @@ button {
 /* Les mots longs (40 caractères maxi) se coupent au lieu de déborder de la carte ou du bloc noir */
 .card-secret,
 .dark-word,
-.word-value { overflow-wrap: anywhere; }
+.reveal-word-value { overflow-wrap: anywhere; }
 
 /* Animations */
 @keyframes shrink {
@@ -974,7 +972,6 @@ button {
 
 @media (prefers-reduced-motion: reduce) {
     .screen.enter { animation: none; }
-    .dots i { animation: none; }
     .timer-block { transition: none; }
     .card-face { transition: none; }
 }
@@ -1155,4 +1152,80 @@ button {
 
 @media (prefers-reduced-motion: reduce) {
     .sheet { animation: none; }
+}
+
+/* Handoff 2026-09-24 repasse · point 7 : bas d'écran d'attente, à la place des boutons morts */
+.dock-wait { display: flex; align-items: center; justify-content: center; gap: 12px; min-height: 60px; padding: 0 18px; border-radius: 16px; box-shadow: inset 0 0 0 2px rgba(20, 16, 15, 0.3); color: var(--ink); font-weight: 600; font-size: 15px; text-align: center; }
+.dock-wait .wait-dots { display: flex; gap: 5px; flex: none; }
+.dock-wait .wait-dots i { width: 8px; height: 8px; border-radius: 50%; background: var(--ink); animation: breathe 1.4s ease-in-out infinite; }
+.dock-wait .wait-dots i:nth-child(2) { animation-delay: 0.2s; }
+.dock-wait .wait-dots i:nth-child(3) { animation-delay: 0.4s; }
+
+/* Points 1 et 2 · bloc secret, même silhouette pour tous au repos (ADR D7) */
+.secret {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    min-height: 84px;
+    padding: 16px 18px;
+    border: 0;
+    border-radius: 16px;
+    background: var(--ink);
+    color: var(--cream);
+    text-align: left;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+}
+
+.secret-rest,
+.secret-reveal { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.secret-reveal { flex-direction: column; align-items: flex-start; gap: 2px; }
+.secret-text { display: flex; flex-direction: column; gap: 2px; }
+.secret[aria-pressed="true"] .secret-rest,
+.secret:not([aria-pressed="true"]) .secret-reveal { display: none; }
+.secret[aria-pressed="true"] { background: var(--yellow); color: var(--ink); transform: scale(0.98); }
+
+.secret-eye { position: relative; flex: none; width: 40px; height: 40px; border: 2.5px solid var(--yellow); border-radius: 50%; }
+.secret-eye::after { content: ''; position: absolute; inset: 0; margin: auto; width: 14px; height: 14px; border-radius: 50%; background: var(--yellow); }
+.secret-label { font-family: var(--display); font-weight: 600; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+.secret[aria-pressed="true"] .secret-label { color: var(--ink); }
+.secret-hint { font-family: var(--display); font-weight: 600; font-size: 20px; text-transform: uppercase; }
+.secret-value { font-family: var(--display); font-weight: 600; font-size: 34px; line-height: 1; text-transform: uppercase; overflow-wrap: anywhere; }
+.secret-value.neutral { font-size: 22px; }
+
+.secret-light { min-height: 72px; padding: 14px 18px; background: var(--well); color: var(--ink); }
+.secret-light .secret-eye { width: 36px; height: 36px; border: 2px solid var(--ink); }
+.secret-light .secret-eye::after { width: 12px; height: 12px; background: var(--ink); }
+.secret-light .secret-label { font-family: var(--text); font-weight: 700; letter-spacing: 0.1em; color: var(--ink); }
+.secret-light .secret-hint { font-family: var(--text); font-size: 15px; text-transform: none; }
+.secret-light .secret-value.role { font-size: 26px; }
+.secret-sub { margin-top: 4px; font-size: 14px; line-height: 1.4; }
+.secret:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+
+.wait-master { padding-top: 36px; }
+.avatar-64 { width: 64px; height: 64px; font-size: 26px; }
+
+/* Point 8 · progression avec le prénom sous chaque pastille, initiales à deux lettres */
+.avatars { gap: 10px; }
+.prog-item { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 52px; }
+.prog-name { max-width: 52px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; font-weight: 500; }
+.prog-item.on .prog-name { font-weight: 600; }
+
+.avatar.duo { font-size: 13px; }
+.avatar-40.duo { font-size: 15px; }
+.avatar-44.duo { font-size: 16px; }
+.avatar-52.duo { font-size: 19px; }
+.avatar-64.duo { font-size: 22px; }
+.presence-dot.duo { font-size: 9px; }
+.avatar-away.duo { font-size: 16px; }
+.msg-alert.compact .avatar-away.duo { font-size: 13px; }
+
+@media (prefers-reduced-motion: reduce) {
+    .dock-wait .wait-dots i { animation: none; }
+    .dock-wait .wait-dots i:nth-child(2) { opacity: 0.6; }
+    .dock-wait .wait-dots i:nth-child(3) { opacity: 0.3; }
+    .secret[aria-pressed="true"] { transform: none; }
 }

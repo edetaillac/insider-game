@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { escapeHtml, formatCountdown, outcomeSentence, messageFor, initial, outcomeTitle, svg, PHASE_BAR } from '../../public/js/dom.js';
+import { escapeHtml, formatCountdown, outcomeSentence, messageFor, initial, outcomeTitle, svg, PHASE_BAR, initials, outcomeStory, roleHint } from '../../public/js/dom.js';
 
 test('escapeHtml neutralise les cinq caractères', () => {
     assert.equal(escapeHtml('<b a="1">&\'</b>'), '&lt;b a=&quot;1&quot;&gt;&amp;&#39;&lt;/b&gt;');
@@ -52,4 +52,42 @@ test('svg renvoie un svg inline avec aria-hidden', () => {
     assert.ok(s.startsWith('<svg'));
     assert.ok(s.includes('aria-hidden="true"'));
     assert.ok(s.includes('width="16"'));
+});
+
+test('point 8 : initiales distinctes, première consonne puis deuxième lettre', () => {
+    const map = initials([{ id: 'a', name: 'Manu' }, { id: 'b', name: 'Marie' }, { id: 'c', name: 'Léa' }]);
+    assert.equal(map.get('a'), 'Mn');
+    assert.equal(map.get('b'), 'Mr');
+    assert.equal(map.get('c'), 'L');
+    const tight = initials([{ id: 'a', name: 'Marc' }, { id: 'b', name: 'Mario' }]);
+    assert.equal(tight.get('a'), 'Ma');
+    assert.ok([...tight.values()].every((v) => v.length <= 2));
+    assert.equal(initials([{ id: 'x', name: '  éva' }]).get('x'), 'É');
+});
+
+const P = [{ id: 'm', name: 'Léa' }, { id: 't', name: 'Test' }, { id: 'u', name: 'Manu' }, { id: 'k', name: 'Karim' }, { id: 'z', name: 'Zoé' }];
+const endView = (result) => ({ players: P, result: { insiderId: null, centerCard: null, tallies: null, pointed: null, roles: { m: 'master', t: 'insider', u: 'common', k: 'common', z: 'common' }, ...result } });
+
+test('point 4 : phrase du vote 1, trouveur Traître ou Citoyen', () => {
+    assert.equal(outcomeStory(endView({ reason: 'vote1', finderId: 't', tallies: { t: 4 }, pointed: 't' }), 't'),
+        'Au vote 1, 4 joueurs sur 5 ont accusé Test. C\'était bien le Traître.');
+    assert.equal(outcomeStory(endView({ reason: 'vote1', tallies: { u: 3 }, pointed: 'u' }), 'u'),
+        'Au vote 1, 3 joueurs sur 5 ont accusé Manu, qui était Citoyen.');
+});
+
+test('point 4 : phrases du vote 2, du centre et du départage', () => {
+    assert.equal(outcomeStory(endView({ reason: 'vote2', pointed: 't' }), 'u'), 'Au vote 2, Test a été le plus pointé. C\'était bien le Traître.');
+    assert.equal(outcomeStory(endView({ reason: 'vote2', pointed: 'k' }), 'u'), 'Au vote 2, Karim a été le plus pointé, mais c\'était un Citoyen.');
+    assert.equal(outcomeStory(endView({ reason: 'vote2', pointed: 'center', centerCard: 'insider' }), 'u'), 'La majorité a vu juste : il n\'y avait pas de Traître.');
+    assert.equal(outcomeStory(endView({ reason: 'vote2', pointed: 'center', centerCard: 'common' }), 'u'), 'La majorité a pointé « Personne », mais il y avait un Traître.');
+    assert.equal(outcomeStory(endView({ reason: 'vote2', pointed: 'k', centerCard: 'insider' }), 'u'), 'Il n\'y avait pas de Traître, et un Citoyen a été accusé.');
+    assert.equal(outcomeStory(endView({ reason: 'tiebreak', pointed: 't' }), 'u'), 'Égalité au vote 2, Manu a départagé. Test a été désigné. C\'était bien le Traître.');
+    assert.equal(outcomeStory(endView({ reason: 'timeout' }), null), 'Personne n\'a trouvé le mot avant la fin du chrono.');
+});
+
+test('point 5 : indices du rôle selon la variante, Traître inchangé', () => {
+    assert.equal(roleHint('common', true), 'Trouve le mot, puis démasque le Traître, s\'il y en a un.');
+    assert.equal(roleHint('master', true), 'Tu choisis le mot et tu réponds aux questions. Il peut n\'y avoir aucun Traître.');
+    assert.equal(roleHint('insider', true), roleHint('insider', false));
+    assert.equal(roleHint('common', false), 'Trouve le mot, puis démasque le Traître.');
 });

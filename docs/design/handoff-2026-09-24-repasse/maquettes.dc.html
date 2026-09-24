@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<style>
+@font-face{font-family:'IBM Plex Sans';font-weight:400 700;src:url('fonts/ibm-plex-sans-latin.woff2') format('woff2')}
+@font-face{font-family:'Oswald';font-weight:500 600;src:url('fonts/oswald-latin.woff2') format('woff2')}
+body{margin:0;background:#E9E4DF;font-family:'IBM Plex Sans',sans-serif;color:#14100F;-webkit-font-smoothing:antialiased}
+a{color:#14100F}a:hover{color:#DE3C31}
+</style>
+</helmet>
+
+<section style="padding:56px 56px 80px">
+<p style="margin:0;font-family:Oswald;font-weight:600;font-size:13px;letter-spacing:.16em;text-transform:uppercase">Tour 5 · Repasse complète</p>
+<h1 style="margin:6px 0 0;font-family:Oswald;font-weight:600;font-size:40px;text-transform:uppercase;line-height:1">UX, UI et gameplay</h1>
+<p style="margin:12px 0 0;max-width:72ch;font-size:14px;line-height:1.5">Lecture du code après implémentation (render.js, game.js, ADR 0001). Treize constats classés par gravité, puis les maquettes des corrections principales.</p>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:28px;margin-top:32px;max-width:1500px">
+
+  <div style="display:flex;flex-direction:column;gap:12px">
+    <div style="display:flex;align-items:center;gap:10px"><span style="font-family:Oswald;font-weight:600;font-size:12px;letter-spacing:.14em;text-transform:uppercase;background:#DE3C31;color:#FFF7EF;padding:3px 9px;border-radius:6px">P1</span><span style="font-family:Oswald;font-weight:600;font-size:18px;text-transform:uppercase">Trahit un rôle</span></div>
+    <div style="display:flex;flex-direction:column;gap:4px;padding:14px 16px;border-radius:12px;background:#FFF7EF">
+      <p style="margin:0;font-weight:700;font-size:14px">1 · L'écran d'enquête trahit le Traître <span style="margin-left:6px;padding:2px 7px;border-radius:999px;background:#14100F;color:#FFC107;font-family:Oswald;font-weight:500;font-size:11px;letter-spacing:.12em;text-transform:uppercase;vertical-align:2px">Validé</span></p>
+      <p style="margin:0;font-size:13px;line-height:1.5">Pendant 5 minutes, les téléphones sont posés sur la table. Celui du Traître affiche un grand bloc noir avec le mot, celui des Citoyens non. La différence se voit de loin, même sans lire. C'est le tell que D6 a supprimé en phase « mot ».</p>
+      <p style="margin:4px 0 0;font-size:13px;line-height:1.5"><strong>Proposition :</strong> tout le monde a le même bloc « Le mot », masqué, à maintenir pour voir. Voir <a href="#5a">5a</a> et <a href="#5b">5b</a>.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:4px;padding:14px 16px;border-radius:12px;background:#FFF7EF">
+      <p style="margin:0;font-weight:700;font-size:14px">2 · Le rôle reste affiché pendant l'attente <span style="margin-left:6px;padding:2px 7px;border-radius:999px;background:#14100F;color:#FFC107;font-family:Oswald;font-weight:500;font-size:11px;letter-spacing:.12em;text-transform:uppercase;vertical-align:2px">Validé</span></p>
+      <p style="margin:0;font-size:13px;line-height:1.5">Pendant que le Maître choisit le mot, l'écran dit « Pose ton téléphone » et affiche « Ton rôle : Traître » en clair. Même problème que le point 1.</p>
+      <p style="margin:4px 0 0;font-size:13px;line-height:1.5"><strong>Proposition :</strong> rappel du rôle masqué, à maintenir. Voir <a href="#5c">5c</a>.</p>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:12px">
+    <div style="display:flex;align-items:center;gap:10px"><span style="font-family:Oswald;font-weight:600;font-size:12px;letter-spacing:.14em;text-transform:uppercase;background:#14100F;color:#FFC107;padding:3px 9px;border-radius:6px">P2</span><span style="font-family:Oswald;font-weight:600;font-size:18px;text-transform:uppercase">Gameplay</span></div>
+    <div style="display:flex;flex-direction:column;gap:4px;padding:14px 16px;border-radius:12px;background:#FFF7EF">
+      <p style="margin:0;font-weight:700;font-size:14px">3 · L'hôte peut déclarer le mot trouvé <span style="margin-left:6px;padding:2px 7px;border-radius:999px;background:#14100F;color:#FFC107;font-family:Oswald;font-weight:500;font-size:11px;letter-spacing:.12em;text-transform:uppercase;vertical-align:2px">Validé</span></p>
+      <p style="margin:0;font-size:13px;line-height:1.5">Dans le livret, seul le Maître dit « oui » (A-5) et clôt la discussion (B-1). L'hôte ne connaît pas le mot : il peut se tromper de trouveur ou clore trop tôt. <strong>Proposition :</strong> <code>wordFound</code> et <code>closeDiscussion</code> réservés au Maître, l'hôte seulement si le Maître est hors ligne.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:4px;padding:14px 16px;border-radius:12px;background:#FFF7EF">
+      <p style="margin:0;font-weight:700;font-size:14px">4 · Le résultat ne raconte pas la manche <span style="margin-left:6px;padding:2px 7px;border-radius:999px;background:#14100F;color:#FFC107;font-family:Oswald;font-weight:500;font-size:11px;letter-spacing:.12em;text-transform:uppercase;vertical-align:2px">Validé</span></p>
+      <p style="margin:0;font-size:13px;line-height:1.5">Seul le Traître est révélé. En variante, la carte du centre ne l'est jamais. Si le vote 1 a tranché, une seule barre sans explication. <strong>Proposition :</strong> tous les rôles, la carte du centre, une phrase sur ce qui a décidé. Voir <a href="#5d">5d</a>.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:4px;padding:14px 16px;border-radius:12px;background:#FFF7EF">
+      <p style="margin:0;font-weight:700;font-size:14px">5 · La variante sans Traître est invisible <span style="margin-left:6px;padding:2px 7px;border-radius:999px;background:#14100F;color:#FFC107;font-family:Oswald;font-weight:500;font-size:11px;letter-spacing:.12em;text-transform:uppercase;vertical-align:2px">Validé</span></p>
+      <p style="margin:0;font-size:13px;line-height:1.5">Elle est active par défaut, mais rien ne l'annonce avant le vote 2, où apparaît « Personne ». <strong>Proposition :</strong> une ligne au salon (« Variante : il peut n'y avoir aucun Traître ») et la même phrase sur la carte de rôle des Citoyens et du Maître.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:4px;padding:14px 16px;border-radius:12px;background:#FFF7EF">
+      <p style="margin:0;font-weight:700;font-size:14px">6 · Le dernier vote est irréversible sans prévenir <span style="margin-left:6px;padding:2px 7px;border-radius:999px;background:#14100F;color:#FFC107;font-family:Oswald;font-weight:500;font-size:11px;letter-spacing:.12em;text-transform:uppercase;vertical-align:2px">Validé</span></p>
+      <p style="margin:0;font-size:13px;line-height:1.5">« Ton vote reste modifiable tant que tout le monde n'a pas voté », mais au vote 1, le tap du dernier votant clôt tout de suite. Le vote 2 demande une confirmation, le vote 1 non. <strong>Proposition :</strong> confirmation dans les deux votes (choisir, puis « Voter »).</p>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:12px">
+    <div style="display:flex;align-items:center;gap:10px"><span style="font-family:Oswald;font-weight:600;font-size:12px;letter-spacing:.14em;text-transform:uppercase;background:rgba(20,16,15,.12);padding:3px 9px;border-radius:6px">P3</span><span style="font-family:Oswald;font-weight:600;font-size:18px;text-transform:uppercase">UX et UI</span></div>
+    <div style="display:flex;flex-direction:column;gap:4px;padding:14px 16px;border-radius:12px;background:#FFF7EF">
+      <p style="margin:0;font-weight:700;font-size:14px">7 · Des boutons morts servent d'attente <span style="margin-left:6px;padding:2px 7px;border-radius:999px;background:#14100F;color:#FFC107;font-family:Oswald;font-weight:500;font-size:11px;letter-spacing:.12em;text-transform:uppercase;vertical-align:2px">Validé</span></p>
+      <p style="margin:0;font-size:13px;line-height:1.5">« Continuer », « Lancer le chrono », « Le mot a été trouvé », « Passer au vote », « En attente » : grisés, jamais actifs pour ce joueur. Ça ressemble à un bug. <strong>Proposition :</strong> un socle d'attente distinct, sans forme de bouton. Voir <a href="#5a">5a</a> et <a href="#5c">5c</a>.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:4px;padding:14px 16px;border-radius:12px;background:#FFF7EF">
+      <p style="margin:0;font-weight:700;font-size:14px">8 · Les initiales se confondent <span style="margin-left:6px;padding:2px 7px;border-radius:999px;background:#14100F;color:#FFC107;font-family:Oswald;font-weight:500;font-size:11px;letter-spacing:.12em;text-transform:uppercase;vertical-align:2px">Validé</span></p>
+      <p style="margin:0;font-size:13px;line-height:1.5">Manu et Marie donnent deux « M » dans la progression et au vote. <strong>Proposition :</strong> deux lettres en cas de collision (« Ma », « Mr »), prénom sous la pastille dans la progression.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:4px;padding:14px 16px;border-radius:12px;background:#FFF7EF">
+      <p style="margin:0;font-weight:700;font-size:14px">9 · Titres en double <span style="margin-left:6px;padding:2px 7px;border-radius:999px;background:#14100F;color:#FFC107;font-family:Oswald;font-weight:500;font-size:11px;letter-spacing:.12em;text-transform:uppercase;vertical-align:2px">Validé</span></p>
+      <p style="margin:0;font-size:13px;line-height:1.5">« Vote 1 sur 2 » en surtitre sous une barre « Premier vote 5/6 ». Retirer le surtitre, la barre suffit.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:4px;padding:14px 16px;border-radius:12px;background:#FFF7EF">
+      <p style="margin:0;font-weight:700;font-size:14px">10 · Échelle de titres irrégulière <span style="margin-left:6px;padding:2px 7px;border-radius:999px;background:#14100F;color:#FFC107;font-family:Oswald;font-weight:500;font-size:11px;letter-spacing:.12em;text-transform:uppercase;vertical-align:2px">Validé</span></p>
+      <p style="margin:0;font-size:13px;line-height:1.5">h3 (28) pour l'attente, h2 (32) pour le salon et le trouveur, h1 (34) pour les votes, h-xl (42) au résultat. Règle : un titre d'écran à 32 px partout, 42 px réservé au résultat.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:4px;padding:14px 16px;border-radius:12px;background:#FFF7EF">
+      <p style="margin:0;font-weight:700;font-size:14px">11 · Texte genré au vote 1 <span style="margin-left:6px;padding:2px 7px;border-radius:999px;background:#14100F;color:#FFC107;font-family:Oswald;font-weight:500;font-size:11px;letter-spacing:.12em;text-transform:uppercase;vertical-align:2px">Validé</span></p>
+      <p style="margin:0;font-size:13px;line-height:1.5">« Léa est-il le Traître ? », « Oui, c'est lui ». Remplacer par « Léa, Traître ? », « Oui, Traître » et « Non ».</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:4px;padding:14px 16px;border-radius:12px;background:#FFF7EF">
+      <p style="margin:0;font-weight:700;font-size:14px">12 · Le jaune n'est plus réservé <span style="margin-left:6px;padding:2px 7px;border-radius:999px;background:#14100F;color:#FFC107;font-family:Oswald;font-weight:500;font-size:11px;letter-spacing:.12em;text-transform:uppercase;vertical-align:2px">Validé</span></p>
+      <p style="margin:0;font-size:13px;line-height:1.5">« Le mot a été trouvé » est jaune chez le Maître, comme « Reprendre la main ». Avec le point 3, c'est le seul bouton du Maître pendant l'enquête : le passer en noir (primaire).</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:4px;padding:14px 16px;border-radius:12px;background:#FFF7EF">
+      <p style="margin:0;font-weight:700;font-size:14px">13 · Styles inline dans render.js <span style="margin-left:6px;padding:2px 7px;border-radius:999px;background:#14100F;color:#FFC107;font-family:Oswald;font-weight:500;font-size:11px;letter-spacing:.12em;text-transform:uppercase;vertical-align:2px">Validé</span></p>
+      <p style="margin:0;font-size:13px;line-height:1.5">Plusieurs <code>style="margin:…"</code> en dur. Les passer en classes utilitaires pour que les écrans restent alignés.</p>
+    </div>
+  </div>
+</div>
+
+<h2 style="margin:56px 0 0;font-family:Oswald;font-weight:600;font-size:28px;text-transform:uppercase">Maquettes</h2>
+<div style="display:flex;flex-wrap:wrap;gap:40px;margin-top:20px;align-items:flex-start">
+
+<!-- 5a -->
+<div id="5a" style="display:flex;flex-direction:column;gap:12px;width:375px">
+<div style="display:flex;align-items:center;gap:10px"><span style="font-family:Oswald;font-weight:600;font-size:13px;background:#14100F;color:#FFC107;padding:3px 9px;border-radius:6px">5a</span><span style="font-weight:600;font-size:14px">Enquête, au repos (tous les rôles)</span></div>
+<div style="position:relative;width:375px;height:780px;border-radius:28px;overflow:hidden;background:#DE3C31;box-shadow:0 20px 50px rgba(0,0,0,.18)">
+  <div style="display:flex;align-items:center;justify-content:center;gap:10px;padding:14px 16px"><img src="img/frise.jpg" alt="" style="display:block;height:26px"><img src="img/title.jpg" alt="Insider" style="display:block;height:16px"></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;min-height:44px;padding:0 12px 0 16px;background:#14100F"><span style="display:flex;align-items:baseline;gap:8px"><span style="font-family:Oswald;font-weight:500;font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:#FFC107">Enquête</span><span style="font-size:12px;color:#9A8F86">3/6</span></span><span style="font-size:12px;font-weight:600;color:#FFF7EF">5 en ligne</span></div>
+  <div style="padding:20px">
+    <div style="padding:12px 16px 14px;text-align:center"><p style="margin:0;font-family:Oswald;font-weight:600;font-size:88px;line-height:.9">3:42</p><p style="margin:8px 0 0;font-family:Oswald;font-weight:600;font-size:12px;letter-spacing:.16em;text-transform:uppercase">Temps restant</p></div>
+    <div style="height:6px;margin-top:14px;border-radius:3px;background:rgba(0,0,0,.16);overflow:hidden"><div style="width:74%;height:100%;background:#14100F"></div></div>
+    <div style="display:flex;align-items:center;gap:14px;margin-top:20px;min-height:84px;padding:16px 18px;border-radius:16px;background:#14100F;color:#FFF7EF">
+      <span style="flex:none;width:40px;height:40px;border:2.5px solid #FFC107;border-radius:50%;display:flex;align-items:center;justify-content:center"><span style="width:14px;height:14px;border-radius:50%;background:#FFC107"></span></span>
+      <div style="display:flex;flex-direction:column;gap:2px"><p style="margin:0;font-family:Oswald;font-weight:600;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#9A8F86">Le mot</p><p style="margin:0;font-family:Oswald;font-weight:600;font-size:20px;text-transform:uppercase">Maintiens pour voir</p></div>
+    </div>
+    <div style="margin-top:14px;padding:16px 18px;border-radius:16px;background:rgba(255,255,255,.14);font-size:15px;line-height:1.5"><p style="margin:0 0 8px;font-weight:700;font-size:12px;letter-spacing:.1em;text-transform:uppercase">Règle du tour</p><p style="margin:0">Questions fermées uniquement. Le Maître ne répond que <strong>oui</strong>, <strong>non</strong> ou <strong>je ne sais pas</strong>. Si le temps s'écoule, tout le monde perd.</p></div>
+  </div>
+  <div style="position:absolute;left:0;right:0;bottom:0;padding:28px 20px 26px;background:linear-gradient(to top,#DE3C31 72%,rgba(222,60,49,0))">
+    <div style="display:flex;align-items:center;justify-content:center;gap:12px;min-height:60px;padding:0 18px;border-radius:16px;box-shadow:inset 0 0 0 2px rgba(20,16,15,.3)">
+      <span style="display:flex;gap:5px"><i style="width:8px;height:8px;border-radius:50%;background:#14100F"></i><i style="width:8px;height:8px;border-radius:50%;background:#14100F;opacity:.6"></i><i style="width:8px;height:8px;border-radius:50%;background:#14100F;opacity:.3"></i></span>
+      <span style="font-weight:600;font-size:15px">Léa déclarera le mot trouvé</span>
+    </div>
+  </div>
+</div>
+<p style="margin:0;font-size:13px;line-height:1.5">Même écran pour Citoyen, Traître et Maître. Le chrono ne passe au noir qu'à 30 s pour tous. Socle d'attente : contour, trois points, une phrase qui nomme la personne. Plus de bouton grisé.</p>
+</div>
+
+<!-- 5b -->
+<div id="5b" style="display:flex;flex-direction:column;gap:12px;width:375px">
+<div style="display:flex;align-items:center;gap:10px"><span style="font-family:Oswald;font-weight:600;font-size:13px;background:#14100F;color:#FFC107;padding:3px 9px;border-radius:6px">5b</span><span style="font-weight:600;font-size:14px">Enquête, appui maintenu (Traître)</span></div>
+<div style="position:relative;width:375px;height:780px;border-radius:28px;overflow:hidden;background:#DE3C31;box-shadow:0 20px 50px rgba(0,0,0,.18)">
+  <div style="display:flex;align-items:center;justify-content:center;gap:10px;padding:14px 16px"><img src="img/frise.jpg" alt="" style="display:block;height:26px"><img src="img/title.jpg" alt="Insider" style="display:block;height:16px"></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;min-height:44px;padding:0 12px 0 16px;background:#14100F"><span style="display:flex;align-items:baseline;gap:8px"><span style="font-family:Oswald;font-weight:500;font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:#FFC107">Enquête</span><span style="font-size:12px;color:#9A8F86">3/6</span></span><span style="font-size:12px;font-weight:600;color:#FFF7EF">5 en ligne</span></div>
+  <div style="padding:20px">
+    <div style="padding:12px 16px 14px;text-align:center"><p style="margin:0;font-family:Oswald;font-weight:600;font-size:88px;line-height:.9">3:42</p><p style="margin:8px 0 0;font-family:Oswald;font-weight:600;font-size:12px;letter-spacing:.16em;text-transform:uppercase">Temps restant</p></div>
+    <div style="height:6px;margin-top:14px;border-radius:3px;background:rgba(0,0,0,.16);overflow:hidden"><div style="width:74%;height:100%;background:#14100F"></div></div>
+    <div style="display:flex;align-items:center;gap:14px;margin-top:20px;min-height:84px;padding:16px 18px;border-radius:16px;background:#FFC107;color:#14100F;transform:scale(.98)">
+      <div style="display:flex;flex-direction:column;gap:2px;min-width:0"><p style="margin:0;font-family:Oswald;font-weight:600;font-size:12px;letter-spacing:.14em;text-transform:uppercase">Le mot</p><p style="margin:0;font-family:Oswald;font-weight:600;font-size:34px;line-height:1;text-transform:uppercase;overflow-wrap:anywhere">Château</p></div>
+    </div>
+    <div style="margin-top:14px;padding:16px 18px;border-radius:16px;background:rgba(255,255,255,.14);font-size:15px;line-height:1.5"><p style="margin:0 0 8px;font-weight:700;font-size:12px;letter-spacing:.1em;text-transform:uppercase">Règle du tour</p><p style="margin:0">Questions fermées uniquement. Le Maître ne répond que <strong>oui</strong>, <strong>non</strong> ou <strong>je ne sais pas</strong>. Si le temps s'écoule, tout le monde perd.</p></div>
+  </div>
+  <div style="position:absolute;left:0;right:0;bottom:0;padding:28px 20px 26px;background:linear-gradient(to top,#DE3C31 72%,rgba(222,60,49,0))">
+    <div style="display:flex;align-items:center;justify-content:center;gap:12px;min-height:60px;padding:0 18px;border-radius:16px;box-shadow:inset 0 0 0 2px rgba(20,16,15,.3)">
+      <span style="display:flex;gap:5px"><i style="width:8px;height:8px;border-radius:50%;background:#14100F"></i><i style="width:8px;height:8px;border-radius:50%;background:#14100F;opacity:.6"></i><i style="width:8px;height:8px;border-radius:50%;background:#14100F;opacity:.3"></i></span>
+      <span style="font-weight:600;font-size:15px">Léa déclarera le mot trouvé</span>
+    </div>
+  </div>
+</div>
+<p style="margin:0;font-size:13px;line-height:1.5">Au relâché, le bloc revient à l'état de 5a. Un Citoyen qui maintient lit « Tu ne connais pas le mot » dans le même bloc, à la même taille. Chacun a donc le même geste. Le Maître garde le bloc ouvert en permanence : son rôle est public.</p>
+</div>
+
+<!-- 5c -->
+<div id="5c" style="display:flex;flex-direction:column;gap:12px;width:375px">
+<div style="display:flex;align-items:center;gap:10px"><span style="font-family:Oswald;font-weight:600;font-size:13px;background:#14100F;color:#FFC107;padding:3px 9px;border-radius:6px">5c</span><span style="font-weight:600;font-size:14px">Choix du mot, vue joueur</span></div>
+<div style="position:relative;width:375px;height:780px;border-radius:28px;overflow:hidden;background:#DE3C31;box-shadow:0 20px 50px rgba(0,0,0,.18)">
+  <div style="display:flex;align-items:center;justify-content:center;gap:10px;padding:14px 16px"><img src="img/frise.jpg" alt="" style="display:block;height:26px"><img src="img/title.jpg" alt="Insider" style="display:block;height:16px"></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;min-height:44px;padding:0 12px 0 16px;background:#14100F"><span style="display:flex;align-items:baseline;gap:8px"><span style="font-family:Oswald;font-weight:500;font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:#FFC107">Choix du mot</span><span style="font-size:12px;color:#9A8F86">2/6</span></span><span style="font-size:12px;font-weight:600;color:#FFF7EF">5 en ligne</span></div>
+  <div style="padding:20px">
+    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;padding-top:36px">
+      <span style="display:flex;align-items:center;justify-content:center;width:64px;height:64px;border-radius:50%;background:#14100F;color:#FFC107;font-family:Oswald;font-weight:600;font-size:26px">L</span>
+      <h1 style="margin:16px 0 0;font-family:Oswald;font-weight:600;font-size:32px;line-height:1.05;text-transform:uppercase">Léa choisit le mot</h1>
+      <p style="margin:8px 0 0;max-width:28ch;font-size:16px;line-height:1.5">Léa est le Maître du jeu. Pose ton téléphone, écran vers la table.</p>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px;margin-top:36px;min-height:72px;padding:14px 18px;border-radius:16px;background:rgba(255,255,255,.14)">
+      <span style="flex:none;width:36px;height:36px;border:2px solid #14100F;border-radius:50%;display:flex;align-items:center;justify-content:center"><span style="width:12px;height:12px;border-radius:50%;background:#14100F"></span></span>
+      <div style="display:flex;flex-direction:column;gap:2px"><p style="margin:0;font-weight:700;font-size:12px;letter-spacing:.1em;text-transform:uppercase">Ton rôle</p><p style="margin:0;font-weight:600;font-size:15px">Maintiens pour le revoir</p></div>
+    </div>
+  </div>
+  <div style="position:absolute;left:0;right:0;bottom:0;padding:28px 20px 26px;background:linear-gradient(to top,#DE3C31 72%,rgba(222,60,49,0))">
+    <div style="display:flex;align-items:center;justify-content:center;gap:12px;min-height:60px;padding:0 18px;border-radius:16px;box-shadow:inset 0 0 0 2px rgba(20,16,15,.3)">
+      <span style="display:flex;gap:5px"><i style="width:8px;height:8px;border-radius:50%;background:#14100F"></i><i style="width:8px;height:8px;border-radius:50%;background:#14100F;opacity:.6"></i><i style="width:8px;height:8px;border-radius:50%;background:#14100F;opacity:.3"></i></span>
+      <span style="font-weight:600;font-size:15px">Le mot arrive dans un instant</span>
+    </div>
+  </div>
+</div>
+<p style="margin:0;font-size:13px;line-height:1.5">Le Maître est présenté par son avatar, puisque son rôle est public. Le rôle du joueur n'apparaît plus en clair. Le bouton « Continuer », grisé et sans effet, disparaît.</p>
+</div>
+
+<!-- 5d -->
+<div id="5d" style="display:flex;flex-direction:column;gap:12px;width:375px">
+<div style="display:flex;align-items:center;gap:10px"><span style="font-family:Oswald;font-weight:600;font-size:13px;background:#14100F;color:#FFC107;padding:3px 9px;border-radius:6px">5d</span><span style="font-weight:600;font-size:14px">Résultat, vue hôte</span></div>
+<div style="position:relative;width:375px;height:780px;border-radius:28px;overflow:hidden;background:#DE3C31;box-shadow:0 20px 50px rgba(0,0,0,.18)">
+  <div style="display:flex;align-items:center;justify-content:center;gap:10px;padding:14px 16px"><img src="img/frise.jpg" alt="" style="display:block;height:26px"><img src="img/title.jpg" alt="Insider" style="display:block;height:16px"></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;min-height:44px;padding:0 12px 0 16px;background:#14100F"><span style="font-family:Oswald;font-weight:500;font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:#FFC107">Résultat</span><span style="display:flex;align-items:center;gap:10px"><span style="display:flex;align-items:center;gap:6px;min-height:28px;padding:0 10px;border:1.5px solid #FFC107;border-radius:999px;color:#FFC107;font-family:Oswald;font-weight:600;font-size:11px;letter-spacing:.12em;text-transform:uppercase"><span style="width:7px;height:7px;border-radius:50%;background:#FFC107"></span>Son</span><span style="font-size:12px;font-weight:600;color:#FFF7EF">5 en ligne</span></span></div>
+  <div style="padding:20px">
+    <h1 style="margin:0;font-family:Oswald;font-weight:600;font-size:42px;line-height:1;text-transform:uppercase">Les Citoyens gagnent</h1>
+    <p style="margin:8px 0 0;font-size:15px;line-height:1.5">Au vote 1, 4 joueurs sur 5 ont accusé Test. C'était bien le Traître.</p>
+    <div style="display:flex;align-items:center;gap:14px;margin-top:16px;padding:16px;border-radius:18px;background:#14100F;color:#FFF7EF"><span style="flex:none;width:52px;height:52px;border-radius:50%;background:#FFC107;color:#14100F;display:flex;align-items:center;justify-content:center;font-family:Oswald;font-weight:600;font-size:22px">T</span><div style="flex:1"><p style="margin:0;font-family:Oswald;font-weight:600;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#9A8F86">Le Traître était</p><p style="margin:2px 0 0;font-family:Oswald;font-weight:600;font-size:28px;line-height:1;text-transform:uppercase">Test</p></div><div style="text-align:right"><p style="margin:0;font-family:Oswald;font-weight:600;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#9A8F86">Le mot</p><p style="margin:2px 0 0;font-family:Oswald;font-weight:600;font-size:20px;line-height:1;text-transform:uppercase;color:#FFC107">Château</p></div></div>
+    <p style="margin:20px 0 8px;font-weight:700;font-size:12px;letter-spacing:.1em;text-transform:uppercase">Les rôles</p>
+    <div style="display:flex;flex-direction:column;border-radius:14px;background:rgba(255,255,255,.14);padding:4px 14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;min-height:40px;border-bottom:1px solid rgba(20,16,15,.15);font-size:15px"><span style="font-weight:600">Léa</span><span>Maître du jeu</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;min-height:40px;border-bottom:1px solid rgba(20,16,15,.15);font-size:15px"><span style="font-weight:600">Test</span><span style="font-weight:700">Traître · a trouvé</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;min-height:40px;border-bottom:1px solid rgba(20,16,15,.15);font-size:15px"><span style="font-weight:600">Manu, Marie, Karim</span><span>Citoyens</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;min-height:40px;font-size:15px"><span style="font-weight:600;font-style:italic">Carte du centre</span><span>Citoyen</span></div>
+    </div>
+  </div>
+  <div style="position:absolute;left:0;right:0;bottom:0;display:flex;flex-direction:column;gap:6px;padding:28px 20px 22px;background:linear-gradient(to top,#DE3C31 78%,rgba(222,60,49,0))">
+    <button style="display:flex;align-items:center;justify-content:center;width:100%;min-height:60px;border:0;border-radius:16px;background:#14100F;color:#FFF7EF;font-family:Oswald;font-weight:600;font-size:19px;letter-spacing:.06em;text-transform:uppercase;box-shadow:0 6px 18px rgba(0,0,0,.2)">Rejouer une manche</button>
+    <button style="display:flex;align-items:center;justify-content:center;width:100%;min-height:50px;border:0;background:transparent;color:#14100F;font-family:Oswald;font-weight:600;font-size:17px;letter-spacing:.06em;text-transform:uppercase">Retour au salon</button>
+  </div>
+</div>
+<p style="margin:0;font-size:13px;line-height:1.5">Une phrase dit ce qui a décidé la manche (vote 1, vote 2, départage ou temps écoulé). Le mot rejoint le bloc de révélation. Tous les rôles sont montrés, carte du centre comprise.</p>
+</div>
+
+</div>
+
+<h2 style="margin:56px 0 0;font-family:Oswald;font-weight:600;font-size:28px;text-transform:uppercase">À trancher</h2>
+<div style="display:flex;flex-direction:column;gap:8px;margin-top:14px;max-width:72ch;font-size:14px;line-height:1.5">
+
+<p style="margin:0"><strong>Maintenir pour voir (point 1) :</strong> le geste est plus lent qu'un tap. L'alternative serait un tap qui affiche le mot pendant 3 s, comme les cartes. Moins discret : l'écran reste allumé en jaune.</p>
+
+</div>
+</section>
+</x-dc>
+</body>
+</html>

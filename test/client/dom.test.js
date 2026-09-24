@@ -43,7 +43,7 @@ test('initial prend la première lettre en capitale, ? à défaut', () => {
 test('outcomeTitle et PHASE_BAR', () => {
     assert.equal(outcomeTitle({ outcome: 'allLose', reason: 'timeout' }), 'Le temps est écoulé');
     assert.equal(outcomeTitle({ outcome: 'commonsWin', reason: 'vote2' }), 'Les Citoyens gagnent');
-    assert.equal(PHASE_BAR.playing.rank, '3 / 6');
+    assert.equal(PHASE_BAR.playing.rank, '3/6');
     assert.equal(PHASE_BAR.tiebreak.label, 'Second vote');
 });
 

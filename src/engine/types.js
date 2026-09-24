@@ -33,8 +33,11 @@
  *   roles: Record<PlayerId, Role>|null,
  *   centerCard: Role|null,
  *   word: string|null,
- *   phase: Phase
+ *   phase: Phase,
+ *   hostChange: HostChange|null
  * }} Game */
+
+/** Dernier transfert d'hôte, oublié au changement de phase suivant. @typedef {{ from: PlayerId|null, to: PlayerId, at: number }} HostChange */
 
 /**
  * @typedef {(
@@ -65,6 +68,7 @@
 /** @typedef {{ rng: () => number, now: () => number, words: readonly string[] }} Deps */
 
 /**
+ * Vue d'un joueur. `claimHost` n'est jamais produit par le moteur : la table l'ajoute selon la présence.
  * @typedef {{
  *   version: number,
  *   phase: Phase['name'],
@@ -78,7 +82,8 @@
  *   tallies: Record<CandidateId, number>|null,
  *   result: { outcome: Outcome, reason: Reason, insiderId: PlayerId|null, centerCard: Role|null,
  *             tallies: Record<CandidateId, number>|null, pointed: CandidateId|null }|null,
- *   actions: CommandType[]
+ *   hostChange: HostChange|null,
+ *   actions: Array<CommandType|'claimHost'>
  * }} View */
 
 export {};

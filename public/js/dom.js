@@ -12,14 +12,14 @@ export const ROLE_HINTS = Object.freeze({
 /** Libellé et rang de la barre de phase (handoff, "Barre de phase"). */
 export const PHASE_BAR = Object.freeze({
     lobby: { label: 'Salon', rank: '' },
-    roles: { label: 'Les rôles', rank: '1 / 6' },
-    rolesWord: { label: 'Choix du mot', rank: '2 / 6' },
-    word: { label: 'Le mot', rank: '2 / 6' },
-    playing: { label: 'Enquête', rank: '3 / 6' },
-    discussion: { label: 'Discussion', rank: '4 / 6' },
-    vote1: { label: 'Premier vote', rank: '5 / 6' },
-    vote2: { label: 'Second vote', rank: '6 / 6' },
-    tiebreak: { label: 'Second vote', rank: '6 / 6' },
+    roles: { label: 'Les rôles', rank: '1/6' },
+    rolesWord: { label: 'Choix du mot', rank: '2/6' },
+    word: { label: 'Le mot', rank: '2/6' },
+    playing: { label: 'Enquête', rank: '3/6' },
+    discussion: { label: 'Discussion', rank: '4/6' },
+    vote1: { label: 'Premier vote', rank: '5/6' },
+    vote2: { label: 'Second vote', rank: '6/6' },
+    tiebreak: { label: 'Second vote', rank: '6/6' },
     ended: { label: 'Résultat', rank: '' }
 });
 
@@ -104,10 +104,12 @@ export function messageFor(ack) {
 const ICONS = Object.freeze({
     check: '<path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>',
     cross: '<path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>',
-    arrow: '<path d="M5 12h13M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'
+    arrow: '<path d="M5 12h13M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>',
+    speaker: '<path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M15.5 9.5a3.5 3.5 0 0 1 0 5M18 7a7 7 0 0 1 0 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+    'speaker-off': '<path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M16 9.5l5 5M21 9.5l-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'
 });
 
-/** @param {'check'|'cross'|'arrow'} name @param {number} [size] */
+/** @param {'check'|'cross'|'arrow'|'speaker'|'speaker-off'} name @param {number} [size] */
 export function svg(name, size = 20) {
-    return `<svg class="icon" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[name]}</svg>`;
+    return `<svg class="icon" data-icon="${name}" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[name]}</svg>`;
 }

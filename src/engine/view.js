@@ -78,6 +78,7 @@ export function view(game, playerId) {
         candidates: candidateList,
         tallies,
         result,
+        hostChange: game.hostChange,
         actions: allowedActions(game, playerId)
     };
 }

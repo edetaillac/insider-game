@@ -7,7 +7,10 @@ contexte: Vérifications manuelles sur téléphones réels avant une partie, ce 
 
 À passer sur un iPhone (Safari) et un Android (Chrome) réels, serveur lancé avec `MIN_PLAYERS=2`.
 
-- [ ] Le son sort après le premier tap (Rejoindre), puis à chaque changement de phase
+- [ ] Le son sort sur le téléphone de l'hôte seulement, après son premier tap : départ du chrono, 30 s restantes, temps écoulé, fin de manche. Les autres téléphones restent muets
+- [ ] La pastille Son de l'hôte coupe le son et le reste après un rechargement
+- [ ] Verrouiller le téléphone de l'hôte fait apparaître "Reprendre la main" chez les autres, et le son suit le nouvel hôte
+- [ ] Le bouton Copier du salon copie l'adresse complète
 - [ ] L'écran ne se verrouille pas pendant le chrono (Wake Lock)
 - [ ] Un reload en pleine partie revient au bon écran, avec le même prénom
 - [ ] Verrouiller puis déverrouiller le téléphone revient au bon écran, le chrono est juste

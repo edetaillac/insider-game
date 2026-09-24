@@ -2,10 +2,11 @@
 // Point d'entrée du navigateur : connexion, état courant, état local d'interface, rendu en quatre régions.
 
 import { render, renderJoin } from './render.js';
-import { unlock, playFor } from './audio.js';
+import { unlock, playFor, playWarn } from './audio.js';
 import { messageFor, formatCountdown } from './dom.js';
 
 const TOKEN_KEY = 'insider.token';
+const MUTED_KEY = 'insider:muted';
 // Durée d'affichage d'une carte qui se recache seule, alignée sur l'animation CSS `shrink 5s`
 const AUTOHIDE_MS = 5000;
 
@@ -14,10 +15,11 @@ const screen = document.getElementById('screen');
 const dock = document.getElementById('dock');
 const banner = document.getElementById('banner');
 const toast = document.getElementById('toast');
-const counter = document.getElementById('counter');
 const phasebar = document.getElementById('phasebar');
 const phaseLabel = phasebar.querySelector('[data-phase-label]');
 const phaseRank = phasebar.querySelector('[data-phase-rank]');
+const phaseRight = phasebar.querySelector('[data-phase-right]');
+const sheetLayer = document.getElementById('sheet');
 
 /** @type {{ view: any, online: string[], serverTime: number, minPlayers: number, shareUrl: string|null } | null} */
 let current = null;
@@ -42,6 +44,30 @@ function freshLocal(view) {
 }
 
 let local = freshLocal(null);
+
+/** État d'interface qui survit aux phases : feuilles ouvertes, son coupé (préférence du téléphone). */
+const ui = { claimSheet: false, presenceSheet: false, muted: readMuted() };
+
+function readMuted() {
+    try {
+        return localStorage.getItem(MUTED_KEY) === '1';
+    } catch {
+        return false;
+    }
+}
+
+function saveMuted() {
+    try {
+        localStorage.setItem(MUTED_KEY, ui.muted ? '1' : '0');
+    } catch {
+        // préférence perdue au rechargement, sans conséquence
+    }
+}
+
+/** Qui entend : le téléphone de l'hôte, sauf s'il a coupé le son. */
+function listener() {
+    return { isHost: Boolean(current?.view.me.isHost), muted: ui.muted };
+}
 
 function readToken() {
     try {
@@ -84,8 +110,11 @@ function patchTimer() {
     const remaining = deadline - now;
     el.textContent = formatCountdown(remaining);
     if (el.hasAttribute('data-urgent-able')) {
-        // Sous 30 s, tout le bloc chrono passe en fond sombre avec les chiffres en jaune
+        // Sous 30 s, tout le bloc chrono passe en fond sombre avec les chiffres en jaune, et le son d'alerte part
         (el.closest('[data-urgent-block]') ?? el).classList.toggle('urgent', remaining < 30_000);
+        if (remaining < 30_000 && remaining > 0 && current.view.phase === 'playing') {
+            playWarn(String(startedAt), listener());
+        }
     }
     const fill = screen.querySelector('.timer-fill');
     if (fill) {
@@ -164,14 +193,77 @@ function paint(parts, enter = false) {
     } else {
         phasebar.hidden = true;
     }
-    if (parts.counter) {
-        counter.textContent = parts.counter;
-        counter.hidden = false;
-    } else {
-        counter.hidden = true;
+    phaseRight.innerHTML = parts.bar ?? '';
+    paintSheet(parts.sheet ?? '');
+    if (screen.querySelector('[role="alert"]')) {
+        // L'alerte n'est annoncée qu'à son apparition, les rendus suivants la gardent muette
+        local.announced = true;
     }
     syncDockHeight();
 }
+
+/** Élément focalisé avant l'ouverture d'une feuille, rendu au focus à la fermeture. */
+let focusBeforeSheet = null;
+let paintedSheet = '';
+
+/** Feuille montante : voile, focus piégé, Échap ferme. L'animation d'entrée ne joue qu'à l'ouverture. */
+function paintSheet(html) {
+    if (html === paintedSheet) {
+        return;
+    }
+    const wasOpen = paintedSheet !== '';
+    const focused = document.activeElement;
+    const focusKey = wasOpen && focused && sheetLayer.contains(focused)
+        ? (focused.getAttribute('data-ui') ?? focused.getAttribute('data-cmd'))
+        : null;
+    paintedSheet = html;
+    sheetLayer.innerHTML = html;
+    sheetLayer.hidden = html === '';
+    sheetLayer.classList.toggle('shown', wasOpen && html !== '');
+    app.classList.toggle('sheet-open', html !== '');
+    if (html !== '' && !wasOpen) {
+        focusBeforeSheet = focused;
+        sheetLayer.querySelector('.sheet button')?.focus();
+    } else if (html !== '' && focusKey) {
+        sheetLayer.querySelector(`[data-ui="${focusKey}"], [data-cmd="${focusKey}"]`)?.focus();
+    } else if (html === '' && wasOpen && focusBeforeSheet instanceof HTMLElement && focusBeforeSheet.isConnected) {
+        focusBeforeSheet.focus();
+    }
+}
+
+function closeSheets() {
+    ui.claimSheet = false;
+    ui.presenceSheet = false;
+}
+
+document.addEventListener('keydown', (event) => {
+    if (sheetLayer.hidden) {
+        return;
+    }
+    if (event.key === 'Escape') {
+        closeSheets();
+        repaint();
+        return;
+    }
+    if (event.key === 'Tab') {
+        const focusables = [...sheetLayer.querySelectorAll('.sheet button')];
+        if (focusables.length === 0) {
+            return;
+        }
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first.focus();
+        } else if (!sheetLayer.contains(document.activeElement)) {
+            event.preventDefault();
+            first.focus();
+        }
+    }
+});
 
 /** Hauteur du socle exposée en CSS (marge basse du contenu, position du toast). Suit le socle et la rotation. */
 function syncDockHeight() {
@@ -198,7 +290,7 @@ function repaint() {
     if (current) {
         const enter = paintedPhase !== current.view.phase;
         paintedPhase = current.view.phase;
-        paint(render(current, local), enter);
+        paint(render(current, local, ui), enter);
         if (current.view.timer) {
             startTicker();
         } else {
@@ -240,6 +332,15 @@ socket.on('state', (envelope) => {
     offset = envelope.serverTime - Date.now();
     const previous = current;
     current = envelope;
+    if (ui.claimSheet && !envelope.view.actions.includes('claimHost')) {
+        // La reprise n'est plus possible : l'hôte est revenu, ou quelqu'un d'autre a repris (2b)
+        ui.claimSheet = false;
+        const host = envelope.view.players.find((p) => p.isHost);
+        const before = previous?.view.players.find((p) => p.isHost);
+        if (host && host.id !== envelope.view.me.id) {
+            showToast(before && before.id === host.id ? `${host.name} est revenu.` : `${host.name} a déjà repris la main.`);
+        }
+    }
     if (previous === null || previous.view.phase !== envelope.view.phase) {
         clearTimeout(autohideTimer);
         local = freshLocal(envelope.view);
@@ -250,7 +351,7 @@ socket.on('state', (envelope) => {
         repaint();
     }
     if (versionChanged) {
-        playFor(previous?.view.phase, envelope.view.phase, envelope.view.result?.reason);
+        playFor(previous?.view.phase, envelope.view.phase, envelope.view.result?.reason, listener());
     }
     banner.hidden = true;
 });
@@ -260,10 +361,42 @@ socket.on('connect', () => { banner.hidden = true; });
 
 function send(command) {
     socket.emit('command', command, (ack) => {
-        if (!ack || !ack.ok) {
-            showToast(messageFor(ack ?? { ok: false }));
+        if (ack && ack.ok) {
+            if (command.type === 'claimHost') {
+                ui.claimSheet = false;
+                repaint();
+            }
+            return;
         }
+        if (command.type === 'claimHost') {
+            // Un autre joueur a été plus rapide : la feuille se ferme sur son nom plutôt qu'un refus sec
+            ui.claimSheet = false;
+            repaint();
+            const host = current?.view.players.find((p) => p.isHost);
+            if (host && current && host.id !== current.view.me.id && current.view.hostChange?.to === host.id) {
+                showToast(`${host.name} a déjà repris la main.`);
+                return;
+            }
+        }
+        showToast(messageFor(ack ?? { ok: false }));
     });
+}
+
+/** Copie l'adresse complète ; repli : sélectionner le texte affiché. */
+async function copyUrl(url) {
+    try {
+        await navigator.clipboard.writeText(url);
+        showToast('Adresse copiée.');
+    } catch {
+        const shown = screen.querySelector('.share-url');
+        if (shown) {
+            const range = document.createRange();
+            range.selectNodeContents(shown);
+            const selection = window.getSelection();
+            selection?.removeAllRanges();
+            selection?.addRange(range);
+        }
+    }
 }
 
 /** Actions locales d'interface (data-ui). Chacune met à jour `local` puis re-rend. */
@@ -293,7 +426,16 @@ const UI = {
         send({ type: current.view.phase === 'tiebreak' ? 'tiebreak' : 'vote2', candidate: local.v2 });
     },
     'kick-ask'(arg) { local.kickConfirm = arg; },
-    'kick-cancel'() { local.kickConfirm = null; }
+    'kick-cancel'() { local.kickConfirm = null; },
+    'claim-ask'() { ui.claimSheet = true; },
+    'claim-cancel'() { ui.claimSheet = false; },
+    presence() { ui.presenceSheet = true; },
+    'sheet-close'() { closeSheets(); },
+    mute() {
+        ui.muted = !ui.muted;
+        saveMuted();
+    },
+    'copy-url'(arg) { copyUrl(arg ?? ''); }
 };
 
 /** Motif d'un bouton inactif : son data-reason, sinon la note qui l'accompagne. */
@@ -335,6 +477,8 @@ function onAction(event) {
 
 screen.addEventListener('click', onAction);
 dock.addEventListener('click', onAction);
+phasebar.addEventListener('click', onAction);
+sheetLayer.addEventListener('click', onAction);
 
 function onSubmit(event) {
     const form = /** @type {HTMLFormElement} */ (event.target).closest('form[data-form]');

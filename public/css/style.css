@@ -1138,9 +1138,10 @@ button {
 
 /* Zone de tap étendue à 44 px sans grossir la pastille */
 .sound-toggle::after { content: ''; position: absolute; left: 0; right: 0; top: -8px; bottom: -8px; }
-.sound-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--yellow); }
+.sound-toggle .icon { flex: none; }
 .sound-toggle.off { border-color: var(--muted); color: var(--muted); }
-.sound-toggle.off .sound-dot { background: transparent; border: 1.5px solid var(--muted); }
+.note-sound { display: flex; align-items: center; justify-content: center; gap: 6px; }
+.note-sound .icon { flex: none; }
 
 .btn-copy:focus-visible,
 .presence:focus-visible,

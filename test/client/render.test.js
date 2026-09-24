@@ -177,3 +177,17 @@ test('pastille Son chez l\'hôte seulement, état coupé', () => {
     assert.match(muted.bar, /aria-checked="false"/);
     assert.match(muted.bar, /Son coupé/);
 });
+
+test('salon, hôte : la note annonce le son avec une icône, et suit la coupure', () => {
+    const on = out(envelope({ me: 'a', actions: ['startRound', 'reset'] }));
+    assert.match(on.dock, /class="dock-note note-sound"><svg[^>]*data-icon="speaker"/);
+    assert.match(on.dock, /Tu es hôte : le son de la partie sort de ton téléphone\./);
+    const muted = out(envelope({ me: 'a', actions: ['startRound', 'reset'] }), { ...UI, muted: true });
+    assert.match(muted.dock, /data-icon="speaker-off"/);
+    assert.match(muted.dock, /Tu es hôte : le son est coupé sur ton téléphone\./);
+});
+
+test('pastille Son : icône haut-parleur, barrée quand le son est coupé', () => {
+    assert.match(out(envelope({ me: 'a' })).bar, /sound-toggle"[^>]*>.*data-icon="speaker"/);
+    assert.match(out(envelope({ me: 'a' }), { ...UI, muted: true }).bar, /data-icon="speaker-off"/);
+});

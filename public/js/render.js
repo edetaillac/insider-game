@@ -163,6 +163,12 @@ function topMessage(envelope, local) {
     return msgInfo({ avatarName: to, html: `<strong>${e(`${to} a repris la main.`)}</strong>${from}` });
 }
 
+/** Note de l'hôte au salon : le son de la partie sort de son téléphone (lot 5). */
+function soundNote(ui) {
+    const text = ui.muted ? 'Tu es hôte : le son est coupé sur ton téléphone.' : 'Tu es hôte : le son de la partie sort de ton téléphone.';
+    return `<p class="dock-note note-sound">${svg(ui.muted ? 'speaker-off' : 'speaker', 16)}${e(text)}</p>`;
+}
+
 /** Socle de reprise (2a, 2f) : l'action exceptionnelle, en jaune. */
 function claimDock(view) {
     return `${note(`Tu deviendras hôte à la place de ${hostName(view)}.`)}${uiButton('claim-ask', 'Reprendre la main', '', 'btn btn-accent')}`;
@@ -185,7 +191,7 @@ function hostChip(envelope, p) {
 /* Écrans (remplacés par les Tasks 4 à 6). Chaque fonction renvoie { content, dock, phase? }. */
 
 /* §2 Salon (handoff 2026-09-24, lot 4) */
-function lobby(envelope, local) {
+function lobby(envelope, local, ui) {
     const { view, minPlayers } = envelope;
     const isHost = view.me.isHost;
     const rows = orderedPlayers(envelope).map((p) => {
@@ -207,7 +213,7 @@ function lobby(envelope, local) {
     let dock;
     if (can(view, 'startRound')) {
         dock = enough
-            ? `${note('Tu es hôte : les autres attendent ton signal.')}${cmdButton('startRound', 'Lancer la partie')}`
+            ? `${soundNote(ui)}${cmdButton('startRound', 'Lancer la partie')}`
             : `${note(`Il faut au moins ${minPlayers} joueurs.`)}${disabledButton('Lancer la partie')}`;
     } else if (can(view, 'claimHost')) {
         dock = claimDock(view);
@@ -497,7 +503,7 @@ function soundToggle(view, ui) {
         return '';
     }
     const on = !ui.muted;
-    return `<button type="button" class="sound-toggle${on ? '' : ' off'}" data-ui="mute" role="switch" aria-checked="${on}" aria-label="Son de la partie"><span class="sound-dot" aria-hidden="true"></span>${on ? 'Son' : 'Son coupé'}</button>`;
+    return `<button type="button" class="sound-toggle${on ? '' : ' off'}" data-ui="mute" role="switch" aria-checked="${on}" aria-label="Son de la partie">${svg(on ? 'speaker' : 'speaker-off', 14)}${on ? 'Son' : 'Son coupé'}</button>`;
 }
 
 /** Feuille montante générique (2b, 3b) : voile, poignée, contenu. */
@@ -537,7 +543,7 @@ function presenceSheet(envelope) {
  */
 export function render(envelope, local, ui = { claimSheet: false, presenceSheet: false, muted: false }) {
     const { view } = envelope;
-    const screen = (SCREENS[view.phase] ?? (() => ({ content: '', dock: '' })))(envelope, local);
+    const screen = (SCREENS[view.phase] ?? (() => ({ content: '', dock: '' })))(envelope, local, ui);
     const message = topMessage(envelope, local);
     let dock = screen.dock ?? '';
     // Hors salon, la reprise remplace un socle d'attente, jamais l'action propre du joueur ni celle du Maître

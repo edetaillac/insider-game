@@ -34,7 +34,8 @@
  *   centerCard: Role|null,
  *   word: string|null,
  *   phase: Phase,
- *   hostChange: HostChange|null
+ *   hostChange: HostChange|null,
+ *   masterAway: boolean
  * }} Game */
 
 /** Dernier transfert d'hôte, oublié au changement de phase suivant. @typedef {{ from: PlayerId|null, to: PlayerId, at: number }} HostChange */
@@ -44,6 +45,7 @@
  *   { type: 'addPlayer', actor: 'server', id: PlayerId, name: string, isHost?: boolean }
  * | { type: 'removePlayer', actor: 'server', id: PlayerId }
  * | { type: 'setHost', actor: 'server', id: PlayerId }
+ * | { type: 'setMasterAway', actor: 'server', away: boolean }
  * | { type: 'timeout', actor: 'server' }
  * | { type: 'startRound', actor: PlayerId }
  * | { type: 'setWord', actor: PlayerId, word: string }
@@ -81,7 +83,7 @@
  *   candidates: Array<{ id: CandidateId, name: string }>|null,
  *   tallies: Record<CandidateId, number>|null,
  *   result: { outcome: Outcome, reason: Reason, insiderId: PlayerId|null, centerCard: Role|null,
- *             tallies: Record<CandidateId, number>|null, pointed: CandidateId|null }|null,
+ *             tallies: Record<CandidateId, number>|null, pointed: CandidateId|null, roles: Record<PlayerId, Role> }|null,
  *   hostChange: HostChange|null,
  *   actions: Array<CommandType|'claimHost'>
  * }} View */

@@ -14,7 +14,7 @@ import { view } from '../engine/view.js';
 /** @typedef {import('../engine/types.js').ErrorCode} ErrorCode */
 
 /** @typedef {{ type: 'state' } | { type: 'kicked', playerId: PlayerId }} TableEvent */
-/** @typedef {{ view: View, online: PlayerId[], serverTime: number, minPlayers: number, shareUrl: string|null }} Snapshot */
+/** @typedef {{ view: View, online: PlayerId[], serverTime: number, minPlayers: number, traitorOptional: boolean, shareUrl: string|null }} Snapshot */
 /** @typedef {{ ok: true, token: string, playerId: PlayerId } | { ok: false, error: ErrorCode, message: string }} JoinResult */
 
 /**
@@ -135,9 +135,22 @@ export function createTable({ settings = {}, words, now = Date.now, random = Mat
             return result;
         }
         game = result.game;
+        syncMasterAway();
         scheduleTimeout();
         emit({ type: 'state' });
         return result;
+    }
+
+    /** ADR D8 : le moteur apprend l'absence du Maître, que seule la table connaît. L'appelant émet l'état. */
+    function syncMasterAway() {
+        const masterId = Object.keys(game.roles ?? {}).find((id) => game.roles?.[id] === 'master');
+        const away = masterId !== undefined && (sockets.get(masterId)?.size ?? 0) === 0;
+        if (away !== game.masterAway) {
+            const result = apply(game, { type: 'setMasterAway', actor: SERVER, away }, deps);
+            if (result.ok) {
+                game = result.game;
+            }
+        }
     }
 
     /** Course entre le tick et un clic : la deadline passée prime sur toute commande d'un joueur. */
@@ -187,6 +200,7 @@ export function createTable({ settings = {}, words, now = Date.now, random = Mat
         set.add(socketId);
         sockets.set(playerId, set);
         if (!wasOnline) {
+            syncMasterAway();
             emit({ type: 'state' });
         }
         return !wasOnline;
@@ -205,6 +219,7 @@ export function createTable({ settings = {}, words, now = Date.now, random = Mat
         set.delete(socketId);
         if (set.size === 0) {
             sockets.delete(playerId);
+            syncMasterAway();
             emit({ type: 'state' });
             return true;
         }
@@ -294,7 +309,7 @@ export function createTable({ settings = {}, words, now = Date.now, random = Mat
         // La reprise dépend de la présence, que seule la table connaît : elle complète les actions du moteur
         /** @type {View['actions']} */
         const actions = canClaimHost(playerId) ? [...projected.actions, 'claimHost'] : projected.actions;
-        return { view: { ...projected, actions }, online: online(), serverTime: now(), minPlayers: game.settings.minPlayers, shareUrl };
+        return { view: { ...projected, actions }, online: online(), serverTime: now(), minPlayers: game.settings.minPlayers, traitorOptional: game.settings.traitorOptional, shareUrl };
     }
 
     /** @param {(event: TableEvent) => void} listener */

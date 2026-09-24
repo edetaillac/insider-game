@@ -111,7 +111,7 @@ test('en ended : tout le monde voit le mot, l\'insider, la carte du centre et le
         assert.equal(v.word, 'Château');
         assert.deepEqual(v.result, {
             outcome: 'commonsWin', reason: 'vote2', insiderId: ctx.insider, centerCard: null,
-            tallies: ended.phase.tallies, pointed: ctx.insider
+            tallies: ended.phase.tallies, pointed: ctx.insider, roles: ended.roles
         });
         assert.equal(v.timer, null);
     }

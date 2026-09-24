@@ -60,7 +60,9 @@ export function view(game, playerId) {
             insiderId,
             centerCard: game.centerCard,
             tallies: phase.tallies,
-            pointed: phase.pointed
+            pointed: phase.pointed,
+            // Fin de manche : tout est révélé, pour que le résultat raconte la manche
+            roles: { ...(game.roles ?? {}) }
         };
     }
 

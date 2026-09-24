@@ -102,7 +102,7 @@ test('closeDiscussion ouvre vote1 avec des bulletins vides', () => {
     const { game, deps, master, host, commons, advance } = started(4);
     const playing = run(game, deps, { type: 'setWord', actor: master, word: 'A' }, { type: 'startTimer', actor: host });
     advance(1000);
-    const disc = run(playing, deps, { type: 'wordFound', actor: host, finderId: commons[0] });
+    const disc = run(playing, deps, { type: 'wordFound', actor: master, finderId: commons[0] });
     const v1 = run(disc, deps, { type: 'closeDiscussion', actor: master });
     assert.deepEqual(v1.phase, { name: 'vote1', finderId: commons[0], ballots: {} });
 });

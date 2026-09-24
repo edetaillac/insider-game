@@ -51,6 +51,7 @@ function sample(type, ctx) {
         case 'addPlayer': return { type, actor: SERVER, id: 'p9', name: 'Neuf' };
         case 'removePlayer': return { type, actor: SERVER, id: 'p4' };
         case 'setHost': return { type, actor: SERVER, id: 'p2' };
+        case 'setMasterAway': return { type, actor: SERVER, away: true };
         case 'timeout': return { type, actor: SERVER };
         case 'startRound': return { type, actor: ctx.host };
         case 'reset': return { type, actor: ctx.host };
@@ -71,7 +72,7 @@ function sample(type, ctx) {
 test('la table couvre toutes les commandes et toutes les phases', () => {
     assert.deepEqual(ALL_PHASES, ['lobby', 'roles', 'word', 'playing', 'discussion', 'vote1', 'vote2', 'tiebreak', 'ended']);
     assert.deepEqual(Object.keys(PHASES_BY_COMMAND).sort(), [
-        'addPlayer', 'closeDiscussion', 'drawWord', 'removePlayer', 'reset', 'seenRole', 'seenWord', 'setHost', 'setWord',
+        'addPlayer', 'closeDiscussion', 'drawWord', 'removePlayer', 'reset', 'seenRole', 'seenWord', 'setHost', 'setMasterAway', 'setWord',
         'startRound', 'startTimer', 'tiebreak', 'timeout', 'vote1', 'vote2', 'wordFound'
     ]);
 });

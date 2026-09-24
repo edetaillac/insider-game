@@ -304,3 +304,35 @@ test('snapshot : claimHost figure dans les actions seulement quand la reprise es
     assert.ok(!t.snapshot(a.playerId).view.actions.includes('claimHost'), 'l\'ancien hôte revenu ne reprend pas');
     assert.deepEqual(t.snapshot(a.playerId).view.hostChange?.to, b.playerId);
 });
+
+test('D8 : la table tient masterAway à jour selon la présence du Maître', () => {
+    const { t } = table();
+    const players = joinAll(t, ['Alice', 'Bob', 'Carol', 'Dan']);
+    players.forEach((p, i) => t.connect(p.playerId, `s${i}`));
+    t.dispatch(players[0].playerId, { type: 'startRound' });
+    const masterIndex = players.findIndex((p) => t.game.roles?.[p.playerId] === 'master');
+    const master = players[masterIndex];
+    assert.equal(t.game.masterAway, false);
+    t.disconnect(master.playerId, `s${masterIndex}`);
+    assert.equal(t.game.masterAway, true);
+    t.connect(master.playerId, 'back');
+    assert.equal(t.game.masterAway, false);
+});
+
+test('D8 : un Maître déjà hors ligne au lancement est marqué absent', () => {
+    const { t } = table();
+    const players = joinAll(t, ['Alice', 'Bob', 'Carol', 'Dan']);
+    t.connect(players[0].playerId, 's0');
+    t.dispatch(players[0].playerId, { type: 'startRound' });
+    const master = t.game.players.find((p) => t.game.roles?.[p.id] === 'master');
+    assert.equal(t.game.masterAway, master.id !== players[0].playerId);
+});
+
+test('point 5 : le snapshot annonce la variante sans Traître', () => {
+    const { t } = table({ traitorOptional: true });
+    const [a] = joinAll(t, ['Alice']);
+    assert.equal(t.snapshot(a.playerId).traitorOptional, true);
+    const other = table({ traitorOptional: false });
+    const [b] = joinAll(other.t, ['Bob']);
+    assert.equal(other.t.snapshot(b.playerId).traitorOptional, false);
+});
